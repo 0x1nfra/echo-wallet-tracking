@@ -57,7 +57,7 @@ export interface WalletAnalysis {
   analyzedAt: number; // timestamp
 }
 
-// Forward declarations (defined in other type files)
+// Forward declarations
 export interface WalletMetrics {
   profitability: ProfitabilityMetrics;
   activity: ActivityMetrics;

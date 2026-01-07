@@ -40,7 +40,7 @@ export class HeliusFetcher {
         const response = await this.client.get('/addresses/' + address + '/transactions', {
           params: {
             'api-key': this.apiKey,
-            before: beforeSignature,
+            'before-signature': beforeSignature,
             limit: 100, // Max per request
           },
         });
@@ -101,12 +101,11 @@ export class HeliusFetcher {
    */
   async getTransaction(signature: string): Promise<HeliusTransaction> {
     try {
-      const response = await this.client.get('/transactions/', {
-        params: {
-          'api-key': this.apiKey,
-          transactions: [signature],
-        },
-      });
+      const response = await this.client.post(
+        '/v0/transactions',
+        { transactions: [signature] },
+        { params: { 'api-key': this.apiKey } }
+      );
 
       const transactions: HeliusTransaction[] = response.data;
       if (!transactions || transactions.length === 0) {

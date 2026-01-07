@@ -46,7 +46,17 @@ export class DexScreenerFetcher {
 
       // Return price in USD
       // TODO: add market cap metrics
+      if (!bestPair.priceUsd || bestPair.priceUsd.trim() === '') {
+        console.warn(`Price USD is missing or empty for token: ${tokenAddress}`);
+        return null;
+      }
+      
       const priceInUsd = parseFloat(bestPair.priceUsd);
+      if (!isFinite(priceInUsd)) {
+        console.warn(`Price USD cannot be parsed to a finite number for token: ${tokenAddress}`);
+        return null;
+      }
+      
       return priceInUsd;
     } catch (error) {
       // TODO: Implement automatic retry with exponential backoff
