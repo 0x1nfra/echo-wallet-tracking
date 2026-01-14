@@ -57,7 +57,7 @@ pnpm run score --file wallets.txt --export --output axiom-import.json
 - [x] Project setup
 - [ ] Transaction fetcher
 - [ ] Transaction parser
-- [ ] P&L calculator
+- [ ] PnL calculator
 - [ ] Metrics engine
 - [ ] Categorization system
 - [ ] Scoring algorithm
