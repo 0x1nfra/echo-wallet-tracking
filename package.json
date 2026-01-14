@@ -11,6 +11,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:scoring": "tsx tests/integration/scoring.test.ts",
+    "test:fetchers": "tsx tests/test-fetchers.ts",
+    "test:parsers": "tsx tests/test-parsers.ts",
     "type-check": "tsc --noEmit",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
