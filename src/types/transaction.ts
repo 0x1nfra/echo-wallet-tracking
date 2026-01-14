@@ -24,11 +24,17 @@ export interface Swap {
   // Token info
   tokenAddress: string;
   tokenSymbol: string;
+  tokenName?: string;
 
-  // Amounts
+  // Amounts (in native units)
   amountSol: number;
   amountTokens: number;
-  pricePerToken: number; // SOL per token
+  pricePerTokenSol: number; // SOL per token (raw)
+
+  // USD values (enriched later)
+  amountUsd?: number; // Trade value in USD
+  pricePerTokenUsd: number; // Token price in USD
+  marketCapUsd?: number; // Market cap at time of trade
 
   // DEX info
   dex: 'raydium' | 'jupiter' | 'pump.fun' | 'orca' | 'meteora' | 'unknown';
@@ -50,7 +56,6 @@ export interface WalletSwaps {
   newestSwap?: number; // timestamp
 }
 
-// FIXME: should be in env?
 /**
  * DEX program IDs for identification
  */

@@ -1,12 +1,74 @@
 // src/parsers/swap.ts
 
-import {
-  Swap,
-  SwapType,
-  DEX_PROGRAM_IDS,
-  SOL_ADDRESSES,
-  HeliusEnhancedTransaction,
-} from '../types/transaction.js';
+import { Swap, SwapType, DEX_PROGRAM_IDS, SOL_ADDRESSES } from '../types/transaction.js';
+
+/**
+ * Enhanced transaction from Helius with parsed data
+ */
+interface HeliusEnhancedTransaction {
+  signature: string;
+  timestamp: number;
+  type: string;
+  fee: number;
+  tokenTransfers?: Array<{
+    fromUserAccount: string;
+    toUserAccount: string;
+    fromTokenAccount: string;
+    toTokenAccount: string;
+    tokenAmount: number;
+    mint: string;
+    tokenStandard: string;
+  }>;
+  nativeTransfers?: Array<{
+    fromUserAccount: string;
+    toUserAccount: string;
+    amount: number;
+  }>;
+  accountData?: Array<{
+    account: string;
+    nativeBalanceChange: number;
+    tokenBalanceChanges?: Array<{
+      mint: string;
+      rawTokenAmount: {
+        tokenAmount: string;
+        decimals: number;
+      };
+      userAccount: string;
+    }>;
+  }>;
+  events?: {
+    swap?: Array<{
+      nativeInput?: {
+        account: string;
+        amount: string;
+      };
+      nativeOutput?: {
+        account: string;
+        amount: string;
+      };
+      tokenInputs?: Array<{
+        mint: string;
+        rawTokenAmount: {
+          tokenAmount: string;
+          decimals: number;
+        };
+        userAccount: string;
+      }>;
+      tokenOutputs?: Array<{
+        mint: string;
+        rawTokenAmount: {
+          tokenAmount: string;
+          decimals: number;
+        };
+        userAccount: string;
+      }>;
+    }>;
+  };
+  instructions?: Array<{
+    programId: string;
+    data?: string;
+  }>;
+}
 
 /**
  * Parse swaps from Helius enhanced transactions
@@ -93,7 +155,7 @@ function parseSwapFromEvents(tx: HeliusEnhancedTransaction): Swap | null {
     return null;
   }
 
-  const pricePerToken = amountSol / amountTokens;
+  const pricePerTokenSol = amountSol / amountTokens;
 
   return {
     signature: tx.signature,
@@ -103,7 +165,7 @@ function parseSwapFromEvents(tx: HeliusEnhancedTransaction): Swap | null {
     tokenSymbol: 'UNKNOWN', // Will be enriched later
     amountSol,
     amountTokens,
-    pricePerToken,
+    pricePerTokenSol,
     dex: identifyDex(tx),
   };
 }
@@ -202,7 +264,7 @@ function parseSwapFromTransfers(tx: HeliusEnhancedTransaction, walletAddress: st
     return null;
   }
 
-  const pricePerToken = amountSol / amountTokens;
+  const pricePerTokenSol = amountSol / amountTokens;
 
   return {
     signature: tx.signature,
@@ -212,7 +274,7 @@ function parseSwapFromTransfers(tx: HeliusEnhancedTransaction, walletAddress: st
     tokenSymbol: 'UNKNOWN',
     amountSol,
     amountTokens,
-    pricePerToken,
+    pricePerTokenSol,
     dex: identifyDex(tx),
   };
 }
@@ -249,10 +311,47 @@ function identifyDex(tx: HeliusEnhancedTransaction): Swap['dex'] {
 }
 
 /**
- * Enrich swaps with token metadata (symbols, etc)
+ * Enrich swaps with token metadata and USD values
  */
-export async function enrichSwaps(swaps: Swap[]): Promise<Swap[]> {
-  // TODO: Fetch token metadata from DexScreener or other sources
-  // For now, just return swaps as-is
-  return swaps;
+export async function enrichSwaps(swaps: Swap[], dexscreener: any): Promise<Swap[]> {
+  // Get unique token addresses
+  const uniqueTokens = [...new Set(swaps.map((s) => s.tokenAddress))];
+
+  // Fetch current prices and metadata for all tokens
+  const tokenDataMap = new Map<string, any>();
+
+  for (const tokenAddress of uniqueTokens) {
+    try {
+      const data = await dexscreener.getTokenInfo(tokenAddress);
+      if (data) {
+        tokenDataMap.set(tokenAddress, data);
+      }
+    } catch (error) {
+      console.warn(`Failed to fetch data for ${tokenAddress}:`, error);
+    }
+  }
+
+  // Enrich each swap with USD values and metadata
+  return swaps.map((swap) => {
+    const tokenData = tokenDataMap.get(swap.tokenAddress);
+
+    // Use the token's USD price directly from DexScreener
+    // This represents the current USD value per token
+    const pricePerTokenUsd = tokenData?.priceUsd ?? 0;
+
+    // Calculate the total USD value of the trade
+    // Using the current token price as the reference
+    const amountUsd = swap.amountTokens * pricePerTokenUsd;
+
+    return {
+      ...swap,
+      // Update token metadata from DexScreener if available
+      tokenSymbol: tokenData?.symbol ?? swap.tokenSymbol,
+      tokenName: tokenData?.name,
+      // USD values calculated using direct token pricing from DexScreener
+      amountUsd: amountUsd,
+      pricePerTokenUsd: pricePerTokenUsd,
+      marketCapUsd: tokenData?.fdv ?? tokenData?.marketCap, // Use FDV if available, otherwise market cap
+    };
+  });
 }

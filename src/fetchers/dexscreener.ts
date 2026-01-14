@@ -120,6 +120,69 @@ export class DexScreenerFetcher {
   }
 
   /**
+   * Get comprehensive token information
+   * @param tokenAddress - Token mint address
+   * @returns Token info including price, symbol, name, market cap, etc.
+   */
+  async getTokenInfo(tokenAddress: string): Promise<any> {
+    try {
+      // Use the endpoint format: /dex/tokens/{tokenAddress} (existing working endpoint)
+      const response = await this.client.get<DexScreenerResponse>(`/dex/tokens/${tokenAddress}`);
+
+      const pairs = response.data.pairs;
+      if (!pairs || pairs.length === 0) {
+        console.warn(`No data found for token: ${tokenAddress}`);
+        return null;
+      }
+
+      // Find the Solana pair with highest liquidity
+      const solanaPairs = pairs.filter((pair: any) => pair.chainId === 'solana');
+      if (solanaPairs.length === 0) {
+        console.warn(`No Solana pairs found for token: ${tokenAddress}`);
+        return null;
+      }
+
+      // Sort by liquidity (highest first)
+      const bestPair = solanaPairs.sort((a: any, b: any) => {
+        const liquidityA = a.liquidity?.usd || 0;
+        const liquidityB = b.liquidity?.usd || 0;
+        return liquidityB - liquidityA;
+      })[0];
+
+      // Extract token information from the best pair
+      let tokenInfo: any = {
+        address: tokenAddress,
+        symbol: bestPair.baseToken?.symbol || 'UNKNOWN',
+        name: bestPair.baseToken?.name || 'Unknown Token',
+        priceUsd: null,
+        fdv: bestPair.fdv || null, // Fully diluted valuation
+        marketCap: bestPair.marketCap || null, // Market cap if available
+        pairAddress: bestPair.pairAddress,
+      };
+
+      // Get price in USD
+      if (bestPair.priceUsd && bestPair.priceUsd.trim() !== '') {
+        const priceInUsd = parseFloat(bestPair.priceUsd);
+        if (isFinite(priceInUsd)) {
+          tokenInfo.priceUsd = priceInUsd;
+        }
+      }
+
+      return tokenInfo;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 429) {
+          throw new Error(
+            'DexScreener API rate limit exceeded. Please wait a moment and try again.'
+          );
+        }
+        console.warn(`Failed to fetch info for ${tokenAddress}:`, error.message);
+      }
+      return null;
+    }
+  }
+
+  /**
    * Test connection to DexScreener API
    * @returns true if API is accessible
    */
