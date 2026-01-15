@@ -171,7 +171,7 @@ function parseSwapFromTransfers(tx: HeliusEnhancedTransaction, walletAddress: st
         for (const account of tx.accountData) {
           if (account.tokenBalanceChanges) {
             const tokenBalanceChange = account.tokenBalanceChanges.find(
-              balanceChange => balanceChange.mint === transfer.mint
+              (balanceChange) => balanceChange.mint === transfer.mint
             );
             if (tokenBalanceChange) {
               decimals = tokenBalanceChange.rawTokenAmount.decimals;
@@ -185,14 +185,16 @@ function parseSwapFromTransfers(tx: HeliusEnhancedTransaction, walletAddress: st
       if (decimals === 9 && tx.events?.swap) {
         for (const swapEvent of tx.events.swap) {
           if (swapEvent.tokenInputs) {
-            const tokenInput = swapEvent.tokenInputs.find(input => input.mint === transfer.mint);
+            const tokenInput = swapEvent.tokenInputs.find((input) => input.mint === transfer.mint);
             if (tokenInput) {
               decimals = tokenInput.rawTokenAmount.decimals;
               break;
             }
           }
           if (swapEvent.tokenOutputs) {
-            const tokenOutput = swapEvent.tokenOutputs.find(output => output.mint === transfer.mint);
+            const tokenOutput = swapEvent.tokenOutputs.find(
+              (output) => output.mint === transfer.mint
+            );
             if (tokenOutput) {
               decimals = tokenOutput.rawTokenAmount.decimals;
               break;
@@ -241,6 +243,10 @@ function parseSwapFromTransfers(tx: HeliusEnhancedTransaction, walletAddress: st
     amountTokens = tokenTransfer.amount / Math.pow(10, tokenTransfer.decimals);
   } else {
     // Unexpected transfer pattern
+    return null;
+  }
+
+  if (amountTokens === 0) {
     return null;
   }
 

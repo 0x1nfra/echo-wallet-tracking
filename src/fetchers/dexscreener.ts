@@ -194,11 +194,14 @@ export class DexScreenerFetcher {
         return null;
       }
 
+      // Determine if the token is the base token in the pair
+      const isBaseToken = bestPair.baseToken?.address === tokenAddress;
+
       return {
         priceUsd: priceInUsd,
-        marketCap: bestPair.marketCap,
+        marketCap: isBaseToken ? bestPair.marketCap : undefined,
         liquidity: bestPair.liquidity?.usd,
-        fdv: bestPair.fdv,
+        fdv: isBaseToken ? bestPair.fdv : undefined,
       };
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -259,8 +262,8 @@ export class DexScreenerFetcher {
         symbol: tokenData?.symbol || 'UNKNOWN',
         name: tokenData?.name || 'Unknown Token',
         priceUsd: null as number | null,
-        fdv: bestPair.fdv || null,
-        marketCap: bestPair.marketCap || null,
+        fdv: isBaseToken ? bestPair.fdv || null : null,
+        marketCap: isBaseToken ? bestPair.marketCap || null : null,
         pairAddress: bestPair.pairAddress,
       };
 
