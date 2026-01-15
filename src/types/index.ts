@@ -19,7 +19,7 @@ export type {
   RiskMetrics,
   TimingMetrics,
   TimePeriodMetrics,
-} from './wallet.js';
+} from './wallet';
 
 // Transaction types
 export type {
@@ -35,7 +35,7 @@ export type {
   DexScreenerToken,
   DexScreenerPair,
   DexScreenerResponse,
-} from './transaction.js';
+} from './transaction';
 
 // Config types
 export type {
@@ -53,7 +53,7 @@ export type {
   ScoringConfig,
   ExportConfig,
   CacheConfig,
-} from './config.js';
+} from './config';
 
 // Export types
 export type { AxiomExport, AxiomWallet, ExportSummary, CsvRow } from './export.js';

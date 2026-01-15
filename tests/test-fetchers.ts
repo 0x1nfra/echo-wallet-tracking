@@ -101,6 +101,26 @@ async function testDexScreener() {
       const token = testTokens.find((t) => t.address === address);
       console.log(`  ${token?.name}: $${price}`);
     });
+
+    // Test with invalid token
+    console.log('\nTesting with invalid token...');
+    const invalidPrice = await dexscreener.getTokenPrice('invalid_address_12345');
+    if (invalidPrice === null) {
+      console.log(chalk.green('✓ Correctly returned null for invalid token'));
+    } else {
+      console.log(chalk.red('✗ Should have returned null for invalid token'));
+    }
+
+    // Test market cap data
+    console.log('\nTesting market cap data...');
+    const pairs = await dexscreener.getTokenPairs(testTokens[0].address);
+    if (pairs.length > 0) {
+      console.log(chalk.green(`✓ Found ${pairs.length} pairs`));
+      const topPair = pairs[0];
+      console.log(`  Market Cap: $${topPair.marketCap?.toLocaleString() || 'N/A'}`);
+      console.log(`  Liquidity: $${topPair.liquidity?.usd?.toLocaleString() || 'N/A'}`);
+      console.log(`  FDV: $${topPair.fdv?.toLocaleString() || 'N/A'}`);
+    }
   } catch (error) {
     console.error(chalk.red('✗ DexScreener test failed:'), error);
   }

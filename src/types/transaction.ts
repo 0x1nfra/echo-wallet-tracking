@@ -11,6 +11,14 @@ export interface Transaction {
   fee: number; // SOL (lamports converted)
 }
 
+export interface TransactionInstruction {
+  programId: string;
+  data: string;
+  accounts: string[];
+}
+
+export type DexType = 'raydium' | 'jupiter' | 'pump.fun' | 'orca' | 'unknown';
+
 /**
  * Parsed swap transaction
  */
@@ -33,7 +41,7 @@ export interface Swap {
 
   // USD values (enriched later)
   amountUsd?: number; // Trade value in USD
-  pricePerTokenUsd: number; // Token price in USD
+  pricePerTokenUsd?: number; // Token price in USD
   marketCapUsd?: number; // Market cap at time of trade
 
   // DEX info
@@ -42,6 +50,12 @@ export interface Swap {
   // Optional metadata
   poolAddress?: string;
   slippage?: number;
+}
+
+export interface ParsedTransaction {
+  wallet: string;
+  swaps: Swap[];
+  rawTransactions: Transaction[];
 }
 
 /**
@@ -75,9 +89,36 @@ export const SOL_ADDRESSES = {
   WRAPPED: 'So11111111111111111111111111111111111111112', // WSOL (same address)
 } as const;
 
-/**
- * Enhanced transaction from Helius with parsed data
- */
+// Helius API response types
+export interface HeliusTransaction {
+  signature: string;
+  slot: number;
+  timestamp: number;
+  fee: number;
+  feePayer: string;
+  success: boolean;
+  type: string;
+  source: string;
+  tokenTransfers?: HeliusTokenTransfer[];
+  nativeTransfers?: HeliusNativeTransfer[];
+}
+
+export interface HeliusTokenTransfer {
+  fromUserAccount: string;
+  toUserAccount: string;
+  fromTokenAccount: string;
+  toTokenAccount: string;
+  tokenAmount: number;
+  mint: string;
+  tokenStandard?: string;
+}
+
+export interface HeliusNativeTransfer {
+  fromUserAccount: string;
+  toUserAccount: string;
+  amount: number;
+}
+
 export interface HeliusEnhancedTransaction {
   signature: string;
   timestamp: number;
@@ -141,4 +182,52 @@ export interface HeliusEnhancedTransaction {
     programId: string;
     data?: string;
   }>;
+}
+
+// DexScreener API response types
+export interface DexScreenerToken {
+  address: string;
+  name: string;
+  symbol: string;
+}
+
+export interface DexScreenerPair {
+  chainId: string;
+  dexId: string;
+  url: string;
+  pairAddress: string;
+  baseToken: DexScreenerToken;
+  quoteToken: DexScreenerToken;
+  priceNative: string;
+  priceUsd?: string;
+  txns: {
+    m5: { buys: number; sells: number };
+    h1: { buys: number; sells: number };
+    h6: { buys: number; sells: number };
+    h24: { buys: number; sells: number };
+  };
+  volume: {
+    h24: number;
+    h6: number;
+    h1: number;
+    m5: number;
+  };
+  priceChange: {
+    m5: number;
+    h1: number;
+    h6: number;
+    h24: number;
+  };
+  liquidity?: {
+    usd: number;
+    base: number;
+    quote: number;
+  };
+  fdv?: number;
+  marketCap?: number;
+}
+
+export interface DexScreenerResponse {
+  schemaVersion: string;
+  pairs: DexScreenerPair[] | null;
 }
