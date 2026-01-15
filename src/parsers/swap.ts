@@ -1,74 +1,12 @@
 // src/parsers/swap.ts
 
-import { Swap, SwapType, DEX_PROGRAM_IDS, SOL_ADDRESSES } from '../types/transaction.js';
-
-/**
- * Enhanced transaction from Helius with parsed data
- */
-interface HeliusEnhancedTransaction {
-  signature: string;
-  timestamp: number;
-  type: string;
-  fee: number;
-  tokenTransfers?: Array<{
-    fromUserAccount: string;
-    toUserAccount: string;
-    fromTokenAccount: string;
-    toTokenAccount: string;
-    tokenAmount: number;
-    mint: string;
-    tokenStandard: string;
-  }>;
-  nativeTransfers?: Array<{
-    fromUserAccount: string;
-    toUserAccount: string;
-    amount: number;
-  }>;
-  accountData?: Array<{
-    account: string;
-    nativeBalanceChange: number;
-    tokenBalanceChanges?: Array<{
-      mint: string;
-      rawTokenAmount: {
-        tokenAmount: string;
-        decimals: number;
-      };
-      userAccount: string;
-    }>;
-  }>;
-  events?: {
-    swap?: Array<{
-      nativeInput?: {
-        account: string;
-        amount: string;
-      };
-      nativeOutput?: {
-        account: string;
-        amount: string;
-      };
-      tokenInputs?: Array<{
-        mint: string;
-        rawTokenAmount: {
-          tokenAmount: string;
-          decimals: number;
-        };
-        userAccount: string;
-      }>;
-      tokenOutputs?: Array<{
-        mint: string;
-        rawTokenAmount: {
-          tokenAmount: string;
-          decimals: number;
-        };
-        userAccount: string;
-      }>;
-    }>;
-  };
-  instructions?: Array<{
-    programId: string;
-    data?: string;
-  }>;
-}
+import {
+  Swap,
+  SwapType,
+  DEX_PROGRAM_IDS,
+  SOL_ADDRESSES,
+  HeliusEnhancedTransaction,
+} from '../types/transaction.js';
 
 /**
  * Parse swaps from Helius enhanced transactions
@@ -155,6 +93,10 @@ function parseSwapFromEvents(tx: HeliusEnhancedTransaction): Swap | null {
     return null;
   }
 
+  if (amountTokens === 0) {
+    return null;
+  }
+
   const pricePerTokenSol = amountSol / amountTokens;
 
   return {
@@ -221,18 +163,56 @@ function parseSwapFromTransfers(tx: HeliusEnhancedTransaction, walletAddress: st
       }
     } else {
       // This is a token transfer
+      // Look for decimals in multiple sources: accountData.tokenBalanceChanges, events.swap, fallback to 9
+      let decimals = 9; // Default fallback
+
+      // First, try to find decimals in accountData.tokenBalanceChanges
+      if (tx.accountData && tx.accountData.length > 0) {
+        for (const account of tx.accountData) {
+          if (account.tokenBalanceChanges) {
+            const tokenBalanceChange = account.tokenBalanceChanges.find(
+              balanceChange => balanceChange.mint === transfer.mint
+            );
+            if (tokenBalanceChange) {
+              decimals = tokenBalanceChange.rawTokenAmount.decimals;
+              break;
+            }
+          }
+        }
+      }
+
+      // If not found in accountData, try to find in events.swap data
+      if (decimals === 9 && tx.events?.swap) {
+        for (const swapEvent of tx.events.swap) {
+          if (swapEvent.tokenInputs) {
+            const tokenInput = swapEvent.tokenInputs.find(input => input.mint === transfer.mint);
+            if (tokenInput) {
+              decimals = tokenInput.rawTokenAmount.decimals;
+              break;
+            }
+          }
+          if (swapEvent.tokenOutputs) {
+            const tokenOutput = swapEvent.tokenOutputs.find(output => output.mint === transfer.mint);
+            if (tokenOutput) {
+              decimals = tokenOutput.rawTokenAmount.decimals;
+              break;
+            }
+          }
+        }
+      }
+
       if (transfer.fromUserAccount === walletAddress) {
         tokenTransfer = {
           mint: transfer.mint,
           amount: transfer.tokenAmount,
-          decimals: 9, // Assume 9 decimals for now
+          decimals: decimals,
           direction: 'out',
         };
       } else if (transfer.toUserAccount === walletAddress) {
         tokenTransfer = {
           mint: transfer.mint,
           amount: transfer.tokenAmount,
-          decimals: 9,
+          decimals: decimals,
           direction: 'in',
         };
       }
@@ -253,12 +233,12 @@ function parseSwapFromTransfers(tx: HeliusEnhancedTransaction, walletAddress: st
     // Buy: SOL out, Token in
     type = 'buy';
     amountSol = solTransfer.amount;
-    amountTokens = tokenTransfer.amount;
+    amountTokens = tokenTransfer.amount / Math.pow(10, tokenTransfer.decimals);
   } else if (solTransfer.direction === 'in' && tokenTransfer.direction === 'out') {
     // Sell: Token out, SOL in
     type = 'sell';
     amountSol = solTransfer.amount;
-    amountTokens = tokenTransfer.amount;
+    amountTokens = tokenTransfer.amount / Math.pow(10, tokenTransfer.decimals);
   } else {
     // Unexpected transfer pattern
     return null;

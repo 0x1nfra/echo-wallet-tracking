@@ -17,7 +17,7 @@ export interface TransactionInstruction {
   accounts: string[];
 }
 
-export type DexType = 'raydium' | 'jupiter' | 'pump.fun' | 'orca' | 'unknown';
+export type DexType = 'raydium' | 'jupiter' | 'pump.fun' | 'orca' | 'meteora' | 'unknown';
 
 /**
  * Parsed swap transaction
@@ -45,7 +45,7 @@ export interface Swap {
   marketCapUsd?: number; // Market cap at time of trade
 
   // DEX info
-  dex: 'raydium' | 'jupiter' | 'pump.fun' | 'orca' | 'meteora' | 'unknown';
+  dex: DexType;
 
   // Optional metadata
   poolAddress?: string;
@@ -76,7 +76,7 @@ export interface WalletSwaps {
 export const DEX_PROGRAM_IDS = {
   RAYDIUM: '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
   JUPITER: 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4',
-  PUMP_FUN: '6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P',
+  PUMP_FUN: 'pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA',
   ORCA: 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc',
   METEORA: 'LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo',
 } as const;

@@ -251,10 +251,13 @@ export class DexScreenerFetcher {
       })[0];
 
       // Extract token information from the best pair
+      const isBaseToken = bestPair.baseToken?.address === tokenAddress;
+      const tokenData = isBaseToken ? bestPair.baseToken : bestPair.quoteToken;
+
       const tokenInfo = {
         address: tokenAddress,
-        symbol: bestPair.baseToken?.symbol || 'UNKNOWN',
-        name: bestPair.baseToken?.name || 'Unknown Token',
+        symbol: tokenData?.symbol || 'UNKNOWN',
+        name: tokenData?.name || 'Unknown Token',
         priceUsd: null as number | null,
         fdv: bestPair.fdv || null,
         marketCap: bestPair.marketCap || null,
