@@ -21,6 +21,8 @@ exports/
 !package.json
 !tsconfig.json
 !.eslintrc.json
+!.planning/*.json
+!.planning/**/*.json
 
 # Logs
 logs/
