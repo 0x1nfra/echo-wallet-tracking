@@ -33,7 +33,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. User can list all tracked wallets with their current status in the CLI
   4. Database schema (wallets, swaps, wallet_metrics, token_signals, removal_log) exists with drizzle-orm migrations that run cleanly on a fresh install
   5. SQLite WAL mode is enabled and the database survives concurrent reads during writes without locking errors
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — DB schema, migration, WAL connection, test infrastructure
+- [ ] 01-02-PLAN.md — Wallet add/remove/list commands + CLI wiring
 
 ### Phase 2: Transaction Parsing
 **Goal**: The system can convert raw Helius API responses into normalized Swap objects for any of the five supported DEXes
@@ -121,7 +125,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Data Foundation | 0/TBD | Not started | - |
+| 1. Data Foundation | 0/2 | Not started | - |
 | 2. Transaction Parsing | 0/TBD | Not started | - |
 | 3. Bundle/Scam Detection | 0/TBD | Not started | - |
 | 4. Metrics and Scoring | 0/TBD | Not started | - |
