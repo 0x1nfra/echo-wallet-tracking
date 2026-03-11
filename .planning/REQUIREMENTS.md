@@ -7,11 +7,11 @@
 
 ### Data Foundation
 
-- [ ] **DATA-01**: System persists wallet registry, swap history, metrics, signals, and removal log to SQLite
-- [ ] **DATA-02**: Database uses WAL mode to allow concurrent reads during monitoring loop writes
-- [ ] **DATA-03**: User can add a wallet to the tracker by address with optional label
-- [ ] **DATA-04**: User can remove a wallet from the tracker
-- [ ] **DATA-05**: User can view all tracked wallets with current score and status
+- [x] **DATA-01**: System persists wallet registry, swap history, metrics, signals, and removal log to SQLite
+- [x] **DATA-02**: Database uses WAL mode to allow concurrent reads during monitoring loop writes
+- [x] **DATA-03**: User can add a wallet to the tracker by address with optional label
+- [x] **DATA-04**: User can remove a wallet from the tracker
+- [x] **DATA-05**: User can view all tracked wallets with current score and status
 
 ### Transaction Parsing
 
@@ -104,11 +104,11 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DATA-01 | Phase 1 | Pending |
-| DATA-02 | Phase 1 | Pending |
-| DATA-03 | Phase 1 | Pending |
-| DATA-04 | Phase 1 | Pending |
-| DATA-05 | Phase 1 | Pending |
+| DATA-01 | Phase 1 | Complete |
+| DATA-02 | Phase 1 | Complete |
+| DATA-03 | Phase 1 | Complete |
+| DATA-04 | Phase 1 | Complete |
+| DATA-05 | Phase 1 | Complete |
 | PARS-01 | Phase 2 | Pending |
 | PARS-02 | Phase 2 | Pending |
 | PARS-03 | Phase 2 | Pending |

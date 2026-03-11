@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
 import chalk from 'chalk';
+import { createWalletCommand } from '@/commands/wallet.js';
 
 const program = new Command();
 
@@ -22,5 +23,7 @@ program
     console.log(chalk.gray('Coming soon...'));
     console.log(chalk.yellow('\nOptions:'), options);
   });
+
+program.addCommand(createWalletCommand());
 
 program.parse();
