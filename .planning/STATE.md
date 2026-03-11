@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 02-transaction-parsing plan 01 — parse_errors schema, wallets importing status, DEX type registry, HeliusTransaction events
-last_updated: "2026-03-11T13:53:43Z"
-last_activity: 2026-03-11 — Phase 02 plan 01 complete; parse_errors table, DEX program ID registry, HeliusTransaction events type contracts established
+stopped_at: Completed 02-transaction-parsing plan 02 — parseSwaps and applyFifo swap parser with FIFO cost basis
+last_updated: "2026-03-11T14:09:00Z"
+last_activity: 2026-03-11 — Phase 02 plan 02 complete; parseSwaps and applyFifo implemented, 13 tests passing
 progress:
   total_phases: 8
   completed_phases: 1
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-03-11)
 ## Current Position
 
 Phase: 2 of 8 (Transaction Parsing)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: Executing
-Last activity: 2026-03-11 — Phase 02 plan 01 complete; parse_errors table, DEX program ID registry, HeliusTransaction events type contracts established
+Last activity: 2026-03-11 — Phase 02 plan 02 complete; parseSwaps and applyFifo implemented, 13 tests passing
 
 Progress: [█████░░░░░] 50%
 
@@ -53,6 +53,7 @@ Progress: [█████░░░░░] 50%
 | Phase 01-data-foundation P01 | 45 | 2 tasks | 11 files |
 | Phase 01-data-foundation P02 | 30 | 2 tasks | 7 files |
 | Phase 02-transaction-parsing P01 | 2 | 2 tasks | 5 files |
+| Phase 02-transaction-parsing P02 | 5 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -71,6 +72,8 @@ Recent decisions affecting current work:
 - [Phase 02-transaction-parsing]: SQLite enum expansion for wallets.status is schema.ts-only — no ALTER TABLE SQL needed (SQLite does not enforce drizzle enum CHECK constraints at SQL level)
 - [Phase 02-transaction-parsing]: DEX_PROGRAM_IDS exported as flat const (test-compatible) and DEX_PROGRAM_IDS_MAP as grouped record (parser runtime) — avoids breaking existing test references
 - [Phase 02-transaction-parsing]: .gitignore exemption added for src/db/migrations/**/*.json to allow drizzle meta journal tracking in git
+- [Phase 02-transaction-parsing]: fee_sol computed as tx.fee / 1e9 — Helius API returns fee in lamports
+- [Phase 02-transaction-parsing]: applyFifo returns new array; partial and full orphan sells both set cost_basis_sol=null, realized_pnl_sol=null
 
 ### Pending Todos
 
@@ -84,6 +87,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-11T13:53:43Z
-Stopped at: Completed 02-transaction-parsing plan 01 — parse_errors schema, wallets importing status, DEX type registry, HeliusTransaction events
+Last session: 2026-03-11T14:09:00Z
+Stopped at: Completed 02-transaction-parsing plan 02 — parseSwaps and applyFifo swap parser with FIFO cost basis
 Resume file: None
