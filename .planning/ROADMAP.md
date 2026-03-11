@@ -65,7 +65,13 @@ Plans:
   3. A wallet that consistently buys in the first 2-3 blocks of launches is detected as a sniper bot
   4. Circular trade relationships between related wallets are detected and flagged as wash trading
   5. Only wallets with "confirmed passing" detection status are eligible for scoring — wallets at "suspected" or "review" status are excluded but not removed
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — wallet_flags schema, detection_status enum extension, types.ts, thresholds.ts
+- [ ] 03-02-PLAN.md — bundler and dev wallet detectors (TDD)
+- [ ] 03-03-PLAN.md — sniper and wash trader detectors (TDD)
+- [ ] 03-04-PLAN.md — detection engine orchestrator, history.ts integration, wallet review/clear-flag/list commands
 
 ### Phase 4: Metrics and Scoring
 **Goal**: Clean wallets receive a reliable 0-100 quality score based on risk-adjusted trading performance
@@ -132,7 +138,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 |-------|----------------|--------|-----------|
 | 1. Data Foundation | 2/2 | Complete   | 2026-03-11 |
 | 2. Transaction Parsing | 3/3 | Complete   | 2026-03-11 |
-| 3. Bundle/Scam Detection | 0/TBD | Not started | - |
+| 3. Bundle/Scam Detection | 0/4 | Not started | - |
 | 4. Metrics and Scoring | 0/TBD | Not started | - |
 | 5. Monitoring Loop and Auto-Removal | 0/TBD | Not started | - |
 | 6. Token Signal Engine | 0/TBD | Not started | - |
