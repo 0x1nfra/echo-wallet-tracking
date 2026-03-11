@@ -23,6 +23,7 @@ exports/
 !.eslintrc.json
 !.planning/*.json
 !.planning/**/*.json
+!src/db/migrations/**/*.json
 
 # Logs
 logs/
