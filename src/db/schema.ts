@@ -8,7 +8,7 @@ export const wallets = sqliteTable('wallets', {
   status: text('status', { enum: ['tracked', 'removed', 'importing'] }).notNull().default('tracked'),
   score: real('score'),
   detection_status: text('detection_status', {
-    enum: ['pending', 'passing', 'suspected', 'review', 'confirmed'],
+    enum: ['pending', 'suspected', 'review', 'confirmed_suspicious', 'confirmed_passing'],
   }),
   added_at: integer('added_at', { mode: 'number' })
     .notNull()
@@ -77,4 +77,27 @@ export const removal_log = sqliteTable('removal_log', {
     .default(sql`(unixepoch('now') * 1000)`),
   removed_by: text('removed_by').notNull().default('auto'),
   restored_at: integer('restored_at', { mode: 'number' }),
+});
+
+export const wallet_flags = sqliteTable('wallet_flags', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  wallet_address: text('wallet_address').notNull(),
+  detector: text('detector', {
+    enum: ['bundler', 'dev_wallet', 'sniper', 'wash_trader'],
+  }).notNull(),
+  confidence: text('confidence', {
+    enum: ['suspected', 'review', 'confirmed_suspicious'],
+  }).notNull(),
+  evidence_summary: text('evidence_summary').notNull(), // JSON string: key facts for CLI display
+  evidence_detail: text('evidence_detail'),             // JSON string: full evidence for Phase 7 dashboard
+  cleared: integer('cleared', { mode: 'boolean' }).notNull().default(false),
+  cleared_at: integer('cleared_at', { mode: 'number' }),
+  cleared_by: text('cleared_by'),                       // 'user' | 'auto'
+  threshold_multiplier: real('threshold_multiplier').notNull().default(1.0),
+  created_at: integer('created_at', { mode: 'number' })
+    .notNull()
+    .default(sql`(unixepoch('now') * 1000)`),
+  updated_at: integer('updated_at', { mode: 'number' })
+    .notNull()
+    .default(sql`(unixepoch('now') * 1000)`),
 });
