@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 01-data-foundation plan 02 — wallet add/remove/list commands, CLI wiring, and 9 unit tests
-last_updated: "2026-03-11T06:04:40.903Z"
-last_activity: 2026-03-11 — Roadmap created, all 8 phases defined, 37 v1 requirements mapped
+stopped_at: Completed 02-transaction-parsing plan 01 — parse_errors schema, wallets importing status, DEX type registry, HeliusTransaction events
+last_updated: "2026-03-11T13:53:43Z"
+last_activity: 2026-03-11 — Phase 02 plan 01 complete; parse_errors table, DEX program ID registry, HeliusTransaction events type contracts established
 progress:
   total_phases: 8
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 3
+  completed_plans: 3
   percent: 50
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-11)
 
 **Core value:** Know what smart money is doing before the crowd — with noise (bots, bundlers, dev wallets) already filtered out
-**Current focus:** Phase 1 — Data Foundation
+**Current focus:** Phase 2 — Transaction Parsing
 
 ## Current Position
 
-Phase: 1 of 8 (Data Foundation)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-03-11 — Roadmap created, all 8 phases defined, 37 v1 requirements mapped
+Phase: 2 of 8 (Transaction Parsing)
+Plan: 1 of 3 in current phase
+Status: Executing
+Last activity: 2026-03-11 — Phase 02 plan 01 complete; parse_errors table, DEX program ID registry, HeliusTransaction events type contracts established
 
 Progress: [█████░░░░░] 50%
 
@@ -52,6 +52,7 @@ Progress: [█████░░░░░] 50%
 *Updated after each plan completion*
 | Phase 01-data-foundation P01 | 45 | 2 tasks | 11 files |
 | Phase 01-data-foundation P02 | 30 | 2 tasks | 7 files |
+| Phase 02-transaction-parsing P01 | 2 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -67,6 +68,9 @@ Recent decisions affecting current work:
 - [Phase 01-data-foundation]: NODE_OPTIONS=--experimental-vm-modules jest used for ESM test support — allows pnpm to pass test patterns directly to jest without double-dash issue
 - [Phase 01-data-foundation]: Tests operate directly against db operations (not CLI process) to avoid process.exit() terminating Jest runner
 - [Phase 01-data-foundation]: Pre-existing parsers.test.ts stub failure logged to deferred-items.md — out of scope for Plan 02
+- [Phase 02-transaction-parsing]: SQLite enum expansion for wallets.status is schema.ts-only — no ALTER TABLE SQL needed (SQLite does not enforce drizzle enum CHECK constraints at SQL level)
+- [Phase 02-transaction-parsing]: DEX_PROGRAM_IDS exported as flat const (test-compatible) and DEX_PROGRAM_IDS_MAP as grouped record (parser runtime) — avoids breaking existing test references
+- [Phase 02-transaction-parsing]: .gitignore exemption added for src/db/migrations/**/*.json to allow drizzle meta journal tracking in git
 
 ### Pending Todos
 
@@ -80,6 +84,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-11T06:04:40.887Z
-Stopped at: Completed 01-data-foundation plan 02 — wallet add/remove/list commands, CLI wiring, and 9 unit tests
+Last session: 2026-03-11T13:53:43Z
+Stopped at: Completed 02-transaction-parsing plan 01 — parse_errors schema, wallets importing status, DEX type registry, HeliusTransaction events
 Resume file: None
