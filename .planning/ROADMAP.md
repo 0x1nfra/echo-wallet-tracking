@@ -12,7 +12,7 @@ Echo is built in strict dependency order — each phase unblocks the next. Raw t
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Data Foundation** - SQLite schema, drizzle-orm migrations, WAL mode, and CLI wallet registry
+- [x] **Phase 1: Data Foundation** - SQLite schema, drizzle-orm migrations, WAL mode, and CLI wallet registry (completed 2026-03-11)
 - [ ] **Phase 2: Transaction Parsing** - Helius enhanced transaction normalization, DEX-specific parsers, full history import, FIFO position tracking
 - [ ] **Phase 3: Bundle/Scam Detection** - Bundler, dev wallet, sniper, and wash trader detection with tiered confidence gating
 - [ ] **Phase 4: Metrics and Scoring** - WalletMetrics calculation and 0-100 wallet score with risk-adjusted return weighting
@@ -125,7 +125,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Data Foundation | 1/2 | In Progress|  |
+| 1. Data Foundation | 2/2 | Complete   | 2026-03-11 |
 | 2. Transaction Parsing | 0/TBD | Not started | - |
 | 3. Bundle/Scam Detection | 0/TBD | Not started | - |
 | 4. Metrics and Scoring | 0/TBD | Not started | - |

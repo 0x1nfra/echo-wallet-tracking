@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 01-data-foundation plan 01 — DB schema, migration, connection singleton, and test suite
-last_updated: "2026-03-11T05:54:36.578Z"
+stopped_at: Completed 01-data-foundation plan 02 — wallet add/remove/list commands, CLI wiring, and 9 unit tests
+last_updated: "2026-03-11T06:04:40.903Z"
 last_activity: 2026-03-11 — Roadmap created, all 8 phases defined, 37 v1 requirements mapped
 progress:
   total_phases: 8
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
   percent: 50
 ---
 
@@ -51,6 +51,7 @@ Progress: [█████░░░░░] 50%
 
 *Updated after each plan completion*
 | Phase 01-data-foundation P01 | 45 | 2 tasks | 11 files |
+| Phase 01-data-foundation P02 | 30 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -64,6 +65,8 @@ Recent decisions affecting current work:
 - [Phase 01-data-foundation]: WAL pragma applied at connection init (not in migration SQL) to ensure WAL is active for all processes sharing the db file
 - [Phase 01-data-foundation]: pnpm onlyBuiltDependencies + nvm Linux node v22 required to compile better-sqlite3 native module in WSL
 - [Phase 01-data-foundation]: NODE_OPTIONS=--experimental-vm-modules jest used for ESM test support — allows pnpm to pass test patterns directly to jest without double-dash issue
+- [Phase 01-data-foundation]: Tests operate directly against db operations (not CLI process) to avoid process.exit() terminating Jest runner
+- [Phase 01-data-foundation]: Pre-existing parsers.test.ts stub failure logged to deferred-items.md — out of scope for Plan 02
 
 ### Pending Todos
 
@@ -77,6 +80,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-11T05:54:36.559Z
-Stopped at: Completed 01-data-foundation plan 01 — DB schema, migration, connection singleton, and test suite
+Last session: 2026-03-11T06:04:40.887Z
+Stopped at: Completed 01-data-foundation plan 02 — wallet add/remove/list commands, CLI wiring, and 9 unit tests
 Resume file: None
