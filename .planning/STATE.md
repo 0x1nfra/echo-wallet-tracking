@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 02-transaction-parsing plan 02 — parseSwaps and applyFifo swap parser with FIFO cost basis
+stopped_at: Completed 02-transaction-parsing plan 03 — history import orchestrator with p-queue/p-retry, importWalletHistory, and wallet command updates
 last_updated: "2026-03-11T14:09:00Z"
-last_activity: 2026-03-11 — Phase 02 plan 02 complete; parseSwaps and applyFifo implemented, 13 tests passing
+last_activity: 2026-03-11 — Phase 02 plan 03 complete; importWalletHistory orchestrator, fetchSwapHistory with rate limiting, wallet add/list updated
 progress:
   total_phases: 8
   completed_phases: 1
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-11)
 
 **Core value:** Know what smart money is doing before the crowd — with noise (bots, bundlers, dev wallets) already filtered out
-**Current focus:** Phase 2 — Transaction Parsing
+**Current focus:** Phase 2 — Transaction Parsing (complete)
 
 ## Current Position
 
 Phase: 2 of 8 (Transaction Parsing)
-Plan: 2 of 3 in current phase
-Status: Executing
-Last activity: 2026-03-11 — Phase 02 plan 02 complete; parseSwaps and applyFifo implemented, 13 tests passing
+Plan: 3 of 3 in current phase (COMPLETE)
+Status: Phase 2 complete
+Last activity: 2026-03-11 — Phase 02 plan 03 complete; importWalletHistory orchestrator, fetchSwapHistory with rate limiting, wallet add/list updated
 
 Progress: [█████░░░░░] 50%
 
@@ -54,6 +54,7 @@ Progress: [█████░░░░░] 50%
 | Phase 01-data-foundation P02 | 30 | 2 tasks | 7 files |
 | Phase 02-transaction-parsing P01 | 2 | 2 tasks | 5 files |
 | Phase 02-transaction-parsing P02 | 5 | 2 tasks | 2 files |
+| Phase 02-transaction-parsing P03 | 2 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -74,6 +75,10 @@ Recent decisions affecting current work:
 - [Phase 02-transaction-parsing]: .gitignore exemption added for src/db/migrations/**/*.json to allow drizzle meta journal tracking in git
 - [Phase 02-transaction-parsing]: fee_sol computed as tx.fee / 1e9 — Helius API returns fee in lamports
 - [Phase 02-transaction-parsing]: applyFifo returns new array; partial and full orphan sells both set cost_basis_sol=null, realized_pnl_sol=null
+- [Phase 02-transaction-parsing]: Module-level heliusQueue (2 req/s) shared as singleton — enforces global rate limit across all HeliusFetcher instances
+- [Phase 02-transaction-parsing]: Helius base URL corrected to api-mainnet.helius-rpc.com/v0 (Enhanced Transactions endpoint)
+- [Phase 02-transaction-parsing]: db.transaction() uses tx callback parameter for inserts; UNIQUE constraint failures caught per-row inside loop to allow partial batch success
+- [Phase 02-transaction-parsing]: resumeImportingWallets fires before program.parse() with .catch(() => {}) — interrupted imports resume silently without blocking CLI
 
 ### Pending Todos
 
@@ -81,12 +86,11 @@ None yet.
 
 ### Blockers/Concerns
 
-- Phase 2: Each DEX (Pump.fun, Raydium, Jupiter, Orca, Meteora) has distinct Helius instruction layouts — needs hands-on validation during planning
 - Phase 3: Bundle detection thresholds are initial hypotheses — false-positive risk is high, needs tuning against real transaction data
 - Phase 8: Graph traversal at scale against Helius free-tier limits (300 req/min) needs validation during planning
 
 ## Session Continuity
 
 Last session: 2026-03-11T14:09:00Z
-Stopped at: Completed 02-transaction-parsing plan 02 — parseSwaps and applyFifo swap parser with FIFO cost basis
+Stopped at: Completed 02-transaction-parsing plan 03 — history import orchestrator with p-queue/p-retry, importWalletHistory, and wallet command updates
 Resume file: None
