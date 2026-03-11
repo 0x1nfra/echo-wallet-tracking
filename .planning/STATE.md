@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 03-bundle-scam-detection plan 01 — wallet_flags schema, detection types, and threshold constants
-last_updated: "2026-03-11T15:33:10Z"
-last_activity: 2026-03-11 — Phase 03 plan 01 complete; wallet_flags table, DetectorResult/DetectorConfig types, BUNDLER/DEV_WALLET/SNIPER/WASH_TRADER thresholds
+stopped_at: Completed 03-bundle-scam-detection plan 02 — detectBundler and detectDevWallet with TDD
+last_updated: "2026-03-11T15:52:28Z"
+last_activity: 2026-03-11 — Phase 03 plan 02 complete; detectBundler (DETC-01), detectDevWallet (DETC-02), 17 tests passing
 progress:
   total_phases: 8
   completed_phases: 1
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-03-11)
 ## Current Position
 
 Phase: 3 of 8 (Bundle Scam Detection)
-Plan: 1 of 4 in current phase (complete)
+Plan: 2 of 4 in current phase (complete)
 Status: Phase 3 in progress
-Last activity: 2026-03-11 — Phase 03 plan 01 complete; wallet_flags table, DetectorResult/DetectorConfig types, BUNDLER/DEV_WALLET/SNIPER/WASH_TRADER thresholds
+Last activity: 2026-03-11 — Phase 03 plan 02 complete; detectBundler (DETC-01), detectDevWallet (DETC-02), 17 tests passing
 
 Progress: [█████░░░░░] 50%
 
@@ -56,6 +56,7 @@ Progress: [█████░░░░░] 50%
 | Phase 02-transaction-parsing P02 | 5 | 2 tasks | 2 files |
 | Phase 02-transaction-parsing P03 | 2 | 2 tasks | 5 files |
 | Phase 03-bundle-scam-detection P01 | 2 | 2 tasks | 5 files |
+| Phase 03-bundle-scam-detection P02 | 17 | 4 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,9 @@ Recent decisions affecting current work:
 - [Phase 02-transaction-parsing]: resumeImportingWallets fires before program.parse() with .catch(() => {}) — interrupted imports resume silently without blocking CLI
 - [Phase 03-bundle-scam-detection]: wallet_flags has no composite unique constraint — engine upsert uses WHERE conditions; multiple cleared historical rows per wallet+detector preserve escalation history
 - [Phase 03-bundle-scam-detection]: DetectionTier (per-flag confidence) is distinct from DetectionStatus (wallet-level aggregate); threshold multiplier caps at 4.0 and doubles on each user clear
+- [Phase 03-bundle-scam-detection]: Bundler groups swaps in application code (JS Map) rather than SQL GROUP BY for mock-injectable testability
+- [Phase 03-bundle-scam-detection]: Dev wallet thresholdMultiplier intentionally ignored — one deployer transfer is always sufficient (locked aggressive bias)
+- [Phase 03-bundle-scam-detection]: jest.config.cjs testMatch extended to src/**/__tests__ so detector tests at src/detection/__tests__/ are discoverable
 
 ### Pending Todos
 
@@ -94,6 +98,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-11T15:33:10Z
-Stopped at: Completed 03-bundle-scam-detection plan 01 — wallet_flags schema, detection types, and threshold constants
+Last session: 2026-03-11T15:52:28Z
+Stopped at: Completed 03-bundle-scam-detection plan 02 — detectBundler and detectDevWallet with TDD
 Resume file: None
