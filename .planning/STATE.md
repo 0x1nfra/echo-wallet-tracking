@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 02-transaction-parsing plan 03 — history import orchestrator with p-queue/p-retry, importWalletHistory, and wallet command updates
-last_updated: "2026-03-11T14:09:00Z"
-last_activity: 2026-03-11 — Phase 02 plan 03 complete; importWalletHistory orchestrator, fetchSwapHistory with rate limiting, wallet add/list updated
+stopped_at: Completed 03-bundle-scam-detection plan 01 — wallet_flags schema, detection types, and threshold constants
+last_updated: "2026-03-11T15:33:10Z"
+last_activity: 2026-03-11 — Phase 03 plan 01 complete; wallet_flags table, DetectorResult/DetectorConfig types, BUNDLER/DEV_WALLET/SNIPER/WASH_TRADER thresholds
 progress:
   total_phases: 8
   completed_phases: 1
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-03-11)
 
 ## Current Position
 
-Phase: 2 of 8 (Transaction Parsing)
-Plan: 3 of 3 in current phase (COMPLETE)
-Status: Phase 2 complete
-Last activity: 2026-03-11 — Phase 02 plan 03 complete; importWalletHistory orchestrator, fetchSwapHistory with rate limiting, wallet add/list updated
+Phase: 3 of 8 (Bundle Scam Detection)
+Plan: 1 of 4 in current phase (complete)
+Status: Phase 3 in progress
+Last activity: 2026-03-11 — Phase 03 plan 01 complete; wallet_flags table, DetectorResult/DetectorConfig types, BUNDLER/DEV_WALLET/SNIPER/WASH_TRADER thresholds
 
 Progress: [█████░░░░░] 50%
 
@@ -55,6 +55,7 @@ Progress: [█████░░░░░] 50%
 | Phase 02-transaction-parsing P01 | 2 | 2 tasks | 5 files |
 | Phase 02-transaction-parsing P02 | 5 | 2 tasks | 2 files |
 | Phase 02-transaction-parsing P03 | 2 | 2 tasks | 5 files |
+| Phase 03-bundle-scam-detection P01 | 2 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,8 @@ Recent decisions affecting current work:
 - [Phase 02-transaction-parsing]: Helius base URL corrected to api-mainnet.helius-rpc.com/v0 (Enhanced Transactions endpoint)
 - [Phase 02-transaction-parsing]: db.transaction() uses tx callback parameter for inserts; UNIQUE constraint failures caught per-row inside loop to allow partial batch success
 - [Phase 02-transaction-parsing]: resumeImportingWallets fires before program.parse() with .catch(() => {}) — interrupted imports resume silently without blocking CLI
+- [Phase 03-bundle-scam-detection]: wallet_flags has no composite unique constraint — engine upsert uses WHERE conditions; multiple cleared historical rows per wallet+detector preserve escalation history
+- [Phase 03-bundle-scam-detection]: DetectionTier (per-flag confidence) is distinct from DetectionStatus (wallet-level aggregate); threshold multiplier caps at 4.0 and doubles on each user clear
 
 ### Pending Todos
 
@@ -91,6 +94,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-11T14:09:00Z
-Stopped at: Completed 02-transaction-parsing plan 03 — history import orchestrator with p-queue/p-retry, importWalletHistory, and wallet command updates
+Last session: 2026-03-11T15:33:10Z
+Stopped at: Completed 03-bundle-scam-detection plan 01 — wallet_flags schema, detection types, and threshold constants
 Resume file: None
