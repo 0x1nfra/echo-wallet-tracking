@@ -1,9 +1,10 @@
 import { Command } from 'commander';
-import { desc, eq } from 'drizzle-orm';
+import { desc, eq, inArray } from 'drizzle-orm';
 import Table from 'cli-table3';
 import chalk from 'chalk';
 import { db } from '../db/index.js';
 import { wallets } from '../db/schema.js';
+import { importWalletHistory } from '../importers/history.js';
 
 function truncateAddress(addr: string): string {
   return `${addr.slice(0, 8)}...${addr.slice(-4)}`;
@@ -16,18 +17,20 @@ export function createWalletCommand(): Command {
     .command('add <address>')
     .description('Add a wallet to track')
     .option('--label <label>', 'Optional label for the wallet')
-    .action((address: string, options: { label?: string }) => {
+    .option('--full-history', 'Import complete transaction history (ignores 180-day window)')
+    .action(async (address: string, options: { label?: string; fullHistory?: boolean }) => {
       try {
+        // Insert with status='importing'
         db.insert(wallets)
-          .values({ address, label: options.label ?? null })
+          .values({ address, label: options.label ?? null, status: 'importing' })
           .run();
         console.log(
-          'Wallet ' +
-            address +
-            ' added' +
-            (options.label ? ' (' + options.label + ')' : '') +
-            '.',
+          'Wallet ' + address + ' added' +
+          (options.label ? ' (' + options.label + ')' : '') +
+          '. Importing history...'
         );
+        await importWalletHistory(address, { fullHistory: options.fullHistory });
+        console.log('Wallet ' + address + ' import complete.');
       } catch (err: unknown) {
         if (
           err instanceof Error &&
@@ -59,7 +62,7 @@ export function createWalletCommand(): Command {
       const rows = db
         .select()
         .from(wallets)
-        .where(eq(wallets.status, 'tracked'))
+        .where(inArray(wallets.status, ['tracked', 'importing']))
         .orderBy(desc(wallets.added_at))
         .all();
 
@@ -76,10 +79,14 @@ export function createWalletCommand(): Command {
       });
 
       for (const row of rows) {
+        const statusDisplay = row.status === 'importing'
+          ? chalk.yellow('importing')
+          : chalk.green('tracked');
+
         table.push([
           truncateAddress(row.address),
           row.label ?? chalk.gray('(no label)'),
-          chalk.green('tracked'),
+          statusDisplay,
           new Date(row.added_at).toLocaleDateString(),
         ]);
       }
