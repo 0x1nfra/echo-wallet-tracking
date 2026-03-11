@@ -1,17 +1,16 @@
 /**
  * Bundler Detector Tests (DETC-01)
- * RED phase: tests written before implementation exists
  *
  * Mock strategy: pass { db, fetcher } as optional deps to detectBundler
  * to avoid hitting real SQLite or Helius API.
+ * Uses plain async functions (no jest.fn()) for ESM compatibility.
  */
 
 import { detectBundler } from '../bundler.js';
 import type { DetectorConfig } from '../types.js';
-import { BUNDLER } from '../thresholds.js';
 
 // -----------------------------------------------------------------------
-// Minimal mock types matching what detectBundler needs from db and fetcher
+// Minimal mock types
 // -----------------------------------------------------------------------
 
 type MockSwapRow = {
@@ -37,32 +36,24 @@ function buildMockDb(swapRows: MockSwapRow[]) {
   return {
     query: {
       swaps: {
-        findMany: jest.fn().mockResolvedValue(swapRows),
+        findMany: async (_opts: unknown) => swapRows,
       },
     },
-    // Also support drizzle-style select chain (whichever detectBundler uses internally)
-    select: jest.fn().mockReturnThis(),
-    from: jest.fn().mockReturnThis(),
-    where: jest.fn().mockReturnThis(),
-    groupBy: jest.fn().mockReturnThis(),
-    having: jest.fn().mockReturnThis(),
-    all: jest.fn().mockResolvedValue(swapRows),
   };
 }
 
 function buildMockFetcher(txMap: Record<string, MockTx>) {
   return {
-    getTransaction: jest.fn().mockImplementation(async (sig: string) => {
+    getTransaction: async (sig: string) => {
       const tx = txMap[sig];
       if (!tx) throw new Error(`Mock: tx not found: ${sig}`);
       return tx;
-    }),
-    fetchTransactions: jest.fn().mockResolvedValue([]),
+    },
   };
 }
 
 // -----------------------------------------------------------------------
-// Helpers: builds coordination events (slot+token groups)
+// Helpers: build coordination events (slot+token groups)
 // -----------------------------------------------------------------------
 
 const WALLET = 'TestWallet111111111111111111111111111111111';
@@ -71,7 +62,7 @@ const OTHER_B = 'OtherWalletBBBBBBBBBBBBBBBBBBBBBBBBBBBBB';
 const FUNDER = 'SharedFunderXXXXXXXXXXXXXXXXXXXXXXXXXXXXX';
 
 /**
- * Build a group of swap rows for one coordination event:
+ * Build swap rows for one coordination event:
  * same slot, same token_mint, WALLET + two others buying.
  */
 function makeCoordinationGroup(
@@ -90,7 +81,7 @@ function makeCoordinationGroup(
 }
 
 /**
- * Build a Helius tx response with a shared funder sending SOL to multiple participants.
+ * Build a Helius tx response with a shared funder sending SOL to recipients.
  */
 function makeFundedTx(sig: string, funder: string, recipients: string[]): MockTx {
   return {
@@ -111,7 +102,6 @@ describe('detectBundler (DETC-01)', () => {
   // --- 0 coordination events: flagged=false ---
   it('returns flagged=false when wallet has no coordination events', async () => {
     const config: DetectorConfig = { walletAddress: WALLET, thresholdMultiplier: 1.0 };
-    // No swaps at all
     const db = buildMockDb([]);
     const fetcher = buildMockFetcher({});
 
@@ -208,7 +198,7 @@ describe('detectBundler (DETC-01)', () => {
     expect(result.confidence).toBe('confirmed_suspicious');
   });
 
-  // --- 4 events but thresholdMultiplier=2.0 → suspected (needs 4 for review) ---
+  // --- 4 events but thresholdMultiplier=2.0 → suspected (needs 4 for suspected, 6 for review) ---
   it('returns suspected (not review) when 4 events but thresholdMultiplier=2.0 raises bar', async () => {
     const config: DetectorConfig = { walletAddress: WALLET, thresholdMultiplier: 2.0 };
 
@@ -228,7 +218,7 @@ describe('detectBundler (DETC-01)', () => {
 
     const result = await detectBundler(config, { db: db as any, fetcher: fetcher as any });
 
-    // With multiplier=2.0: suspected needs >=4, review needs >=6
+    // multiplier=2.0: suspected needs >=4, review needs >=6
     // 4 events → >= suspected(4) but < review(6) → suspected
     expect(result.flagged).toBe(true);
     expect(result.confidence).toBe('suspected');
@@ -238,7 +228,7 @@ describe('detectBundler (DETC-01)', () => {
   it('returns flagged=false when shared funder is a known system account', async () => {
     const config: DetectorConfig = { walletAddress: WALLET, thresholdMultiplier: 1.0 };
 
-    // Use the real Jupiter v6 address from BUNDLER.KNOWN_SYSTEM_ACCOUNTS
+    // Jupiter v6 address from BUNDLER.KNOWN_SYSTEM_ACCOUNTS
     const jupiterFunder = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaW7grrKgrWqK';
 
     const swaps = [
@@ -263,7 +253,7 @@ describe('detectBundler (DETC-01)', () => {
   it('returns flagged=false when slot group has fewer than MIN_WALLETS_IN_SAME_SLOT buyers', async () => {
     const config: DetectorConfig = { walletAddress: WALLET, thresholdMultiplier: 1.0 };
 
-    // Only 2 wallets in the same slot (needs 3)
+    // Only 2 wallets in same slot (MIN_WALLETS_IN_SAME_SLOT = 3)
     const smallGroup = [WALLET, OTHER_A];
     const swaps = [
       ...makeCoordinationGroup(100, 'TOKEN_A', 'sig-a', smallGroup),
