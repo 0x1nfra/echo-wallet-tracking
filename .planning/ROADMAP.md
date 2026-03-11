@@ -12,7 +12,7 @@ Echo is built in strict dependency order — each phase unblocks the next. Raw t
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [x] **Phase 1: Data Foundation** - SQLite schema, drizzle-orm migrations, WAL mode, and CLI wallet registry (completed 2026-03-11)
+- [x] **Phase 1: Data Foundation** - SQLite schema, drizzle-orm migrations, WAL mode, and CLI wallet registry (completed 2026-03-11)
 - [ ] **Phase 2: Transaction Parsing** - Helius enhanced transaction normalization, DEX-specific parsers, full history import, FIFO position tracking
 - [ ] **Phase 3: Bundle/Scam Detection** - Bundler, dev wallet, sniper, and wash trader detection with tiered confidence gating
 - [ ] **Phase 4: Metrics and Scoring** - WalletMetrics calculation and 0-100 wallet score with risk-adjusted return weighting
@@ -48,7 +48,12 @@ Plans:
   2. Swaps are correctly identified and normalized for Pump.fun, Raydium, Jupiter, Orca, and Meteora transactions — each with correct token amounts, SOL amounts, and timestamps
   3. Each wallet has a `history_complete` flag that is only set to true after full history import finishes successfully
   4. FIFO cost basis is applied to match buys to sells and produce correct realized PnL values for closed positions
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — parse_errors schema migration, DEX program ID registry, HeliusTransaction type extensions
+- [ ] 02-02-PLAN.md — parseSwaps and applyFifo implementation (TDD)
+- [ ] 02-03-PLAN.md — Helius fetcher upgrade (p-queue + p-retry), history import orchestrator, wallet add --full-history
 
 ### Phase 3: Bundle/Scam Detection
 **Goal**: The system can classify wallets as clean or suspicious using tiered confidence before they are ever scored
@@ -126,7 +131,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Data Foundation | 2/2 | Complete   | 2026-03-11 |
-| 2. Transaction Parsing | 0/TBD | Not started | - |
+| 2. Transaction Parsing | 0/3 | Not started | - |
 | 3. Bundle/Scam Detection | 0/TBD | Not started | - |
 | 4. Metrics and Scoring | 0/TBD | Not started | - |
 | 5. Monitoring Loop and Auto-Removal | 0/TBD | Not started | - |
