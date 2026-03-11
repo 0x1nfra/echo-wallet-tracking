@@ -20,6 +20,6 @@ module.exports = {
       },
     ],
   },
-  testMatch: ['**/tests/unit/**/*.test.ts'],
+  testMatch: ['**/tests/unit/**/*.test.ts', '**/src/**/__tests__/**/*.test.ts'],
   collectCoverageFrom: ['src/**/*.ts'],
 };
