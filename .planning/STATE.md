@@ -1,3 +1,19 @@
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: planning
+stopped_at: Completed 01-data-foundation plan 01 — DB schema, migration, connection singleton, and test suite
+last_updated: "2026-03-11T05:54:36.578Z"
+last_activity: 2026-03-11 — Roadmap created, all 8 phases defined, 37 v1 requirements mapped
+progress:
+  total_phases: 8
+  completed_phases: 0
+  total_plans: 2
+  completed_plans: 1
+  percent: 50
+---
+
 # Project State
 
 ## Project Reference
@@ -14,7 +30,7 @@ Plan: 0 of TBD in current phase
 Status: Ready to plan
 Last activity: 2026-03-11 — Roadmap created, all 8 phases defined, 37 v1 requirements mapped
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
@@ -34,6 +50,7 @@ Progress: [░░░░░░░░░░] 0%
 - Trend: -
 
 *Updated after each plan completion*
+| Phase 01-data-foundation P01 | 45 | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -44,6 +61,9 @@ Recent decisions affecting current work:
 
 - Roadmap: 8 phases derived from requirements, strictly dependency-ordered (Phases 1-4 are non-negotiable sequential prerequisites)
 - Stack: better-sqlite3 + drizzle-orm for persistence, p-queue + p-retry for rate limiting, grammy for Telegram, HTMX + Alpine.js for dashboard — no Redis, no React
+- [Phase 01-data-foundation]: WAL pragma applied at connection init (not in migration SQL) to ensure WAL is active for all processes sharing the db file
+- [Phase 01-data-foundation]: pnpm onlyBuiltDependencies + nvm Linux node v22 required to compile better-sqlite3 native module in WSL
+- [Phase 01-data-foundation]: NODE_OPTIONS=--experimental-vm-modules jest used for ESM test support — allows pnpm to pass test patterns directly to jest without double-dash issue
 
 ### Pending Todos
 
@@ -57,6 +77,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-11
-Stopped at: Phase 1 context gathered — CLI structure, list display, DB location, schema design all decided
-Resume file: .planning/phases/01-data-foundation/01-CONTEXT.md
+Last session: 2026-03-11T05:54:36.559Z
+Stopped at: Completed 01-data-foundation plan 01 — DB schema, migration, connection singleton, and test suite
+Resume file: None

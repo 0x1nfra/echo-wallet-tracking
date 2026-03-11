@@ -7,8 +7,8 @@
 
 ### Data Foundation
 
-- [ ] **DATA-01**: System persists wallet registry, swap history, metrics, signals, and removal log to SQLite
-- [ ] **DATA-02**: Database uses WAL mode to allow concurrent reads during monitoring loop writes
+- [x] **DATA-01**: System persists wallet registry, swap history, metrics, signals, and removal log to SQLite
+- [x] **DATA-02**: Database uses WAL mode to allow concurrent reads during monitoring loop writes
 - [ ] **DATA-03**: User can add a wallet to the tracker by address with optional label
 - [ ] **DATA-04**: User can remove a wallet from the tracker
 - [ ] **DATA-05**: User can view all tracked wallets with current score and status
@@ -104,8 +104,8 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DATA-01 | Phase 1 | Pending |
-| DATA-02 | Phase 1 | Pending |
+| DATA-01 | Phase 1 | Complete |
+| DATA-02 | Phase 1 | Complete |
 | DATA-03 | Phase 1 | Pending |
 | DATA-04 | Phase 1 | Pending |
 | DATA-05 | Phase 1 | Pending |
