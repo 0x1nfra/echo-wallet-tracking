@@ -3,18 +3,79 @@
  */
 
 import axios, { AxiosInstance } from 'axios';
+import PQueue from 'p-queue';
+import pRetry from 'p-retry';
 import type { HeliusTransaction } from '../types/index.js';
+
+// Free tier: 2 req/s Enhanced API
+const heliusQueue = new PQueue({ interval: 1000, intervalCap: 2 });
 
 export class HeliusFetcher {
   private client: AxiosInstance;
   private apiKey: string;
 
-  constructor(apiKey: string, endpoint: string = 'https://api.helius.xyz/v0') {
+  constructor(apiKey: string, endpoint: string = 'https://api-mainnet.helius-rpc.com/v0') {
     this.apiKey = apiKey;
     this.client = axios.create({
       baseURL: endpoint,
       timeout: 30000, // 30 second timeout
     });
+  }
+
+  /**
+   * Fetch all swap transactions for a wallet address with pagination, rate limiting, and retry.
+   * @param address - Solana wallet address
+   * @param afterTimestamp - Unix seconds lower bound; 0 = no lower bound (--full-history)
+   * @returns Array of Helius transactions
+   */
+  async fetchSwapHistory(
+    address: string,
+    afterTimestamp: number  // Unix seconds; 0 = no lower bound (--full-history)
+  ): Promise<HeliusTransaction[]> {
+    const allTxs: HeliusTransaction[] = [];
+    let beforeSignature: string | undefined;
+    let hasMore = true;
+
+    while (hasMore) {
+      const params: Record<string, string | number> = {
+        'api-key': this.apiKey,
+        limit: 100,
+        type: 'SWAP',
+      };
+      if (afterTimestamp > 0) params['gte-time'] = afterTimestamp;
+      if (beforeSignature) params['before-signature'] = beforeSignature;
+
+      const txs = await pRetry(
+        () => heliusQueue.add(async () => {
+          const res = await this.client.get(
+            `/addresses/${address}/transactions`,
+            { params }
+          );
+          return res.data as HeliusTransaction[];
+        }),
+        {
+          retries: 3,
+          onFailedAttempt: (error) => {
+            // Do not retry auth errors
+            if ((error as any).response?.status === 401) throw error;
+          },
+        }
+      );
+
+      if (!txs || txs.length === 0) { hasMore = false; break; }
+
+      allTxs.push(...txs);
+
+      const oldest = txs[txs.length - 1];
+      // Stop when we've gone past the time window or got a partial page
+      if ((afterTimestamp > 0 && oldest.timestamp < afterTimestamp) || txs.length < 100) {
+        hasMore = false;
+      } else {
+        beforeSignature = oldest.signature;
+      }
+    }
+
+    return allTxs;
   }
 
   /**

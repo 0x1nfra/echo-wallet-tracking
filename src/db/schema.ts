@@ -5,7 +5,7 @@ export const wallets = sqliteTable('wallets', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   address: text('address').notNull().unique(),
   label: text('label'),
-  status: text('status', { enum: ['tracked', 'removed'] }).notNull().default('tracked'),
+  status: text('status', { enum: ['tracked', 'removed', 'importing'] }).notNull().default('tracked'),
   score: real('score'),
   detection_status: text('detection_status', {
     enum: ['pending', 'passing', 'suspected', 'review', 'confirmed'],
@@ -54,6 +54,17 @@ export const token_signals = sqliteTable('token_signals', {
   pnl_weighted_holder_score: real('pnl_weighted_holder_score'),
   coordination_discount: real('coordination_discount'),
   updated_at: integer('updated_at', { mode: 'number' }),
+});
+
+export const parse_errors = sqliteTable('parse_errors', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  tx_signature: text('tx_signature').notNull(),
+  dex: text('dex').notNull(),
+  wallet_address: text('wallet_address').notNull(),
+  error_message: text('error_message').notNull(),
+  created_at: integer('created_at', { mode: 'number' })
+    .notNull()
+    .default(sql`(unixepoch('now') * 1000)`),
 });
 
 export const removal_log = sqliteTable('removal_log', {

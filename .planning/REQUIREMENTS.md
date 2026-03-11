@@ -15,9 +15,9 @@
 
 ### Transaction Parsing
 
-- [ ] **PARS-01**: System normalizes Helius enhanced transactions into Swap objects for Pump.fun, Raydium, Jupiter, Orca, and Meteora
-- [ ] **PARS-02**: System fetches and paginates full transaction history on first wallet import before calculating any metrics
-- [ ] **PARS-03**: System uses FIFO cost basis to track positions and calculate realized PnL per closed trade
+- [x] **PARS-01**: System normalizes Helius enhanced transactions into Swap objects for Pump.fun, Raydium, Jupiter, Orca, and Meteora
+- [x] **PARS-02**: System fetches and paginates full transaction history on first wallet import before calculating any metrics
+- [x] **PARS-03**: System uses FIFO cost basis to track positions and calculate realized PnL per closed trade
 
 ### Bundle/Scam Detection
 
@@ -109,9 +109,9 @@
 | DATA-03 | Phase 1 | Complete |
 | DATA-04 | Phase 1 | Complete |
 | DATA-05 | Phase 1 | Complete |
-| PARS-01 | Phase 2 | Pending |
-| PARS-02 | Phase 2 | Pending |
-| PARS-03 | Phase 2 | Pending |
+| PARS-01 | Phase 2 | Complete |
+| PARS-02 | Phase 2 | Complete |
+| PARS-03 | Phase 2 | Complete |
 | DETC-01 | Phase 3 | Pending |
 | DETC-02 | Phase 3 | Pending |
 | DETC-03 | Phase 3 | Pending |

@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 01-data-foundation plan 02 — wallet add/remove/list commands, CLI wiring, and 9 unit tests
-last_updated: "2026-03-11T06:04:40.903Z"
-last_activity: 2026-03-11 — Roadmap created, all 8 phases defined, 37 v1 requirements mapped
+stopped_at: Completed 02-transaction-parsing plan 03 — history import orchestrator with p-queue/p-retry, importWalletHistory, and wallet command updates
+last_updated: "2026-03-11T14:09:00Z"
+last_activity: 2026-03-11 — Phase 02 plan 03 complete; importWalletHistory orchestrator, fetchSwapHistory with rate limiting, wallet add/list updated
 progress:
   total_phases: 8
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 3
+  completed_plans: 3
   percent: 50
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-11)
 
 **Core value:** Know what smart money is doing before the crowd — with noise (bots, bundlers, dev wallets) already filtered out
-**Current focus:** Phase 1 — Data Foundation
+**Current focus:** Phase 2 — Transaction Parsing (complete)
 
 ## Current Position
 
-Phase: 1 of 8 (Data Foundation)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-03-11 — Roadmap created, all 8 phases defined, 37 v1 requirements mapped
+Phase: 2 of 8 (Transaction Parsing)
+Plan: 3 of 3 in current phase (COMPLETE)
+Status: Phase 2 complete
+Last activity: 2026-03-11 — Phase 02 plan 03 complete; importWalletHistory orchestrator, fetchSwapHistory with rate limiting, wallet add/list updated
 
 Progress: [█████░░░░░] 50%
 
@@ -52,6 +52,9 @@ Progress: [█████░░░░░] 50%
 *Updated after each plan completion*
 | Phase 01-data-foundation P01 | 45 | 2 tasks | 11 files |
 | Phase 01-data-foundation P02 | 30 | 2 tasks | 7 files |
+| Phase 02-transaction-parsing P01 | 2 | 2 tasks | 5 files |
+| Phase 02-transaction-parsing P02 | 5 | 2 tasks | 2 files |
+| Phase 02-transaction-parsing P03 | 2 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -67,6 +70,15 @@ Recent decisions affecting current work:
 - [Phase 01-data-foundation]: NODE_OPTIONS=--experimental-vm-modules jest used for ESM test support — allows pnpm to pass test patterns directly to jest without double-dash issue
 - [Phase 01-data-foundation]: Tests operate directly against db operations (not CLI process) to avoid process.exit() terminating Jest runner
 - [Phase 01-data-foundation]: Pre-existing parsers.test.ts stub failure logged to deferred-items.md — out of scope for Plan 02
+- [Phase 02-transaction-parsing]: SQLite enum expansion for wallets.status is schema.ts-only — no ALTER TABLE SQL needed (SQLite does not enforce drizzle enum CHECK constraints at SQL level)
+- [Phase 02-transaction-parsing]: DEX_PROGRAM_IDS exported as flat const (test-compatible) and DEX_PROGRAM_IDS_MAP as grouped record (parser runtime) — avoids breaking existing test references
+- [Phase 02-transaction-parsing]: .gitignore exemption added for src/db/migrations/**/*.json to allow drizzle meta journal tracking in git
+- [Phase 02-transaction-parsing]: fee_sol computed as tx.fee / 1e9 — Helius API returns fee in lamports
+- [Phase 02-transaction-parsing]: applyFifo returns new array; partial and full orphan sells both set cost_basis_sol=null, realized_pnl_sol=null
+- [Phase 02-transaction-parsing]: Module-level heliusQueue (2 req/s) shared as singleton — enforces global rate limit across all HeliusFetcher instances
+- [Phase 02-transaction-parsing]: Helius base URL corrected to api-mainnet.helius-rpc.com/v0 (Enhanced Transactions endpoint)
+- [Phase 02-transaction-parsing]: db.transaction() uses tx callback parameter for inserts; UNIQUE constraint failures caught per-row inside loop to allow partial batch success
+- [Phase 02-transaction-parsing]: resumeImportingWallets fires before program.parse() with .catch(() => {}) — interrupted imports resume silently without blocking CLI
 
 ### Pending Todos
 
@@ -74,12 +86,11 @@ None yet.
 
 ### Blockers/Concerns
 
-- Phase 2: Each DEX (Pump.fun, Raydium, Jupiter, Orca, Meteora) has distinct Helius instruction layouts — needs hands-on validation during planning
 - Phase 3: Bundle detection thresholds are initial hypotheses — false-positive risk is high, needs tuning against real transaction data
 - Phase 8: Graph traversal at scale against Helius free-tier limits (300 req/min) needs validation during planning
 
 ## Session Continuity
 
-Last session: 2026-03-11T06:04:40.887Z
-Stopped at: Completed 01-data-foundation plan 02 — wallet add/remove/list commands, CLI wiring, and 9 unit tests
+Last session: 2026-03-11T14:09:00Z
+Stopped at: Completed 02-transaction-parsing plan 03 — history import orchestrator with p-queue/p-retry, importWalletHistory, and wallet command updates
 Resume file: None
