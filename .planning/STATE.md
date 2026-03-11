@@ -58,5 +58,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-11
-Stopped at: Roadmap and STATE.md written; REQUIREMENTS.md traceability already complete
-Resume file: None
+Stopped at: Phase 1 context gathered — CLI structure, list display, DB location, schema design all decided
+Resume file: .planning/phases/01-data-foundation/01-CONTEXT.md
