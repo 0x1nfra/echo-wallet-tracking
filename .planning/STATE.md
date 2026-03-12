@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 03-bundle-scam-detection plan 02 — detectBundler and detectDevWallet with TDD
-last_updated: "2026-03-11T15:52:28Z"
-last_activity: 2026-03-11 — Phase 03 plan 02 complete; detectBundler (DETC-01), detectDevWallet (DETC-02), 17 tests passing
+stopped_at: Completed 03-bundle-scam-detection plan 03 — detectSniper and detectWashTrader with TDD
+last_updated: "2026-03-12T13:25:10.135Z"
+last_activity: 2026-03-12 — Phase 03 plan 03 complete; detectSniper (DETC-03), detectWashTrader (DETC-04), 38 tests passing
 progress:
   total_phases: 8
-  completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
-  percent: 50
+  completed_phases: 2
+  total_plans: 9
+  completed_plans: 8
+  percent: 89
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-11)
 ## Current Position
 
 Phase: 3 of 8 (Bundle Scam Detection)
-Plan: 2 of 4 in current phase (complete)
+Plan: 3 of 4 in current phase (complete)
 Status: Phase 3 in progress
-Last activity: 2026-03-11 — Phase 03 plan 02 complete; detectBundler (DETC-01), detectDevWallet (DETC-02), 17 tests passing
+Last activity: 2026-03-12 — Phase 03 plan 03 complete; detectSniper (DETC-03), detectWashTrader (DETC-04), 38 tests passing
 
-Progress: [█████░░░░░] 50%
+Progress: [█████████░] 89%
 
 ## Performance Metrics
 
@@ -57,6 +57,7 @@ Progress: [█████░░░░░] 50%
 | Phase 02-transaction-parsing P03 | 2 | 2 tasks | 5 files |
 | Phase 03-bundle-scam-detection P01 | 2 | 2 tasks | 5 files |
 | Phase 03-bundle-scam-detection P02 | 17 | 4 tasks | 5 files |
+| Phase 03-bundle-scam-detection P03 | 4 | 4 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,9 @@ Recent decisions affecting current work:
 - [Phase 03-bundle-scam-detection]: Bundler groups swaps in application code (JS Map) rather than SQL GROUP BY for mock-injectable testability
 - [Phase 03-bundle-scam-detection]: Dev wallet thresholdMultiplier intentionally ignored — one deployer transfer is always sufficient (locked aggressive bias)
 - [Phase 03-bundle-scam-detection]: jest.config.cjs testMatch extended to src/**/__tests__ so detector tests at src/detection/__tests__/ are discoverable
+- [Phase 03-bundle-scam-detection]: Sniper uses raw SQL GROUP BY with drizzle sql template tag; double-cast as unknown as SniperQueryRow[] needed for TypeScript acceptance of db.all() return type
+- [Phase 03-bundle-scam-detection]: Wash trader independence key = (token_mint, wallet_b) — same token+wallet pair counts as 1 pattern regardless of buy count; different wallet_b on same token = separate independent pattern
+- [Phase 03-bundle-scam-detection]: Wash trader buy→transfer→sell chain alone confirmed as evidence (no explicit SOL-back nativeTransfer required); sell index built upfront as Map for O(1) lookup
 
 ### Pending Todos
 
@@ -98,6 +102,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-11T15:52:28Z
-Stopped at: Completed 03-bundle-scam-detection plan 02 — detectBundler and detectDevWallet with TDD
+Last session: 2026-03-12T13:25:10.133Z
+Stopped at: Completed 03-bundle-scam-detection plan 03 — detectSniper and detectWashTrader with TDD
 Resume file: None
