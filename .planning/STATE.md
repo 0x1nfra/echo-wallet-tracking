@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 03-bundle-scam-detection plan 03 — detectSniper and detectWashTrader with TDD
-last_updated: "2026-03-12T13:25:10.135Z"
-last_activity: 2026-03-12 — Phase 03 plan 03 complete; detectSniper (DETC-03), detectWashTrader (DETC-04), 38 tests passing
+stopped_at: Completed 03-bundle-scam-detection plan 04 — detection engine, CLI commands, Phase 3 complete
+last_updated: "2026-03-12T13:38:52Z"
+last_activity: 2026-03-12 — Phase 03 plan 04 complete; detection engine (DETC-05, DETC-06), wallet review/clear-flag/flag commands, 67 tests passing
 progress:
   total_phases: 8
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 9
-  completed_plans: 8
-  percent: 89
+  completed_plans: 9
+  percent: 100
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-11)
 
 ## Current Position
 
-Phase: 3 of 8 (Bundle Scam Detection)
-Plan: 3 of 4 in current phase (complete)
-Status: Phase 3 in progress
-Last activity: 2026-03-12 — Phase 03 plan 03 complete; detectSniper (DETC-03), detectWashTrader (DETC-04), 38 tests passing
+Phase: 3 of 8 (Bundle Scam Detection) — COMPLETE
+Plan: 4 of 4 in current phase (complete)
+Status: Phase 3 complete — ready for Phase 4 (wallet scoring)
+Last activity: 2026-03-12 — Phase 03 plan 04 complete; detection engine (DETC-05, DETC-06), wallet review/clear-flag/flag commands, 67 tests passing
 
-Progress: [█████████░] 89%
+Progress: [██████████] 100% (Phase 3)
 
 ## Performance Metrics
 
@@ -58,6 +58,7 @@ Progress: [█████████░] 89%
 | Phase 03-bundle-scam-detection P01 | 2 | 2 tasks | 5 files |
 | Phase 03-bundle-scam-detection P02 | 17 | 4 tasks | 5 files |
 | Phase 03-bundle-scam-detection P03 | 4 | 4 tasks | 4 files |
+| Phase 03-bundle-scam-detection P04 | 12 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -90,6 +91,9 @@ Recent decisions affecting current work:
 - [Phase 03-bundle-scam-detection]: Sniper uses raw SQL GROUP BY with drizzle sql template tag; double-cast as unknown as SniperQueryRow[] needed for TypeScript acceptance of db.all() return type
 - [Phase 03-bundle-scam-detection]: Wash trader independence key = (token_mint, wallet_b) — same token+wallet pair counts as 1 pattern regardless of buy count; different wallet_b on same token = separate independent pattern
 - [Phase 03-bundle-scam-detection]: Wash trader buy→transfer→sell chain alone confirmed as evidence (no explicit SOL-back nativeTransfer required); sell index built upfront as Map for O(1) lookup
+- [Phase 03-bundle-scam-detection]: wallet_flags SELECT-then-INSERT/UPDATE (no onConflictDoUpdate) — multiple cleared rows allowed per wallet+detector for escalation history
+- [Phase 03-bundle-scam-detection]: Detection triggered synchronously after importWalletHistory sets history_complete=true; Phase 5 monitoring loop uses runDetectionIfNeeded
+- [Phase 03-bundle-scam-detection]: wallet flag --detector defaults to 'manual' (not in DetectorId enum) for user-attributed flags without polluting detector namespace
 
 ### Pending Todos
 
@@ -102,6 +106,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-12T13:25:10.133Z
-Stopped at: Completed 03-bundle-scam-detection plan 03 — detectSniper and detectWashTrader with TDD
+Last session: 2026-03-12T13:38:52Z
+Stopped at: Completed 03-bundle-scam-detection plan 04 — detection engine, CLI commands, Phase 3 complete
 Resume file: None
