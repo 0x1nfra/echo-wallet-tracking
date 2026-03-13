@@ -15,6 +15,8 @@ export const wallets = sqliteTable('wallets', {
     .default(sql`(unixepoch('now') * 1000)`),
   last_checked_at: integer('last_checked_at', { mode: 'number' }),
   history_complete: integer('history_complete', { mode: 'boolean' }).notNull().default(false),
+  low_score_streak: integer('low_score_streak').notNull().default(0),
+  last_trade_at: integer('last_trade_at', { mode: 'number' }),
 });
 
 export const swaps = sqliteTable('swaps', {
@@ -83,6 +85,8 @@ export const removal_log = sqliteTable('removal_log', {
     .notNull()
     .default(sql`(unixepoch('now') * 1000)`),
   removed_by: text('removed_by').notNull().default('auto'),
+  label: text('label'),
+  score_at_removal: real('score_at_removal'),
   restored_at: integer('restored_at', { mode: 'number' }),
 });
 
