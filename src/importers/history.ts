@@ -5,6 +5,7 @@ import { createHeliusFetcher } from '../fetchers/helius.js';
 import { parseSwaps, applyFifo } from '../parsers/swap.js';
 import type { SwapRow } from '../types/transaction.js';
 import type { HeliusTransaction } from '../types/index.js';
+import { runDetection } from '../detection/engine.js';
 
 const DAYS_180_IN_SECONDS = 180 * 24 * 60 * 60;
 
@@ -62,6 +63,9 @@ export async function importWalletHistory(
     .set({ status: 'tracked', history_complete: true, last_checked_at: Date.now() })
     .where(eq(wallets.address, address))
     .run();
+
+  // Run detection after full history import — gate all four detectors on history_complete=true
+  await runDetection(address);
 }
 
 function identifyDexForError(tx: HeliusTransaction): string | null {

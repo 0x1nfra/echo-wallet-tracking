@@ -21,12 +21,12 @@
 
 ### Bundle/Scam Detection
 
-- [ ] **DETC-01**: System detects bundler wallets (same-block coordinated buys from wallets sharing a funding source)
-- [ ] **DETC-02**: System detects dev wallets (wallet received tokens directly from the token deployer address)
-- [ ] **DETC-03**: System detects sniper bots (wallet consistently buys in first 2-3 blocks of token launches)
-- [ ] **DETC-04**: System detects wash traders (circular trades between related wallets)
-- [ ] **DETC-05**: System applies tiered confidence to detection (suspected → review → confirmed) before flagging a wallet
-- [ ] **DETC-06**: Only wallets with passing detection status are eligible for scoring
+- [x] **DETC-01**: System detects bundler wallets (same-block coordinated buys from wallets sharing a funding source)
+- [x] **DETC-02**: System detects dev wallets (wallet received tokens directly from the token deployer address)
+- [x] **DETC-03**: System detects sniper bots (wallet consistently buys in first 2-3 blocks of token launches)
+- [x] **DETC-04**: System detects wash traders (circular trades between related wallets)
+- [x] **DETC-05**: System applies tiered confidence to detection (suspected → review → confirmed) before flagging a wallet
+- [x] **DETC-06**: Only wallets with passing detection status are eligible for scoring
 
 ### Wallet Scoring
 
@@ -112,12 +112,12 @@
 | PARS-01 | Phase 2 | Complete |
 | PARS-02 | Phase 2 | Complete |
 | PARS-03 | Phase 2 | Complete |
-| DETC-01 | Phase 3 | Pending |
-| DETC-02 | Phase 3 | Pending |
-| DETC-03 | Phase 3 | Pending |
-| DETC-04 | Phase 3 | Pending |
-| DETC-05 | Phase 3 | Pending |
-| DETC-06 | Phase 3 | Pending |
+| DETC-01 | Phase 3 | Complete |
+| DETC-02 | Phase 3 | Complete |
+| DETC-03 | Phase 3 | Complete |
+| DETC-04 | Phase 3 | Complete |
+| DETC-05 | Phase 3 | Complete |
+| DETC-06 | Phase 3 | Complete |
 | SCOR-01 | Phase 4 | Pending |
 | SCOR-02 | Phase 4 | Pending |
 | SCOR-03 | Phase 4 | Pending |

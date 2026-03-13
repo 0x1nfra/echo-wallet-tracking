@@ -16,7 +16,7 @@
     "lint:fix": "eslint src/**/*.ts --fix",
     "format": "prettier --write \"src/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\"",
-    "score": "tsx src/cli.ts"
+    "echo": "tsx src/cli.ts"
   },
   "keywords": [
     "solana",

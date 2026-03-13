@@ -3,15 +3,31 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 02-transaction-parsing plan 03 — history import orchestrator with p-queue/p-retry, importWalletHistory, and wallet command updates
-last_updated: "2026-03-11T14:09:00Z"
-last_activity: 2026-03-11 — Phase 02 plan 03 complete; importWalletHistory orchestrator, fetchSwapHistory with rate limiting, wallet add/list updated
+stopped_at: Completed 03-bundle-scam-detection plan 05 — fixed computeOverallStatus manual flag bug, 79 tests green
+last_updated: "2026-03-13T09:38:30.747Z"
+last_activity: 2026-03-12 — Phase 03 plan 04 complete; detection engine (DETC-05, DETC-06), wallet review/clear-flag/flag commands, 67 tests passing
 progress:
   total_phases: 8
-  completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
-  percent: 50
+  completed_phases: 3
+  total_plans: 11
+  completed_plans: 11
+  percent: 100
+---
+
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: planning
+stopped_at: Completed 03-bundle-scam-detection plan 04 — detection engine, CLI commands, Phase 3 complete
+last_updated: "2026-03-12T13:38:52Z"
+last_activity: 2026-03-12 — Phase 03 plan 04 complete; detection engine (DETC-05, DETC-06), wallet review/clear-flag/flag commands, 67 tests passing
+progress:
+  [██████████] 100%
+  completed_phases: 3
+  total_plans: 9
+  completed_plans: 9
+  percent: 100
 ---
 
 # Project State
@@ -25,12 +41,12 @@ See: .planning/PROJECT.md (updated 2026-03-11)
 
 ## Current Position
 
-Phase: 2 of 8 (Transaction Parsing)
-Plan: 3 of 3 in current phase (COMPLETE)
-Status: Phase 2 complete
-Last activity: 2026-03-11 — Phase 02 plan 03 complete; importWalletHistory orchestrator, fetchSwapHistory with rate limiting, wallet add/list updated
+Phase: 3 of 8 (Bundle Scam Detection) — COMPLETE
+Plan: 4 of 4 in current phase (complete)
+Status: Phase 3 complete — ready for Phase 4 (wallet scoring)
+Last activity: 2026-03-12 — Phase 03 plan 04 complete; detection engine (DETC-05, DETC-06), wallet review/clear-flag/flag commands, 67 tests passing
 
-Progress: [█████░░░░░] 50%
+Progress: [██████████] 100% (Phase 3)
 
 ## Performance Metrics
 
@@ -55,6 +71,12 @@ Progress: [█████░░░░░] 50%
 | Phase 02-transaction-parsing P01 | 2 | 2 tasks | 5 files |
 | Phase 02-transaction-parsing P02 | 5 | 2 tasks | 2 files |
 | Phase 02-transaction-parsing P03 | 2 | 2 tasks | 5 files |
+| Phase 03-bundle-scam-detection P01 | 2 | 2 tasks | 5 files |
+| Phase 03-bundle-scam-detection P02 | 17 | 4 tasks | 5 files |
+| Phase 03-bundle-scam-detection P03 | 4 | 4 tasks | 4 files |
+| Phase 03-bundle-scam-detection P04 | 12 | 2 tasks | 3 files |
+| Phase 01-data-foundation PGAP | 5 | 2 tasks | 1 files |
+| Phase 03-bundle-scam-detection P05 | 2 | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -79,6 +101,19 @@ Recent decisions affecting current work:
 - [Phase 02-transaction-parsing]: Helius base URL corrected to api-mainnet.helius-rpc.com/v0 (Enhanced Transactions endpoint)
 - [Phase 02-transaction-parsing]: db.transaction() uses tx callback parameter for inserts; UNIQUE constraint failures caught per-row inside loop to allow partial batch success
 - [Phase 02-transaction-parsing]: resumeImportingWallets fires before program.parse() with .catch(() => {}) — interrupted imports resume silently without blocking CLI
+- [Phase 03-bundle-scam-detection]: wallet_flags has no composite unique constraint — engine upsert uses WHERE conditions; multiple cleared historical rows per wallet+detector preserve escalation history
+- [Phase 03-bundle-scam-detection]: DetectionTier (per-flag confidence) is distinct from DetectionStatus (wallet-level aggregate); threshold multiplier caps at 4.0 and doubles on each user clear
+- [Phase 03-bundle-scam-detection]: Bundler groups swaps in application code (JS Map) rather than SQL GROUP BY for mock-injectable testability
+- [Phase 03-bundle-scam-detection]: Dev wallet thresholdMultiplier intentionally ignored — one deployer transfer is always sufficient (locked aggressive bias)
+- [Phase 03-bundle-scam-detection]: jest.config.cjs testMatch extended to src/**/__tests__ so detector tests at src/detection/__tests__/ are discoverable
+- [Phase 03-bundle-scam-detection]: Sniper uses raw SQL GROUP BY with drizzle sql template tag; double-cast as unknown as SniperQueryRow[] needed for TypeScript acceptance of db.all() return type
+- [Phase 03-bundle-scam-detection]: Wash trader independence key = (token_mint, wallet_b) — same token+wallet pair counts as 1 pattern regardless of buy count; different wallet_b on same token = separate independent pattern
+- [Phase 03-bundle-scam-detection]: Wash trader buy→transfer→sell chain alone confirmed as evidence (no explicit SOL-back nativeTransfer required); sell index built upfront as Map for O(1) lookup
+- [Phase 03-bundle-scam-detection]: wallet_flags SELECT-then-INSERT/UPDATE (no onConflictDoUpdate) — multiple cleared rows allowed per wallet+detector for escalation history
+- [Phase 03-bundle-scam-detection]: Detection triggered synchronously after importWalletHistory sets history_complete=true; Phase 5 monitoring loop uses runDetectionIfNeeded
+- [Phase 03-bundle-scam-detection]: wallet flag --detector defaults to 'manual' (not in DetectorId enum) for user-attributed flags without polluting detector namespace
+- [Phase 01-data-foundation]: getDefaultDb() uses sqlObj.toQuery({ escapeName, escapeParam }) (correct drizzle API) not non-existent toSQL(); db.$client.prepare(sql).all(...params) is the correct better-sqlite3 execution pattern
+- [Phase 03-bundle-scam-detection]: computeOverallStatus uses two-path resolution: out-of-band pre-pass + severity-order path; return worst across both
 
 ### Pending Todos
 
@@ -91,6 +126,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-11T14:09:00Z
-Stopped at: Completed 02-transaction-parsing plan 03 — history import orchestrator with p-queue/p-retry, importWalletHistory, and wallet command updates
+Last session: 2026-03-13T09:38:30.745Z
+Stopped at: Completed 03-bundle-scam-detection plan 05 — fixed computeOverallStatus manual flag bug, 79 tests green
 Resume file: None
