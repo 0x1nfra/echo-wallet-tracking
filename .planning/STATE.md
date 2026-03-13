@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 04-metrics-and-scoring plan 01 — score_history table + wallet_metrics sub-score columns, migration 0003 applied
-last_updated: "2026-03-13T13:29:32.076Z"
+stopped_at: Completed 04-metrics-and-scoring plan 02 — 5 metric calculators + score composer, 57 new tests, 136 total green
+last_updated: "2026-03-13T13:36:49.548Z"
 last_activity: 2026-03-12 — Phase 03 plan 04 complete; detection engine (DETC-05, DETC-06), wallet review/clear-flag/flag commands, 67 tests passing
 progress:
   total_phases: 8
   completed_phases: 3
   total_plans: 14
-  completed_plans: 12
+  completed_plans: 13
   percent: 100
 ---
 
@@ -78,6 +78,7 @@ Progress: [██████████] 100% (Phase 3)
 | Phase 01-data-foundation PGAP | 5 | 2 tasks | 1 files |
 | Phase 03-bundle-scam-detection P05 | 2 | 1 tasks | 2 files |
 | Phase 04-metrics-and-scoring P01 | 5 | 2 tasks | 3 files |
+| Phase 04-metrics-and-scoring P02 | 8 | 4 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -118,6 +119,8 @@ Recent decisions affecting current work:
 - [Phase 04-metrics-and-scoring]: Migration 0003 manually corrected: drizzle-kit regenerated already-applied tables due to missing meta snapshots 0001/0002 — stripped to only score_history and wallet_metrics ALTER TABLE statements
 - [Phase 04-metrics-and-scoring]: score_history index (score_history_wallet_scored on wallet_address, scored_at DESC) added manually — drizzle-kit SQLite did not auto-generate it; critical for Phase 5 rolling-window queries
 - [Phase 04-metrics-and-scoring]: All seven new wallet_metrics columns are nullable — consistent with existing nullable metric columns, null until first scoring run
+- [Phase 04-metrics-and-scoring]: normalizeSharpeLike uses tanh(sharpe*0.5); plan comment values (76/96/24) were inconsistent with formula — actual values are 73/88/27 for sharpe=1/2/-1
+- [Phase 04-metrics-and-scoring]: Confidence dampener: calculateSharpeRatio multiplies by min(1.0, tradeCount/50) before capping at 3.0
 
 ### Pending Todos
 
@@ -130,6 +133,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-13T13:29:32.072Z
-Stopped at: Completed 04-metrics-and-scoring plan 01 — score_history table + wallet_metrics sub-score columns, migration 0003 applied
+Last session: 2026-03-13T13:36:49.545Z
+Stopped at: Completed 04-metrics-and-scoring plan 02 — 5 metric calculators + score composer, 57 new tests, 136 total green
 Resume file: None
