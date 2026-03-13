@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 05-monitoring-loop-and-auto-removal plan 02 — MonitorLoop class + three removal policies, 136 tests green
-last_updated: "2026-03-13T17:23:28.836Z"
+stopped_at: Completed 05-monitoring-loop-and-auto-removal plan 03 — CLI wiring complete, wallet monitor/removals subcommands, MonitorLoop auto-starts, 136 tests green
+last_updated: "2026-03-13T17:28:02.492Z"
 last_activity: 2026-03-12 — Phase 03 plan 04 complete; detection engine (DETC-05, DETC-06), wallet review/clear-flag/flag commands, 67 tests passing
 progress:
   total_phases: 8
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 17
-  completed_plans: 16
+  completed_plans: 17
   percent: 100
 ---
 
@@ -82,6 +82,7 @@ Progress: [██████████] 100% (Phase 3)
 | Phase 04-metrics-and-scoring P03 | 132 | 2 tasks | 3 files |
 | Phase 05-monitoring-loop-and-auto-removal P01 | 31 | 2 tasks | 4 files |
 | Phase 05-monitoring-loop-and-auto-removal P02 | 2 | 2 tasks | 3 files |
+| Phase 05-monitoring-loop-and-auto-removal P03 | 2 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -132,6 +133,8 @@ Recent decisions affecting current work:
 - [Phase 05-monitoring-loop-and-auto-removal]: checkRemovalPolicies called only after successful pipeline — fetch errors never increment low_score_streak
 - [Phase 05-monitoring-loop-and-auto-removal]: last_trade_at=NULL guard skips inactivity check — wallets with no swap data treated as not-yet-tracked, not inactive
 - [Phase 05-monitoring-loop-and-auto-removal]: MonitorLoop.start() uses scheduleNextCycle(0) for immediate first cycle, then CYCLE_INTERVAL_MS=30s for subsequent
+- [Phase 05-monitoring-loop-and-auto-removal]: monitorLoop exported from wallet.ts as module-level singleton — consumed by cli.ts for auto-start and by wallet monitor subcommands for manual control
+- [Phase 05-monitoring-loop-and-auto-removal]: MonitorLoop.start() chained in .then() after resumeImportingWallets().catch() — ensures interrupted imports drain before loop begins; program.parse() remains synchronous
 
 ### Pending Todos
 
@@ -144,6 +147,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-13T17:23:28.834Z
-Stopped at: Completed 05-monitoring-loop-and-auto-removal plan 02 — MonitorLoop class + three removal policies, 136 tests green
+Last session: 2026-03-13T17:28:02.490Z
+Stopped at: Completed 05-monitoring-loop-and-auto-removal plan 03 — CLI wiring complete, wallet monitor/removals subcommands, MonitorLoop auto-starts, 136 tests green
 Resume file: None
