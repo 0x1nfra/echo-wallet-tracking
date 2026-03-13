@@ -99,7 +99,12 @@ Plans:
   3. All Helius API calls are queued with max 5 concurrent requests and retry with exponential backoff on 429 responses — rate limit exhaustion does not crash the loop
   4. A wallet whose score falls below threshold for N consecutive cycles over a 30-day rolling window is automatically removed with a logged reason
   5. All auto-removals are written to the removal_log table with reason, timestamp, and detection details — and can be reviewed and reversed
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — Schema migration (4 new monitoring columns) + heliusQueue concurrency: 5 with 429 backoff
+- [ ] 05-02-PLAN.md — MonitorLoop class (30s cycle, incremental fetch, auto-restart) + removal policy engine (3 policies)
+- [ ] 05-03-PLAN.md — CLI wallet monitor start/pause/stop + wallet removals list/restore + auto-start in cli.ts
 
 ### Phase 6: Token Signal Engine
 **Goal**: The system produces a per-token buy/sell signal score after each monitoring cycle that reflects genuine smart money activity
@@ -145,7 +150,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 2. Transaction Parsing | 3/3 | Complete   | 2026-03-11 |
 | 3. Bundle/Scam Detection | 5/5 | Complete   | 2026-03-13 |
 | 4. Metrics and Scoring | 3/3 | Complete   | 2026-03-13 |
-| 5. Monitoring Loop and Auto-Removal | 0/TBD | Not started | - |
+| 5. Monitoring Loop and Auto-Removal | 0/3 | Planning | - |
 | 6. Token Signal Engine | 0/TBD | Not started | - |
 | 7. API, Dashboard, and Telegram Alerts | 0/TBD | Not started | - |
 | 8. Wallet Discovery | 0/TBD | Not started | - |
