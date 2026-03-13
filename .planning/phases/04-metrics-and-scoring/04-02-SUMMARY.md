@@ -149,6 +149,14 @@ Bundler < 65: Yes. Genuine trader > bundler by >= 10 points: Yes. ROADMAP succes
 3. **Task 3: RED — failing tests for score composer** — `8344357` (test)
 4. **Task 4: GREEN — implement score composer** — `b465fc1` (feat)
 
+**Plan metadata:** `3816bb1` (docs: complete plan)
+
+## Self-Check: PASSED
+
+- All 10 files created: FOUND
+- All 4 task commits: FOUND
+- SUMMARY.md created: FOUND
+
 ## Files Created/Modified
 
 - `src/metrics/win-rate.ts` — ClosedTrade interface, groupIntoClosedTrades, calculateWinRate
