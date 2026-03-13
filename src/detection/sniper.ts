@@ -203,13 +203,13 @@ export async function detectSniper(
 
 async function getDefaultDb(): Promise<SniperDb> {
   const { db } = await import('../db/index.js');
-  // Expose the underlying better-sqlite3 driver's `all` method via drizzle
-  // session so we can run raw SQL with tagged template literals.
   return {
     all: async (sqlObj: any, _params: unknown) => {
-      // drizzle sql`` template returns an object with .queryChunks / .toSQL()
-      const { query, params } = sqlObj.toSQL ? sqlObj.toSQL() : { query: String(sqlObj), params: [] };
-      return (db as any).all(query, params);
+      const built = (sqlObj as any).toQuery({
+        escapeName: (n: string) => `"${n}"`,
+        escapeParam: () => '?',
+      });
+      return (db as any).$client.prepare(built.sql).all(...built.params);
     },
   };
 }
