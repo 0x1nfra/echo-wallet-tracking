@@ -144,7 +144,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 1. Data Foundation | 2/2 | Complete   | 2026-03-11 |
 | 2. Transaction Parsing | 3/3 | Complete   | 2026-03-11 |
 | 3. Bundle/Scam Detection | 5/5 | Complete   | 2026-03-13 |
-| 4. Metrics and Scoring | 0/3 | Not started | - |
+| 4. Metrics and Scoring | 1/3 | In Progress|  |
 | 5. Monitoring Loop and Auto-Removal | 0/TBD | Not started | - |
 | 6. Token Signal Engine | 0/TBD | Not started | - |
 | 7. API, Dashboard, and Telegram Alerts | 0/TBD | Not started | - |

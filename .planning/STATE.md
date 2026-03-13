@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 03-bundle-scam-detection plan 05 — fixed computeOverallStatus manual flag bug, 79 tests green
-last_updated: "2026-03-13T09:38:30.747Z"
+stopped_at: Completed 04-metrics-and-scoring plan 01 — score_history table + wallet_metrics sub-score columns, migration 0003 applied
+last_updated: "2026-03-13T13:29:32.076Z"
 last_activity: 2026-03-12 — Phase 03 plan 04 complete; detection engine (DETC-05, DETC-06), wallet review/clear-flag/flag commands, 67 tests passing
 progress:
   total_phases: 8
   completed_phases: 3
-  total_plans: 11
-  completed_plans: 11
+  total_plans: 14
+  completed_plans: 12
   percent: 100
 ---
 
@@ -77,6 +77,7 @@ Progress: [██████████] 100% (Phase 3)
 | Phase 03-bundle-scam-detection P04 | 12 | 2 tasks | 3 files |
 | Phase 01-data-foundation PGAP | 5 | 2 tasks | 1 files |
 | Phase 03-bundle-scam-detection P05 | 2 | 1 tasks | 2 files |
+| Phase 04-metrics-and-scoring P01 | 5 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -114,6 +115,9 @@ Recent decisions affecting current work:
 - [Phase 03-bundle-scam-detection]: wallet flag --detector defaults to 'manual' (not in DetectorId enum) for user-attributed flags without polluting detector namespace
 - [Phase 01-data-foundation]: getDefaultDb() uses sqlObj.toQuery({ escapeName, escapeParam }) (correct drizzle API) not non-existent toSQL(); db.$client.prepare(sql).all(...params) is the correct better-sqlite3 execution pattern
 - [Phase 03-bundle-scam-detection]: computeOverallStatus uses two-path resolution: out-of-band pre-pass + severity-order path; return worst across both
+- [Phase 04-metrics-and-scoring]: Migration 0003 manually corrected: drizzle-kit regenerated already-applied tables due to missing meta snapshots 0001/0002 — stripped to only score_history and wallet_metrics ALTER TABLE statements
+- [Phase 04-metrics-and-scoring]: score_history index (score_history_wallet_scored on wallet_address, scored_at DESC) added manually — drizzle-kit SQLite did not auto-generate it; critical for Phase 5 rolling-window queries
+- [Phase 04-metrics-and-scoring]: All seven new wallet_metrics columns are nullable — consistent with existing nullable metric columns, null until first scoring run
 
 ### Pending Todos
 
@@ -126,6 +130,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-13T09:38:30.745Z
-Stopped at: Completed 03-bundle-scam-detection plan 05 — fixed computeOverallStatus manual flag bug, 79 tests green
+Last session: 2026-03-13T13:29:32.072Z
+Stopped at: Completed 04-metrics-and-scoring plan 01 — score_history table + wallet_metrics sub-score columns, migration 0003 applied
 Resume file: None
