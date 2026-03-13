@@ -82,7 +82,12 @@ Plans:
   2. Each eligible wallet receives a 0-100 score weighted: risk-adjusted return (40%), win rate (20%), consistency and recency (20%), activity health (20%)
   3. Wallets without complete transaction history or without confirmed-passing detection status produce no score (are skipped)
   4. A bundler-style wallet with high win rate but volatile returns scores materially lower than a genuine smart trader with consistent risk-adjusted performance
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — Schema migration: score_history table + wallet_metrics sub-score columns
+- [ ] 04-02-PLAN.md — Metric calculators TDD: win-rate, PnL, Sharpe, drawdown, recency + score composer
+- [ ] 04-03-PLAN.md — Scoring engine (DB wiring, eligibility gate) + CLI wallet score command
 
 ### Phase 5: Monitoring Loop and Auto-Removal
 **Goal**: The system continuously updates wallet data on a 30-second cycle without exhausting Helius rate limits, and automatically removes wallets that degrade or are confirmed scams
@@ -139,7 +144,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 1. Data Foundation | 2/2 | Complete   | 2026-03-11 |
 | 2. Transaction Parsing | 3/3 | Complete   | 2026-03-11 |
 | 3. Bundle/Scam Detection | 5/5 | Complete   | 2026-03-13 |
-| 4. Metrics and Scoring | 0/TBD | Not started | - |
+| 4. Metrics and Scoring | 0/3 | Not started | - |
 | 5. Monitoring Loop and Auto-Removal | 0/TBD | Not started | - |
 | 6. Token Signal Engine | 0/TBD | Not started | - |
 | 7. API, Dashboard, and Telegram Alerts | 0/TBD | Not started | - |
