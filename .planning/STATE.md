@@ -3,11 +3,27 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
+stopped_at: Completed 01-data-foundation plan GAP — fixed sniper getDefaultDb() toSQL crash, 67 tests green
+last_updated: "2026-03-13T08:22:32.318Z"
+last_activity: 2026-03-12 — Phase 03 plan 04 complete; detection engine (DETC-05, DETC-06), wallet review/clear-flag/flag commands, 67 tests passing
+progress:
+  total_phases: 8
+  completed_phases: 3
+  total_plans: 10
+  completed_plans: 10
+  percent: 100
+---
+
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: planning
 stopped_at: Completed 03-bundle-scam-detection plan 04 — detection engine, CLI commands, Phase 3 complete
 last_updated: "2026-03-12T13:38:52Z"
 last_activity: 2026-03-12 — Phase 03 plan 04 complete; detection engine (DETC-05, DETC-06), wallet review/clear-flag/flag commands, 67 tests passing
 progress:
-  total_phases: 8
+  [██████████] 100%
   completed_phases: 3
   total_plans: 9
   completed_plans: 9
@@ -59,6 +75,7 @@ Progress: [██████████] 100% (Phase 3)
 | Phase 03-bundle-scam-detection P02 | 17 | 4 tasks | 5 files |
 | Phase 03-bundle-scam-detection P03 | 4 | 4 tasks | 4 files |
 | Phase 03-bundle-scam-detection P04 | 12 | 2 tasks | 3 files |
+| Phase 01-data-foundation PGAP | 5 | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -94,6 +111,7 @@ Recent decisions affecting current work:
 - [Phase 03-bundle-scam-detection]: wallet_flags SELECT-then-INSERT/UPDATE (no onConflictDoUpdate) — multiple cleared rows allowed per wallet+detector for escalation history
 - [Phase 03-bundle-scam-detection]: Detection triggered synchronously after importWalletHistory sets history_complete=true; Phase 5 monitoring loop uses runDetectionIfNeeded
 - [Phase 03-bundle-scam-detection]: wallet flag --detector defaults to 'manual' (not in DetectorId enum) for user-attributed flags without polluting detector namespace
+- [Phase 01-data-foundation]: getDefaultDb() uses sqlObj.toQuery({ escapeName, escapeParam }) (correct drizzle API) not non-existent toSQL(); db.$client.prepare(sql).all(...params) is the correct better-sqlite3 execution pattern
 
 ### Pending Todos
 
@@ -106,6 +124,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-12T13:38:52Z
-Stopped at: Completed 03-bundle-scam-detection plan 04 — detection engine, CLI commands, Phase 3 complete
+Last session: 2026-03-13T08:22:32.317Z
+Stopped at: Completed 01-data-foundation plan GAP — fixed sniper getDefaultDb() toSQL crash, 67 tests green
 Resume file: None
