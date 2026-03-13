@@ -150,7 +150,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 2. Transaction Parsing | 3/3 | Complete   | 2026-03-11 |
 | 3. Bundle/Scam Detection | 5/5 | Complete   | 2026-03-13 |
 | 4. Metrics and Scoring | 3/3 | Complete   | 2026-03-13 |
-| 5. Monitoring Loop and Auto-Removal | 0/3 | Planning | - |
+| 5. Monitoring Loop and Auto-Removal | 1/3 | In Progress|  |
 | 6. Token Signal Engine | 0/TBD | Not started | - |
 | 7. API, Dashboard, and Telegram Alerts | 0/TBD | Not started | - |
 | 8. Wallet Discovery | 0/TBD | Not started | - |

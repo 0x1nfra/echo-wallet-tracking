@@ -38,7 +38,7 @@
 
 - [ ] **MNTR-01**: System polls all tracked wallets on a ~30-second cycle
 - [ ] **MNTR-02**: System uses incremental fetching per wallet (only transactions since last_checked_at) after first import
-- [ ] **MNTR-03**: System rate-limits all Helius API calls (max 5 concurrent, exponential backoff on 429 responses)
+- [x] **MNTR-03**: System rate-limits all Helius API calls (max 5 concurrent, exponential backoff on 429 responses)
 
 ### Auto-Removal
 
@@ -123,7 +123,7 @@
 | SCOR-03 | Phase 4 | Complete |
 | MNTR-01 | Phase 5 | Pending |
 | MNTR-02 | Phase 5 | Pending |
-| MNTR-03 | Phase 5 | Pending |
+| MNTR-03 | Phase 5 | Complete |
 | RMVL-01 | Phase 5 | Pending |
 | RMVL-02 | Phase 5 | Pending |
 | RMVL-03 | Phase 5 | Pending |
