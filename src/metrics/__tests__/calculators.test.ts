@@ -218,16 +218,19 @@ describe('normalizeSharpeLike', () => {
     expect(normalizeSharpeLike(0)).toBe(50);
   });
 
-  it('returns ~76 for sharpe=1.0', () => {
-    expect(normalizeSharpeLike(1.0)).toBe(76);
+  it('returns ~73 for sharpe=1.0', () => {
+    // Math.round(((Math.tanh(0.5) + 1) / 2) * 100) = 73
+    expect(normalizeSharpeLike(1.0)).toBe(73);
   });
 
-  it('returns ~96 for sharpe=2.0', () => {
-    expect(normalizeSharpeLike(2.0)).toBe(96);
+  it('returns ~88 for sharpe=2.0', () => {
+    // Math.round(((Math.tanh(1.0) + 1) / 2) * 100) = 88
+    expect(normalizeSharpeLike(2.0)).toBe(88);
   });
 
-  it('returns ~24 for sharpe=-1.0', () => {
-    expect(normalizeSharpeLike(-1.0)).toBe(24);
+  it('returns ~27 for sharpe=-1.0', () => {
+    // Math.round(((Math.tanh(-0.5) + 1) / 2) * 100) = 27
+    expect(normalizeSharpeLike(-1.0)).toBe(27);
   });
 
   it('output is always in [0, 100]', () => {
