@@ -1,10 +1,10 @@
 import { Command } from 'commander';
-import { and, desc, eq, inArray } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNotNull } from 'drizzle-orm';
 import Table from 'cli-table3';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import { db } from '../db/index.js';
-import { wallets, wallet_flags } from '../db/schema.js';
+import { wallets, wallet_flags, wallet_metrics } from '../db/schema.js';
 import { importWalletHistory } from '../importers/history.js';
 import { computeOverallStatus } from '../detection/engine.js';
 import { CLEAR_THRESHOLD_MULTIPLIER_FACTOR, MAX_THRESHOLD_MULTIPLIER } from '../detection/thresholds.js';
@@ -308,6 +308,96 @@ export function createWalletCommand(): Command {
 
       console.log(chalk.green(`\nWallet ${address} is now: ${newStatus}`));
       console.log(chalk.gray(`Run 'echo wallet review' to see active flags. Use 'echo wallet clear-flag ${address}' to remove.`));
+    });
+
+  wallet
+    .command('score [address]')
+    .description('Score a wallet or all eligible wallets')
+    .option('--all', 'Score all eligible wallets')
+    .action(async (address: string | undefined, options: { all?: boolean }) => {
+      if (options.all) {
+        const { scoreAllEligible } = await import('../scoring/engine.js');
+        const result = scoreAllEligible();
+        console.log(chalk.green(`Scoring complete: ${result.scored} scored, ${result.skipped} skipped`));
+
+        // Print top 20 wallets by score
+        const topWallets = db.select({
+          address: wallets.address,
+          score: wallets.score,
+          detection_status: wallets.detection_status,
+          trade_count: wallet_metrics.trade_count,
+        }).from(wallets)
+          .leftJoin(wallet_metrics, eq(wallets.address, wallet_metrics.wallet_address))
+          .where(isNotNull(wallets.score))
+          .orderBy(desc(wallets.score))
+          .limit(20)
+          .all();
+
+        if (topWallets.length > 0) {
+          const table = new Table({
+            head: ['ADDRESS', 'SCORE', 'STATUS', 'TRADES'],
+            style: { head: ['cyan'] },
+          });
+          for (const row of topWallets) {
+            const scoreVal = row.score ?? 0;
+            const scoreStr = scoreVal >= 70
+              ? chalk.green(String(scoreVal))
+              : scoreVal >= 40
+              ? chalk.yellow(String(scoreVal))
+              : chalk.red(String(scoreVal));
+            table.push([
+              truncateAddress(row.address),
+              scoreStr,
+              row.detection_status ?? 'pending',
+              String(row.trade_count ?? '-'),
+            ]);
+          }
+          console.log(table.toString());
+        }
+      } else if (address) {
+        const { scoreWallet } = await import('../scoring/engine.js');
+        scoreWallet(address);
+
+        // Query and display score breakdown
+        const metrics = db.select().from(wallet_metrics)
+          .where(eq(wallet_metrics.wallet_address, address))
+          .get();
+        const wallet = db.select().from(wallets).where(eq(wallets.address, address)).get();
+
+        if (!metrics || metrics.score_total === null) {
+          // Explain why wallet is ineligible
+          if (!wallet) {
+            console.log(chalk.yellow(`Wallet ${address} not found. Add it with: echo wallet add ${address}`));
+          } else if (!wallet.history_complete) {
+            console.log(chalk.yellow(`Wallet ${address} is not yet eligible: history import incomplete.`));
+          } else if (wallet.detection_status !== 'confirmed_passing') {
+            console.log(chalk.yellow(`Wallet ${address} is not eligible: detection_status is "${wallet.detection_status ?? 'pending'}".`));
+          } else {
+            console.log(chalk.yellow(`Wallet ${address} has insufficient trade history for scoring (needs ≥20 swaps, or may be dormant).`));
+          }
+          return;
+        }
+
+        const score = metrics.score_total;
+        const scoreColor = score >= 70 ? chalk.green : score >= 40 ? chalk.yellow : chalk.red;
+        console.log(chalk.bold(`\nScore breakdown for ${truncateAddress(address)}`));
+        console.log(`Total Score: ${scoreColor(String(Math.round(score)))}`);
+
+        const table = new Table({
+          head: ['COMPONENT', 'WEIGHT', 'SUB-SCORE'],
+          style: { head: ['cyan'] },
+        });
+        table.push(
+          ['Risk-Adjusted Return', '40%', String(Math.round(metrics.score_risk_adjusted ?? 0))],
+          ['Win Rate', '20%', String(Math.round(metrics.score_win_rate ?? 0))],
+          ['Consistency / Recency', '20%', String(Math.round(metrics.score_consistency_recency ?? 0))],
+          ['Activity Health', '20%', String(Math.round(metrics.score_activity_health ?? 0))],
+        );
+        console.log(table.toString());
+        console.log(chalk.gray(`Trades: ${metrics.trade_count ?? '-'}  |  Recent (180d): ${metrics.recent_trade_count ?? '-'}  |  Last scored: ${metrics.calculated_at ? new Date(metrics.calculated_at).toLocaleDateString() : '-'}`));
+      } else {
+        console.log(chalk.yellow('Usage: echo wallet score <address> | --all'));
+      }
     });
 
   return wallet;

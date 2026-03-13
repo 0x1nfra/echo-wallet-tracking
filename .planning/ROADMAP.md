@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Data Foundation** - SQLite schema, drizzle-orm migrations, WAL mode, and CLI wallet registry (completed 2026-03-11)
 - [x] **Phase 2: Transaction Parsing** - Helius enhanced transaction normalization, DEX-specific parsers, full history import, FIFO position tracking (completed 2026-03-11)
 - [x] **Phase 3: Bundle/Scam Detection** - Bundler, dev wallet, sniper, and wash trader detection with tiered confidence gating (completed 2026-03-12)
-- [ ] **Phase 4: Metrics and Scoring** - WalletMetrics calculation and 0-100 wallet score with risk-adjusted return weighting
+- [x] **Phase 4: Metrics and Scoring** - WalletMetrics calculation and 0-100 wallet score with risk-adjusted return weighting (completed 2026-03-13)
 - [ ] **Phase 5: Monitoring Loop and Auto-Removal** - 30s cron loop with p-queue rate limiting, incremental fetching, and auditable auto-removal
 - [ ] **Phase 6: Token Signal Engine** - Per-token 0-100 signal score aggregating smart wallet activity, buy velocity, exit pressure, and coordination discounting
 - [ ] **Phase 7: API, Dashboard, and Telegram Alerts** - Fastify REST+SSE API, HTMX dashboard, and grammy Telegram bot with threshold alerts
@@ -82,7 +82,12 @@ Plans:
   2. Each eligible wallet receives a 0-100 score weighted: risk-adjusted return (40%), win rate (20%), consistency and recency (20%), activity health (20%)
   3. Wallets without complete transaction history or without confirmed-passing detection status produce no score (are skipped)
   4. A bundler-style wallet with high win rate but volatile returns scores materially lower than a genuine smart trader with consistent risk-adjusted performance
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — Schema migration: score_history table + wallet_metrics sub-score columns
+- [ ] 04-02-PLAN.md — Metric calculators TDD: win-rate, PnL, Sharpe, drawdown, recency + score composer
+- [ ] 04-03-PLAN.md — Scoring engine (DB wiring, eligibility gate) + CLI wallet score command
 
 ### Phase 5: Monitoring Loop and Auto-Removal
 **Goal**: The system continuously updates wallet data on a 30-second cycle without exhausting Helius rate limits, and automatically removes wallets that degrade or are confirmed scams
@@ -139,7 +144,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 1. Data Foundation | 2/2 | Complete   | 2026-03-11 |
 | 2. Transaction Parsing | 3/3 | Complete   | 2026-03-11 |
 | 3. Bundle/Scam Detection | 5/5 | Complete   | 2026-03-13 |
-| 4. Metrics and Scoring | 0/TBD | Not started | - |
+| 4. Metrics and Scoring | 3/3 | Complete   | 2026-03-13 |
 | 5. Monitoring Loop and Auto-Removal | 0/TBD | Not started | - |
 | 6. Token Signal Engine | 0/TBD | Not started | - |
 | 7. API, Dashboard, and Telegram Alerts | 0/TBD | Not started | - |
