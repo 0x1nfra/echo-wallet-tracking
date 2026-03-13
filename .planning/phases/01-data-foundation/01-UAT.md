@@ -1,9 +1,9 @@
 ---
-status: complete
+status: resolved
 phase: 01-data-foundation
 source: [01-01-SUMMARY.md, 01-02-SUMMARY.md]
 started: 2026-03-13T00:00:00Z
-updated: 2026-03-13T12:00:00Z
+updated: 2026-03-13T14:00:00Z
 ---
 
 ## Current Test
@@ -57,9 +57,13 @@ skipped: 0
 ## Gaps
 
 - truth: "wallet add exits cleanly with exit code 0 after printing success message"
-  status: failed
+  status: resolved
   reason: "User reported: Wallet added message prints, but crashes with SqliteError: near \"[object Object]\": syntax error in src/detection/sniper.ts:212 during detection after import. Exit code 1."
   severity: major
   test: 2
-  artifacts: []
-  missing: []
+  root_cause: "getDefaultDb() helper in sniper.ts calls sqlObj.toSQL() which does not exist on drizzle's SQL class. The ternary always falls through to String(sqlObj) = \"[object Object]\". Fix: use db.all(sql`...`) directly via the drizzle BetterSQLite3Database instance instead of the hand-rolled toSQL adapter."
+  artifacts:
+    - path: "src/detection/sniper.ts"
+      issue: "getDefaultDb all-adapter calls non-existent toSQL() method; fallback yields String(sqlObj) = '[object Object]'"
+  missing:
+    - "Replace getDefaultDb() raw adapter with drizzle's native db.all(sql`...`) call at line 212"
