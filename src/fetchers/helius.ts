@@ -79,6 +79,19 @@ export class HeliusFetcher {
   }
 
   /**
+   * Fetch a single page of transactions for any Solana address (wallet or mint).
+   * Rate-limited via heliusQueue. No pagination — returns at most `limit` results.
+   */
+  async fetchOnePage(address: string, limit: number = 20): Promise<HeliusTransaction[]> {
+    return heliusQueue.add(async () => {
+      const res = await this.client.get(`/addresses/${address}/transactions`, {
+        params: { 'api-key': this.apiKey, limit },
+      });
+      return (res.data ?? []) as HeliusTransaction[];
+    }) as Promise<HeliusTransaction[]>;
+  }
+
+  /**
    * Fetch all transactions for a wallet address
    * @param address - Solana wallet address
    * @param days - Number of days to look back (default: 30)

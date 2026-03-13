@@ -197,13 +197,12 @@ async function getDefaultFetcher(): Promise<DevWalletFetcher> {
   // Adapt HeliusFetcher to DevWalletFetcher interface
   return {
     fetchTransactions: async (address: string, limit = 20) => {
-      // Helius fetchSwapHistory doesn't directly support mint-address fetches;
-      // use getTransactions which fetches by address with date window.
-      // For early mint transactions, we pass the mint address — may return empty
-      // if Helius doesn't index by mint (expected limitation, see module docblock).
+      // Fetch a single page of transactions for the mint address.
+      // We only need the earliest txs (creation tx + a few after) to find
+      // the deployer — no need to paginate through all history.
       try {
-        const txs = await f.getTransactions(address, 1); // last 1 day as heuristic
-        return txs.slice(0, limit) as any[];
+        const txs = await f.fetchOnePage(address, Math.min(limit, 100));
+        return txs as any[];
       } catch {
         return [];
       }
