@@ -32,7 +32,7 @@
 
 - [x] **SCOR-01**: System calculates wallet metrics: win rate, realized PnL in SOL, risk-adjusted return (Sharpe-like ratio), max drawdown, and recency score
 - [x] **SCOR-02**: System produces a 0-100 wallet score weighted: risk-adjusted return (40%), win rate (20%), consistency and recency (20%), activity health (20%)
-- [ ] **SCOR-03**: System only scores wallets with complete transaction history and confirmed-passing detection status
+- [x] **SCOR-03**: System only scores wallets with complete transaction history and confirmed-passing detection status
 
 ### Monitoring Loop
 
@@ -120,7 +120,7 @@
 | DETC-06 | Phase 3 | Complete |
 | SCOR-01 | Phase 4 | Complete |
 | SCOR-02 | Phase 4 | Complete |
-| SCOR-03 | Phase 4 | Pending |
+| SCOR-03 | Phase 4 | Complete |
 | MNTR-01 | Phase 5 | Pending |
 | MNTR-02 | Phase 5 | Pending |
 | MNTR-03 | Phase 5 | Pending |
