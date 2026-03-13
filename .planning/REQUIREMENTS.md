@@ -36,16 +36,16 @@
 
 ### Monitoring Loop
 
-- [ ] **MNTR-01**: System polls all tracked wallets on a ~30-second cycle
-- [ ] **MNTR-02**: System uses incremental fetching per wallet (only transactions since last_checked_at) after first import
+- [x] **MNTR-01**: System polls all tracked wallets on a ~30-second cycle
+- [x] **MNTR-02**: System uses incremental fetching per wallet (only transactions since last_checked_at) after first import
 - [x] **MNTR-03**: System rate-limits all Helius API calls (max 5 concurrent, exponential backoff on 429 responses)
 
 ### Auto-Removal
 
-- [ ] **RMVL-01**: System automatically removes a wallet when its score falls below threshold over a rolling 30-day window for N consecutive cycles
-- [ ] **RMVL-02**: System automatically removes a wallet when bundle/scam detection reaches "confirmed" confidence level
-- [ ] **RMVL-03**: System automatically removes a wallet after configurable days of inactivity (no trades)
-- [ ] **RMVL-04**: System logs all removals with reason, timestamp, and detection details — removals are auditable and reversible
+- [x] **RMVL-01**: System automatically removes a wallet when its score falls below threshold over a rolling 30-day window for N consecutive cycles
+- [x] **RMVL-02**: System automatically removes a wallet when bundle/scam detection reaches "confirmed" confidence level
+- [x] **RMVL-03**: System automatically removes a wallet after configurable days of inactivity (no trades)
+- [x] **RMVL-04**: System logs all removals with reason, timestamp, and detection details — removals are auditable and reversible
 
 ### Token Signal Engine
 
@@ -121,13 +121,13 @@
 | SCOR-01 | Phase 4 | Complete |
 | SCOR-02 | Phase 4 | Complete |
 | SCOR-03 | Phase 4 | Complete |
-| MNTR-01 | Phase 5 | Pending |
-| MNTR-02 | Phase 5 | Pending |
+| MNTR-01 | Phase 5 | Complete |
+| MNTR-02 | Phase 5 | Complete |
 | MNTR-03 | Phase 5 | Complete |
-| RMVL-01 | Phase 5 | Pending |
-| RMVL-02 | Phase 5 | Pending |
-| RMVL-03 | Phase 5 | Pending |
-| RMVL-04 | Phase 5 | Pending |
+| RMVL-01 | Phase 5 | Complete |
+| RMVL-02 | Phase 5 | Complete |
+| RMVL-03 | Phase 5 | Complete |
+| RMVL-04 | Phase 5 | Complete |
 | SGNL-01 | Phase 6 | Pending |
 | SGNL-02 | Phase 6 | Pending |
 | SGNL-03 | Phase 6 | Pending |
