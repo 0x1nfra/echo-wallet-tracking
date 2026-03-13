@@ -42,6 +42,13 @@ export const wallet_metrics = sqliteTable('wallet_metrics', {
   max_drawdown: real('max_drawdown'),
   recency_score: real('recency_score'),
   calculated_at: integer('calculated_at', { mode: 'number' }),
+  score_total: real('score_total'),
+  score_risk_adjusted: real('score_risk_adjusted'),
+  score_win_rate: real('score_win_rate'),
+  score_consistency_recency: real('score_consistency_recency'),
+  score_activity_health: real('score_activity_health'),
+  trade_count: integer('trade_count'),
+  recent_trade_count: integer('recent_trade_count'),
 });
 
 export const token_signals = sqliteTable('token_signals', {
@@ -98,6 +105,15 @@ export const wallet_flags = sqliteTable('wallet_flags', {
     .notNull()
     .default(sql`(unixepoch('now') * 1000)`),
   updated_at: integer('updated_at', { mode: 'number' })
+    .notNull()
+    .default(sql`(unixepoch('now') * 1000)`),
+});
+
+export const score_history = sqliteTable('score_history', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  wallet_address: text('wallet_address').notNull(),
+  score: real('score').notNull(),
+  scored_at: integer('scored_at', { mode: 'number' })
     .notNull()
     .default(sql`(unixepoch('now') * 1000)`),
 });
