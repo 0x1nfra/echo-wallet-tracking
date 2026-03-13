@@ -14,16 +14,38 @@ export function computeOverallStatus(activeFlags: ActiveFlag[]): DetectionStatus
   const unclearedFlags = activeFlags.filter(f => !f.cleared);
   if (unclearedFlags.length === 0) return 'confirmed_passing';
 
-  // Find worst detector by severity order
-  const worstDetector = SEVERITY_ORDER.find(d => unclearedFlags.some(f => f.detector === d));
-  if (!worstDetector) return 'confirmed_passing';
-
-  // Among flags from worst detector, find highest confidence tier
-  const worstFlags = unclearedFlags.filter(f => f.detector === worstDetector);
+  // Pre-pass: collect flags whose detector is NOT in SEVERITY_ORDER (e.g. 'manual')
+  const outOfBandFlags = unclearedFlags.filter(f => !SEVERITY_ORDER.includes(f.detector as any));
+  let outOfBandWorst: DetectionTier | null = null;
   for (const tier of TIER_ORDER) {
-    if (worstFlags.some(f => f.confidence === tier)) return tier;
+    if (outOfBandFlags.some(f => f.confidence === tier)) {
+      outOfBandWorst = tier;
+      break;
+    }
   }
-  return 'confirmed_passing';
+
+  // Standard severity-order resolution path (unchanged)
+  const worstDetector = SEVERITY_ORDER.find(d => unclearedFlags.some(f => f.detector === d));
+  let severityWorst: DetectionTier | null = null;
+  if (worstDetector) {
+    const worstFlags = unclearedFlags.filter(f => f.detector === worstDetector);
+    for (const tier of TIER_ORDER) {
+      if (worstFlags.some(f => f.confidence === tier)) {
+        severityWorst = tier;
+        break;
+      }
+    }
+  }
+
+  // Return the worse of the two paths (TIER_ORDER is sorted worst-first)
+  if (outOfBandWorst === null && severityWorst === null) return 'confirmed_passing';
+  if (outOfBandWorst === null) return severityWorst!;
+  if (severityWorst === null) return outOfBandWorst;
+
+  // Both are set — pick whichever appears earlier in TIER_ORDER (more severe)
+  const outOfBandIndex = TIER_ORDER.indexOf(outOfBandWorst);
+  const severityIndex = TIER_ORDER.indexOf(severityWorst);
+  return outOfBandIndex <= severityIndex ? outOfBandWorst : severityWorst;
 }
 
 export async function runDetection(walletAddress: string): Promise<void> {
