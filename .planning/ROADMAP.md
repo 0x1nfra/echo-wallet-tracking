@@ -114,7 +114,12 @@ Plans:
   1. After each monitoring cycle completes, every token held by tracked wallets receives an updated 0-100 signal score reflecting smart wallet count, buy velocity in the last 1 hour, exit pressure from sells, and PnL-weighted holder score
   2. Token signals are stored in the token_signals table and are available immediately after each cycle ends
   3. A token whose smart-wallet holders appear coordinated (share a common funding source) receives a discounted signal score compared to a token held by independent wallets with similar metrics
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — Schema migration: signal_tier + coordinated_wallet_count columns
+- [ ] 06-02-PLAN.md — Signal scorer TDD: pure computeSignalScore() function
+- [ ] 06-03-PLAN.md — Signal engine, MonitorLoop hook, signal list CLI command
 
 ### Phase 7: API, Dashboard, and Telegram Alerts
 **Goal**: The user can monitor live signals and wallet activity via a web dashboard and receive time-sensitive alerts via Telegram
@@ -126,7 +131,12 @@ Plans:
   3. User can click into a wallet on the dashboard to see recent trades, score breakdown, and detection flags
   4. User receives a Telegram alert when a token signal crosses a configured threshold — and does not receive duplicate alerts for the same token within a 2-hour window
   5. User can send /status, /top, and /wallet <address> commands to the Telegram bot and receive current data in response
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — Schema migration: signal_tier + coordinated_wallet_count columns
+- [ ] 06-02-PLAN.md — Signal scorer TDD: pure computeSignalScore() function
+- [ ] 06-03-PLAN.md — Signal engine, MonitorLoop hook, signal list CLI command
 
 ### Phase 8: Wallet Discovery
 **Goal**: The user can grow the tracked wallet list automatically by discovering profitable early traders from a token contract address
@@ -137,7 +147,12 @@ Plans:
   2. Only discovered wallets that score above 70 are added to the tracker — low-quality wallets are rejected automatically
   3. Newly discovered wallets enter a 7-day probation period and are excluded from token signal scoring during that window
   4. The system can extend discovery via graph traversal — identifying wallet candidates that co-traded with known smart money wallets
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — Schema migration: signal_tier + coordinated_wallet_count columns
+- [ ] 06-02-PLAN.md — Signal scorer TDD: pure computeSignalScore() function
+- [ ] 06-03-PLAN.md — Signal engine, MonitorLoop hook, signal list CLI command
 
 ## Progress
 
