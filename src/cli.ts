@@ -14,11 +14,18 @@ program
 
 program.addCommand(createWalletCommand());
 
+// Gate: skip auto-start when user is explicitly running 'wallet monitor start'
+// (the action handler starts the loop itself in that case)
+const isMonitorStart =
+  process.argv.includes('monitor') && process.argv.includes('start');
+
 // At startup: resume any interrupted imports, then start the monitoring loop
 resumeImportingWallets()
   .catch(() => {}) // silent — incomplete imports are retried on next cycle
   .then(() => {
-    monitorLoop.start();
+    if (!isMonitorStart) {
+      monitorLoop.start();
+    }
   });
 
 program.parse();
