@@ -36,6 +36,13 @@
       "when": 1773420419000,
       "tag": "0004_monitoring_columns",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1773510000000,
+      "tag": "0005_token_signal_columns",
+      "breakpoints": true
     }
   ]
 }

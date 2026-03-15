@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Bundle/Scam Detection** - Bundler, dev wallet, sniper, and wash trader detection with tiered confidence gating (completed 2026-03-12)
 - [x] **Phase 4: Metrics and Scoring** - WalletMetrics calculation and 0-100 wallet score with risk-adjusted return weighting (completed 2026-03-13)
 - [x] **Phase 5: Monitoring Loop and Auto-Removal** - 30s cron loop with p-queue rate limiting, incremental fetching, and auditable auto-removal (completed 2026-03-13)
-- [ ] **Phase 6: Token Signal Engine** - Per-token 0-100 signal score aggregating smart wallet activity, buy velocity, exit pressure, and coordination discounting
+- [x] **Phase 6: Token Signal Engine** - Per-token 0-100 signal score aggregating smart wallet activity, buy velocity, exit pressure, and coordination discounting (completed 2026-03-15)
 - [ ] **Phase 7: API, Dashboard, and Telegram Alerts** - Fastify REST+SSE API, HTMX dashboard, and grammy Telegram bot with threshold alerts
 - [ ] **Phase 8: Wallet Discovery** - Token-CA candidate extraction, scoring gate, 7-day probation, and graph traversal discovery
 
@@ -114,7 +114,12 @@ Plans:
   1. After each monitoring cycle completes, every token held by tracked wallets receives an updated 0-100 signal score reflecting smart wallet count, buy velocity in the last 1 hour, exit pressure from sells, and PnL-weighted holder score
   2. Token signals are stored in the token_signals table and are available immediately after each cycle ends
   3. A token whose smart-wallet holders appear coordinated (share a common funding source) receives a discounted signal score compared to a token held by independent wallets with similar metrics
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — Schema migration: signal_tier + coordinated_wallet_count columns
+- [ ] 06-02-PLAN.md — Signal scorer TDD: pure computeSignalScore() function
+- [ ] 06-03-PLAN.md — Signal engine, MonitorLoop hook, signal list CLI command
 
 ### Phase 7: API, Dashboard, and Telegram Alerts
 **Goal**: The user can monitor live signals and wallet activity via a web dashboard and receive time-sensitive alerts via Telegram
@@ -126,7 +131,12 @@ Plans:
   3. User can click into a wallet on the dashboard to see recent trades, score breakdown, and detection flags
   4. User receives a Telegram alert when a token signal crosses a configured threshold — and does not receive duplicate alerts for the same token within a 2-hour window
   5. User can send /status, /top, and /wallet <address> commands to the Telegram bot and receive current data in response
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — Schema migration: signal_tier + coordinated_wallet_count columns
+- [ ] 06-02-PLAN.md — Signal scorer TDD: pure computeSignalScore() function
+- [ ] 06-03-PLAN.md — Signal engine, MonitorLoop hook, signal list CLI command
 
 ### Phase 8: Wallet Discovery
 **Goal**: The user can grow the tracked wallet list automatically by discovering profitable early traders from a token contract address
@@ -137,7 +147,12 @@ Plans:
   2. Only discovered wallets that score above 70 are added to the tracker — low-quality wallets are rejected automatically
   3. Newly discovered wallets enter a 7-day probation period and are excluded from token signal scoring during that window
   4. The system can extend discovery via graph traversal — identifying wallet candidates that co-traded with known smart money wallets
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — Schema migration: signal_tier + coordinated_wallet_count columns
+- [ ] 06-02-PLAN.md — Signal scorer TDD: pure computeSignalScore() function
+- [ ] 06-03-PLAN.md — Signal engine, MonitorLoop hook, signal list CLI command
 
 ## Progress
 
@@ -151,6 +166,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 3. Bundle/Scam Detection | 5/5 | Complete   | 2026-03-13 |
 | 4. Metrics and Scoring | 3/3 | Complete   | 2026-03-13 |
 | 5. Monitoring Loop and Auto-Removal | 4/4 | Complete    | 2026-03-15 |
-| 6. Token Signal Engine | 0/TBD | Not started | - |
+| 6. Token Signal Engine | 3/3 | Complete   | 2026-03-15 |
 | 7. API, Dashboard, and Telegram Alerts | 0/TBD | Not started | - |
 | 8. Wallet Discovery | 0/TBD | Not started | - |
