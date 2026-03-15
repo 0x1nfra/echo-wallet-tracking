@@ -7,8 +7,8 @@ import PQueue from 'p-queue';
 import pRetry from 'p-retry';
 import type { HeliusTransaction } from '../types/index.js';
 
-// Free tier: 2 req/s Enhanced API
-const heliusQueue = new PQueue({ interval: 1000, intervalCap: 2 });
+// Monitoring loop: max 5 concurrent Helius requests
+const heliusQueue = new PQueue({ concurrency: 5 });
 
 export class HeliusFetcher {
   private client: AxiosInstance;
@@ -54,10 +54,16 @@ export class HeliusFetcher {
           return res.data as HeliusTransaction[];
         }),
         {
-          retries: 3,
-          onFailedAttempt: (error) => {
-            // Do not retry auth errors
-            if ((error as any).response?.status === 401) throw error;
+          retries: 5,
+          onFailedAttempt: async (error) => {
+            const status = (error as any).response?.status;
+            // Never retry auth errors
+            if (status === 401) throw error;
+            // Exponential backoff on rate limit: 2s, 4s, 8s, 16s, 32s
+            if (status === 429) {
+              const delayMs = Math.pow(2, error.attemptNumber) * 1000;
+              await new Promise(resolve => setTimeout(resolve, delayMs));
+            }
           },
         }
       );

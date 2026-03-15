@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 04-metrics-and-scoring plan 03 — scoring engine + CLI wallet score command, 136 tests green
-last_updated: "2026-03-13T13:41:23.737Z"
+stopped_at: Completed 05-monitoring-loop-and-auto-removal GAP plan — MonitorLoop idempotency guard, PID file IPC, cli.ts gate, 139 tests green
+last_updated: "2026-03-15T14:02:54.619Z"
 last_activity: 2026-03-12 — Phase 03 plan 04 complete; detection engine (DETC-05, DETC-06), wallet review/clear-flag/flag commands, 67 tests passing
 progress:
   total_phases: 8
-  completed_phases: 4
-  total_plans: 14
-  completed_plans: 14
+  completed_phases: 5
+  total_plans: 18
+  completed_plans: 18
   percent: 100
 ---
 
@@ -80,6 +80,10 @@ Progress: [██████████] 100% (Phase 3)
 | Phase 04-metrics-and-scoring P01 | 5 | 2 tasks | 3 files |
 | Phase 04-metrics-and-scoring P02 | 8 | 4 tasks | 10 files |
 | Phase 04-metrics-and-scoring P03 | 132 | 2 tasks | 3 files |
+| Phase 05-monitoring-loop-and-auto-removal P01 | 31 | 2 tasks | 4 files |
+| Phase 05-monitoring-loop-and-auto-removal P02 | 2 | 2 tasks | 3 files |
+| Phase 05-monitoring-loop-and-auto-removal P03 | 2 | 2 tasks | 2 files |
+| Phase 05-monitoring-loop-and-auto-removal PGAP | 15 | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -124,6 +128,17 @@ Recent decisions affecting current work:
 - [Phase 04-metrics-and-scoring]: Confidence dampener: calculateSharpeRatio multiplies by min(1.0, tradeCount/50) before capping at 3.0
 - [Phase 04-metrics-and-scoring]: scoreAllEligible() re-queries swaps per wallet — simple and correct for current scale
 - [Phase 04-metrics-and-scoring]: Dynamic import used for scoring engine in CLI action — avoids circular dependency at module load time
+- [Phase 05-monitoring-loop-and-auto-removal]: Migration 0004 uses statement-breakpoint markers — drizzle-kit better-sqlite3 prepares one statement at a time; multi-statement SQL file fails without breakpoints
+- [Phase 05-monitoring-loop-and-auto-removal]: heliusQueue switched from interval/intervalCap (free-tier 2 req/s) to concurrency: 5 — monitoring loop needs parallel wallet fetches, not interval throttling
+- [Phase 05-monitoring-loop-and-auto-removal]: pRetry retries increased from 3 to 5 with 429-specific exponential backoff (2s base, doubles per attempt) — rate limit exhaustion must not crash the monitoring loop
+- [Phase 05-monitoring-loop-and-auto-removal]: checkRemovalPolicies called only after successful pipeline — fetch errors never increment low_score_streak
+- [Phase 05-monitoring-loop-and-auto-removal]: last_trade_at=NULL guard skips inactivity check — wallets with no swap data treated as not-yet-tracked, not inactive
+- [Phase 05-monitoring-loop-and-auto-removal]: MonitorLoop.start() uses scheduleNextCycle(0) for immediate first cycle, then CYCLE_INTERVAL_MS=30s for subsequent
+- [Phase 05-monitoring-loop-and-auto-removal]: monitorLoop exported from wallet.ts as module-level singleton — consumed by cli.ts for auto-start and by wallet monitor subcommands for manual control
+- [Phase 05-monitoring-loop-and-auto-removal]: MonitorLoop.start() chained in .then() after resumeImportingWallets().catch() — ensures interrupted imports drain before loop begins; program.parse() remains synchronous
+- [Phase 05-monitoring-loop-and-auto-removal]: PID file stored in OS tmpdir (echo-monitor.pid) for cross-process IPC
+- [Phase 05-monitoring-loop-and-auto-removal]: process.once used (not process.on) for SIGTERM handler in MonitorLoop.start() to prevent listener accumulation
+- [Phase 05-monitoring-loop-and-auto-removal]: argv snapshot taken before program.parse() for isMonitorStart gate in cli.ts
 
 ### Pending Todos
 
@@ -136,6 +151,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-13T13:41:23.735Z
-Stopped at: Completed 04-metrics-and-scoring plan 03 — scoring engine + CLI wallet score command, 136 tests green
+Last session: 2026-03-15T14:02:54.617Z
+Stopped at: Completed 05-monitoring-loop-and-auto-removal GAP plan — MonitorLoop idempotency guard, PID file IPC, cli.ts gate, 139 tests green
 Resume file: None

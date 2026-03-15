@@ -2,7 +2,7 @@
 import 'dotenv/config';
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { createWalletCommand } from '@/commands/wallet.js';
+import { createWalletCommand, monitorLoop } from '@/commands/wallet.js';
 import { resumeImportingWallets } from '@/importers/history.js';
 
 const program = new Command();
@@ -14,7 +14,18 @@ program
 
 program.addCommand(createWalletCommand());
 
-// At startup, resume any wallets stuck in 'importing' state from previous interrupted runs
-resumeImportingWallets().catch(() => {}); // silent — don't block CLI startup
+// Gate: skip auto-start when user is explicitly running 'wallet monitor start'
+// (the action handler starts the loop itself in that case)
+const isMonitorStart =
+  process.argv.includes('monitor') && process.argv.includes('start');
+
+// At startup: resume any interrupted imports, then start the monitoring loop
+resumeImportingWallets()
+  .catch(() => {}) // silent — incomplete imports are retried on next cycle
+  .then(() => {
+    if (!isMonitorStart) {
+      monitorLoop.start();
+    }
+  });
 
 program.parse();

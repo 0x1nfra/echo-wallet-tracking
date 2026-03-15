@@ -4,10 +4,14 @@ import Table from 'cli-table3';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import { db } from '../db/index.js';
-import { wallets, wallet_flags, wallet_metrics } from '../db/schema.js';
+import { wallets, wallet_flags, wallet_metrics, removal_log } from '../db/schema.js';
 import { importWalletHistory } from '../importers/history.js';
 import { computeOverallStatus } from '../detection/engine.js';
 import { CLEAR_THRESHOLD_MULTIPLIER_FACTOR, MAX_THRESHOLD_MULTIPLIER } from '../detection/thresholds.js';
+import { MonitorLoop, writePid, readPid, clearPid } from '../monitor/index.js';
+
+// Shared loop instance — used by both `wallet monitor` commands and cli.ts auto-start
+export const monitorLoop = new MonitorLoop();
 
 function truncateAddress(addr: string): string {
   return `${addr.slice(0, 8)}...${addr.slice(-4)}`;
@@ -399,6 +403,125 @@ export function createWalletCommand(): Command {
         console.log(chalk.yellow('Usage: echo wallet score <address> | --all'));
       }
     });
+
+  const monitor = new Command('monitor').description('Control the monitoring loop');
+
+  monitor
+    .command('start')
+    .description('Start the monitoring loop (runs a cycle every 30 seconds)')
+    .action(() => {
+      monitorLoop.start();
+      writePid(process.pid);
+      console.log('Monitoring loop started. Press Ctrl+C to exit.');
+      // Keep process alive
+      process.on('SIGTERM', () => { monitorLoop.stop(); clearPid(); process.exit(0); });
+      process.on('SIGINT', () => {
+        monitorLoop.stop();
+        process.exit(0);
+      });
+    });
+
+  monitor
+    .command('pause')
+    .description('Pause the monitoring loop (current cycle drains first)')
+    .action(() => {
+      monitorLoop.pause();
+    });
+
+  monitor
+    .command('stop')
+    .description('Stop the monitoring loop')
+    .action(() => {
+      const pid = readPid();
+      if (pid === null) {
+        console.log('[monitor] no running loop found (no PID file)');
+        process.exit(0);
+      }
+      try {
+        process.kill(pid, 'SIGTERM');
+        clearPid();
+        console.log(`[monitor] sent SIGTERM to process ${pid}`);
+      } catch (_err) {
+        clearPid();
+        console.log('[monitor] loop process was not running — PID file cleaned up');
+      }
+      process.exit(0);
+    });
+
+  wallet.addCommand(monitor);
+
+  const removals = new Command('removals').description('View and manage auto-removed wallets');
+
+  removals
+    .command('list')
+    .description('List all auto-removed wallets with removal details')
+    .action(() => {
+      const rows = db.select().from(removal_log)
+        .orderBy(desc(removal_log.removed_at))
+        .all();
+
+      if (rows.length === 0) {
+        console.log('No wallets have been auto-removed.');
+        return;
+      }
+
+      const table = new Table({
+        head: ['ADDRESS', 'LABEL', 'SCORE', 'DETECTION STATUS', 'REASON', 'REMOVED AT'],
+        style: { head: ['cyan'] },
+        colWidths: [20, 15, 8, 22, 36, 14],
+      });
+
+      for (const row of rows) {
+        const restoredMark = row.restored_at ? chalk.green(' [restored]') : '';
+        table.push([
+          truncateAddress(row.wallet_address) + restoredMark,
+          row.label ?? chalk.gray('(none)'),
+          row.score_at_removal !== null ? row.score_at_removal.toFixed(1) : chalk.gray('—'),
+          row.detection_details ?? chalk.gray('—'),
+          row.reason,
+          new Date(row.removed_at).toLocaleDateString(),
+        ]);
+      }
+      console.log(table.toString());
+    });
+
+  removals
+    .command('restore <address>')
+    .description('Restore an auto-removed wallet back to tracked status')
+    .action(async (address: string) => {
+      // Check it exists in removal_log and is not already restored
+      const logEntry = db.select().from(removal_log)
+        .where(eq(removal_log.wallet_address, address))
+        .orderBy(desc(removal_log.removed_at))
+        .get();
+
+      if (!logEntry) {
+        console.error(`No removal log entry found for ${address}.`);
+        process.exit(1);
+      }
+
+      if (logEntry.restored_at !== null) {
+        console.log(`Wallet ${address} was already restored on ${new Date(logEntry.restored_at).toLocaleDateString()}.`);
+      }
+
+      // Re-activate wallet in wallets table
+      // If the row was set to status='removed', restore to 'tracked' with history_complete=true
+      // Existing swap data is preserved (no re-import of full history)
+      db.update(wallets)
+        .set({ status: 'tracked', detection_status: 'pending', low_score_streak: 0 })
+        .where(eq(wallets.address, address))
+        .run();
+
+      // Mark as restored in removal_log
+      db.update(removal_log)
+        .set({ restored_at: Date.now() })
+        .where(eq(removal_log.id, logEntry.id))
+        .run();
+
+      console.log(`Wallet ${address} restored — incremental fetch will run on next monitoring cycle.`);
+    });
+
+  wallet.addCommand(removals);
 
   return wallet;
 }
