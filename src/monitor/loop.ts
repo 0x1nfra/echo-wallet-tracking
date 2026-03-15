@@ -16,12 +16,19 @@ export class MonitorLoop {
   private stopped: boolean = false;
   private timer: ReturnType<typeof setTimeout> | null = null;
   private cycleRunning: boolean = false;
+  private running: boolean = false;
 
   start(): void {
+    if (this.running) {
+      console.log('[monitor] already running — ignoring duplicate start');
+      return;
+    }
+    this.running = true;
     this.stopped = false;
     this.paused = false;
     console.log(`[monitor] starting — cycle interval ${CYCLE_INTERVAL_MS / 1000}s`);
     this.scheduleNextCycle(0);
+    process.once('SIGTERM', () => { this.stop(); });
   }
 
   pause(): void {
@@ -37,6 +44,7 @@ export class MonitorLoop {
 
   stop(): void {
     this.stopped = true;
+    this.running = false;
     this.paused = false;
     if (this.timer !== null) {
       clearTimeout(this.timer);
