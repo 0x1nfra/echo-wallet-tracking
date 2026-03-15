@@ -48,5 +48,9 @@ skipped: 2
   reason: "User reported: the time is the bug — Updated column shows 1/21/1970 instead of today's date"
   severity: major
   test: 2
-  artifacts: []
-  missing: []
+  root_cause: "src/commands/signal.ts line 42: new Date(row.updated_at) treats Unix seconds as milliseconds. updated_at is stored as integer seconds (SQLite unixepoch()), but Date() constructor expects milliseconds."
+  artifacts:
+    - path: "src/commands/signal.ts"
+      issue: "line 42: new Date(row.updated_at) should be new Date(row.updated_at * 1000)"
+  missing:
+    - "Multiply updated_at by 1000 before passing to Date constructor"
