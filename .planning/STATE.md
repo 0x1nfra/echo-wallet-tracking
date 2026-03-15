@@ -41,12 +41,12 @@ See: .planning/PROJECT.md (updated 2026-03-11)
 
 ## Current Position
 
-Phase: 3 of 8 (Bundle Scam Detection) — COMPLETE
-Plan: 4 of 4 in current phase (complete)
-Status: Phase 3 complete — ready for Phase 4 (wallet scoring)
-Last activity: 2026-03-12 — Phase 03 plan 04 complete; detection engine (DETC-05, DETC-06), wallet review/clear-flag/flag commands, 67 tests passing
+Phase: 6 of 8 (Token Signal Engine) — IN PROGRESS
+Plan: 2 of 3 in current phase (plan 01 and 02 complete)
+Status: Phase 6 plans 01 and 02 complete — token_signals schema extended; pure signal scorer with TDD tests
+Last activity: 2026-03-15 — Phase 06 plan 01 complete; signal_tier + coordinated_wallet_count columns added, 153 tests passing
 
-Progress: [██████████] 100% (Phase 3)
+Progress: [██░░░░░░░░] 67% (Phase 6)
 
 ## Performance Metrics
 
@@ -84,6 +84,7 @@ Progress: [██████████] 100% (Phase 3)
 | Phase 05-monitoring-loop-and-auto-removal P02 | 2 | 2 tasks | 3 files |
 | Phase 05-monitoring-loop-and-auto-removal P03 | 2 | 2 tasks | 2 files |
 | Phase 05-monitoring-loop-and-auto-removal PGAP | 15 | 3 tasks | 6 files |
+| Phase 06-token-signal-engine P01 | 15 | 1 tasks | 3 files |
 | Phase 06-token-signal-engine P02 | 3 | 3 tasks | 3 files |
 
 ## Accumulated Context
@@ -140,6 +141,8 @@ Recent decisions affecting current work:
 - [Phase 05-monitoring-loop-and-auto-removal]: PID file stored in OS tmpdir (echo-monitor.pid) for cross-process IPC
 - [Phase 05-monitoring-loop-and-auto-removal]: process.once used (not process.on) for SIGTERM handler in MonitorLoop.start() to prevent listener accumulation
 - [Phase 05-monitoring-loop-and-auto-removal]: argv snapshot taken before program.parse() for isMonitorStart gate in cli.ts
+- [Phase 06-token-signal-engine]: Manual migration journal when must exceed lastDbMigration.created_at — Drizzle SQLiteDialect.migrate() applies only when folderMillis > lastDbMigration[2] (learned from 0005 journal timestamp fix)
+- [Phase 06-token-signal-engine]: Migration 0005 written manually per Phase 04 precedent — drizzle-kit regenerates already-applied tables when meta snapshots are incomplete
 - [Phase 06-token-signal-engine]: Score formula weights locked: PnL-weighted holder quality 40%, buy velocity 35%, smart wallet count 25%
 - [Phase 06-token-signal-engine]: Tier thresholds: strong >= 65, moderate >= 35, weak < 35, inactive = 0
 - [Phase 06-token-signal-engine]: Coordination discount applied as final multiplier only — does NOT affect intermediate sub-score calculations
