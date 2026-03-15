@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 05-monitoring-loop-and-auto-removal GAP plan — MonitorLoop idempotency guard, PID file IPC, cli.ts gate, 139 tests green
-last_updated: "2026-03-15T14:02:54.619Z"
+stopped_at: Completed 06-token-signal-engine plan 02 — pure signal scorer, 14 TDD tests, 153 total tests green
+last_updated: "2026-03-15T15:58:06.063Z"
 last_activity: 2026-03-12 — Phase 03 plan 04 complete; detection engine (DETC-05, DETC-06), wallet review/clear-flag/flag commands, 67 tests passing
 progress:
   total_phases: 8
   completed_phases: 5
-  total_plans: 18
-  completed_plans: 18
+  total_plans: 21
+  completed_plans: 20
   percent: 100
 ---
 
@@ -84,6 +84,7 @@ Progress: [██████████] 100% (Phase 3)
 | Phase 05-monitoring-loop-and-auto-removal P02 | 2 | 2 tasks | 3 files |
 | Phase 05-monitoring-loop-and-auto-removal P03 | 2 | 2 tasks | 2 files |
 | Phase 05-monitoring-loop-and-auto-removal PGAP | 15 | 3 tasks | 6 files |
+| Phase 06-token-signal-engine P02 | 3 | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -139,6 +140,10 @@ Recent decisions affecting current work:
 - [Phase 05-monitoring-loop-and-auto-removal]: PID file stored in OS tmpdir (echo-monitor.pid) for cross-process IPC
 - [Phase 05-monitoring-loop-and-auto-removal]: process.once used (not process.on) for SIGTERM handler in MonitorLoop.start() to prevent listener accumulation
 - [Phase 05-monitoring-loop-and-auto-removal]: argv snapshot taken before program.parse() for isMonitorStart gate in cli.ts
+- [Phase 06-token-signal-engine]: Score formula weights locked: PnL-weighted holder quality 40%, buy velocity 35%, smart wallet count 25%
+- [Phase 06-token-signal-engine]: Tier thresholds: strong >= 65, moderate >= 35, weak < 35, inactive = 0
+- [Phase 06-token-signal-engine]: Coordination discount applied as final multiplier only — does NOT affect intermediate sub-score calculations
+- [Phase 06-token-signal-engine]: All-coordinated suppression: if every current holder is coordinated, signalScore=0 early-exit with coordinationDiscount=0.3 for Phase 7 transparency
 
 ### Pending Todos
 
@@ -151,6 +156,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-15T14:02:54.617Z
-Stopped at: Completed 05-monitoring-loop-and-auto-removal GAP plan — MonitorLoop idempotency guard, PID file IPC, cli.ts gate, 139 tests green
+Last session: 2026-03-15T15:57:54.449Z
+Stopped at: Completed 06-token-signal-engine plan 02 — pure signal scorer, 14 TDD tests, 153 total tests green
 Resume file: None
