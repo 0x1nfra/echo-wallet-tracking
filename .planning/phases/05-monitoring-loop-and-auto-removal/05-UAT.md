@@ -1,9 +1,9 @@
 ---
 status: complete
 phase: 05-monitoring-loop-and-auto-removal
-source: [05-01-SUMMARY.md, 05-02-SUMMARY.md, 05-03-SUMMARY.md]
+source: [05-01-SUMMARY.md, 05-02-SUMMARY.md, 05-03-SUMMARY.md, 05-04-SUMMARY.md]
 started: 2026-03-14T00:00:00Z
-updated: 2026-03-15T00:00:00Z
+updated: 2026-03-15T14:12:00Z
 ---
 
 ## Current Test
@@ -18,9 +18,8 @@ result: pass
 
 ### 2. wallet monitor start
 expected: Running `pnpm echo wallet monitor start` logs `[monitor] starting — cycle interval 30s`, then shortly after `[monitor] cycle start — N wallets`. Process stays alive and cycles every 30 seconds. Ctrl+C exits cleanly.
-result: issue
-reported: "[monitor] starting — cycle interval 30s logged twice; monitor starts twice causing concurrent cycles (two cycle start lines in a row, two cycle complete at different timestamps) — doubles API calls per cycle"
-severity: major
+result: pass
+fixed_by: 05-GAP-PLAN.md (Tasks 1+3) — idempotency guard in loop.ts + cli.ts argv gate
 
 ### 3. wallet monitor pause
 expected: Running `pnpm echo wallet monitor pause` (in a separate invocation or while the loop is running) logs `[monitor] paused — current cycle will drain`.
@@ -28,9 +27,8 @@ result: pass
 
 ### 4. wallet monitor stop
 expected: Running `pnpm echo wallet monitor stop` logs `[monitor] stopped` and the process exits.
-result: issue
-reported: "logged [monitor] stopped but the loop did not really stop — cycle continues in the first terminal"
-severity: major
+result: pass
+fixed_by: 05-GAP-PLAN.md (Task 2) — pid.ts IPC + SIGTERM handler in loop.ts
 
 ### 5. wallet removals list (empty)
 expected: Running `pnpm echo wallet removals list` when no wallets have been auto-removed prints `No wallets have been auto-removed.`
@@ -43,25 +41,23 @@ result: pass
 ## Summary
 
 total: 6
-passed: 4
-issues: 2
+passed: 6
+issues: 0
 pending: 0
 skipped: 0
 
 ## Gaps
 
 - truth: "Running `wallet monitor start` starts exactly one monitoring loop instance — single set of cycle logs per interval"
-  status: failed
-  reason: "User reported: [monitor] starting — cycle interval 30s logged twice; monitor starts twice causing concurrent cycles (two cycle start lines in a row, two cycle complete at different timestamps) — doubles API calls per cycle"
-  severity: major
+  status: closed
+  closed_by: 05-GAP-PLAN.md Tasks 1+3
+  fix: "idempotency guard (private running flag + early-return) in loop.ts; cli.ts argv gate skips auto-start when subcommand is wallet monitor start"
+  verified: 2026-03-15 (human-verify checkpoint approved)
   test: 2
-  artifacts: []
-  missing: []
 
 - truth: "Running `wallet monitor stop` stops the monitoring loop — no further cycles run in the first terminal"
-  status: failed
-  reason: "User reported: logged [monitor] stopped but the loop did not really stop — cycle continues in the first terminal"
-  severity: major
+  status: closed
+  closed_by: 05-GAP-PLAN.md Task 2
+  fix: "pid.ts IPC helper writes PID on start; monitor stop reads PID and sends SIGTERM cross-process; MonitorLoop registers process.once SIGTERM handler that calls stop()"
+  verified: 2026-03-15 (human-verify checkpoint approved)
   test: 4
-  artifacts: []
-  missing: []
