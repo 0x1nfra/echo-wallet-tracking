@@ -62,6 +62,8 @@ export const token_signals = sqliteTable('token_signals', {
   exit_pressure: real('exit_pressure'),
   pnl_weighted_holder_score: real('pnl_weighted_holder_score'),
   coordination_discount: real('coordination_discount'),
+  signal_tier: text('signal_tier'),
+  coordinated_wallet_count: integer('coordinated_wallet_count'),
   updated_at: integer('updated_at', { mode: 'number' }),
 });
 
