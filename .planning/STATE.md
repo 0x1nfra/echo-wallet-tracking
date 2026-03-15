@@ -3,11 +3,27 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
+stopped_at: Completed 06-token-signal-engine plan 03 — DB-integrated signal engine, MonitorLoop hook, echo signal list CLI, 167 tests green
+last_updated: "2026-03-15T16:07:36.027Z"
+last_activity: 2026-03-15 — Phase 06 plan 01 complete; signal_tier + coordinated_wallet_count columns added, 153 tests passing
+progress:
+  total_phases: 8
+  completed_phases: 6
+  total_plans: 21
+  completed_plans: 21
+  percent: 100
+---
+
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: planning
 stopped_at: Completed 06-token-signal-engine plan 02 — pure signal scorer, 14 TDD tests, 153 total tests green
 last_updated: "2026-03-15T15:58:06.063Z"
 last_activity: 2026-03-12 — Phase 03 plan 04 complete; detection engine (DETC-05, DETC-06), wallet review/clear-flag/flag commands, 67 tests passing
 progress:
-  total_phases: 8
+  [██████████] 100%
   completed_phases: 5
   total_plans: 21
   completed_plans: 20
@@ -86,6 +102,7 @@ Progress: [██░░░░░░░░] 67% (Phase 6)
 | Phase 05-monitoring-loop-and-auto-removal PGAP | 15 | 3 tasks | 6 files |
 | Phase 06-token-signal-engine P01 | 15 | 1 tasks | 3 files |
 | Phase 06-token-signal-engine P02 | 3 | 3 tasks | 3 files |
+| Phase 06-token-signal-engine P03 | 6 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -147,6 +164,8 @@ Recent decisions affecting current work:
 - [Phase 06-token-signal-engine]: Tier thresholds: strong >= 65, moderate >= 35, weak < 35, inactive = 0
 - [Phase 06-token-signal-engine]: Coordination discount applied as final multiplier only — does NOT affect intermediate sub-score calculations
 - [Phase 06-token-signal-engine]: All-coordinated suppression: if every current holder is coordinated, signalScore=0 early-exit with coordinationDiscount=0.3 for Phase 7 transparency
+- [Phase 06-token-signal-engine]: computeAllTokenSignals accepts optional db parameter for in-memory SQLite testability — avoids jest.unstable_mockModule ESM limitations
+- [Phase 06-token-signal-engine]: engine.ts batch pre-loads wallet_metrics and wallet_flags before per-token loop — prevents O(tokens*wallets) queries
 
 ### Pending Todos
 
@@ -159,6 +178,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-15T15:57:54.449Z
-Stopped at: Completed 06-token-signal-engine plan 02 — pure signal scorer, 14 TDD tests, 153 total tests green
+Last session: 2026-03-15T16:07:26.704Z
+Stopped at: Completed 06-token-signal-engine plan 03 — DB-integrated signal engine, MonitorLoop hook, echo signal list CLI, 167 tests green
 Resume file: None

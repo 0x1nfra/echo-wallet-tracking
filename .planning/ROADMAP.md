@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Bundle/Scam Detection** - Bundler, dev wallet, sniper, and wash trader detection with tiered confidence gating (completed 2026-03-12)
 - [x] **Phase 4: Metrics and Scoring** - WalletMetrics calculation and 0-100 wallet score with risk-adjusted return weighting (completed 2026-03-13)
 - [x] **Phase 5: Monitoring Loop and Auto-Removal** - 30s cron loop with p-queue rate limiting, incremental fetching, and auditable auto-removal (completed 2026-03-13)
-- [ ] **Phase 6: Token Signal Engine** - Per-token 0-100 signal score aggregating smart wallet activity, buy velocity, exit pressure, and coordination discounting
+- [x] **Phase 6: Token Signal Engine** - Per-token 0-100 signal score aggregating smart wallet activity, buy velocity, exit pressure, and coordination discounting (completed 2026-03-15)
 - [ ] **Phase 7: API, Dashboard, and Telegram Alerts** - Fastify REST+SSE API, HTMX dashboard, and grammy Telegram bot with threshold alerts
 - [ ] **Phase 8: Wallet Discovery** - Token-CA candidate extraction, scoring gate, 7-day probation, and graph traversal discovery
 
@@ -166,6 +166,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 3. Bundle/Scam Detection | 5/5 | Complete   | 2026-03-13 |
 | 4. Metrics and Scoring | 3/3 | Complete   | 2026-03-13 |
 | 5. Monitoring Loop and Auto-Removal | 4/4 | Complete    | 2026-03-15 |
-| 6. Token Signal Engine | 2/3 | In Progress|  |
+| 6. Token Signal Engine | 3/3 | Complete   | 2026-03-15 |
 | 7. API, Dashboard, and Telegram Alerts | 0/TBD | Not started | - |
 | 8. Wallet Discovery | 0/TBD | Not started | - |

@@ -50,7 +50,7 @@
 ### Token Signal Engine
 
 - [x] **SGNL-01**: System computes a per-token signal score (0-100) based on: count of smart wallets holding, buy velocity in last 1h, exit pressure from sells, and PnL-weighted holder score
-- [ ] **SGNL-02**: System updates all token signals after each monitoring cycle completes
+- [x] **SGNL-02**: System updates all token signals after each monitoring cycle completes
 - [x] **SGNL-03**: System discounts a token's signal score when its holders appear coordinated (share a common funding source)
 
 ### Web Dashboard
@@ -129,7 +129,7 @@
 | RMVL-03 | Phase 5 | Complete |
 | RMVL-04 | Phase 5 | Complete |
 | SGNL-01 | Phase 6 | Complete |
-| SGNL-02 | Phase 6 | Pending |
+| SGNL-02 | Phase 6 | Complete |
 | SGNL-03 | Phase 6 | Complete |
 | DASH-01 | Phase 7 | Pending |
 | DASH-02 | Phase 7 | Pending |
