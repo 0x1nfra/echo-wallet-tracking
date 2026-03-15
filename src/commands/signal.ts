@@ -39,7 +39,7 @@ export function createSignalCommand(): Command {
           chalk.red(tier);
 
         const updatedAt = row.updated_at
-          ? new Date(row.updated_at).toLocaleString()
+          ? new Date(row.updated_at * 1000).toLocaleString()
           : 'never';
 
         table.push([
