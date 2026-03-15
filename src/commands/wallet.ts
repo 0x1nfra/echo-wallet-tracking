@@ -8,7 +8,7 @@ import { wallets, wallet_flags, wallet_metrics, removal_log } from '../db/schema
 import { importWalletHistory } from '../importers/history.js';
 import { computeOverallStatus } from '../detection/engine.js';
 import { CLEAR_THRESHOLD_MULTIPLIER_FACTOR, MAX_THRESHOLD_MULTIPLIER } from '../detection/thresholds.js';
-import { MonitorLoop } from '../monitor/index.js';
+import { MonitorLoop, writePid, readPid, clearPid } from '../monitor/index.js';
 
 // Shared loop instance — used by both `wallet monitor` commands and cli.ts auto-start
 export const monitorLoop = new MonitorLoop();
@@ -411,8 +411,10 @@ export function createWalletCommand(): Command {
     .description('Start the monitoring loop (runs a cycle every 30 seconds)')
     .action(() => {
       monitorLoop.start();
+      writePid(process.pid);
       console.log('Monitoring loop started. Press Ctrl+C to exit.');
       // Keep process alive
+      process.on('SIGTERM', () => { monitorLoop.stop(); clearPid(); process.exit(0); });
       process.on('SIGINT', () => {
         monitorLoop.stop();
         process.exit(0);
@@ -430,7 +432,19 @@ export function createWalletCommand(): Command {
     .command('stop')
     .description('Stop the monitoring loop')
     .action(() => {
-      monitorLoop.stop();
+      const pid = readPid();
+      if (pid === null) {
+        console.log('[monitor] no running loop found (no PID file)');
+        process.exit(0);
+      }
+      try {
+        process.kill(pid, 'SIGTERM');
+        clearPid();
+        console.log(`[monitor] sent SIGTERM to process ${pid}`);
+      } catch (_err) {
+        clearPid();
+        console.log('[monitor] loop process was not running — PID file cleaned up');
+      }
       process.exit(0);
     });
 
