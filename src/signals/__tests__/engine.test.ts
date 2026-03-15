@@ -1,10 +1,15 @@
 /**
  * Tests for computeAllTokenSignals() — the DB-integrated signal engine.
  *
- * Uses a real in-memory SQLite database via createTestDb() (same pattern as
- * wallet-add.test.ts) and passes the test db instance to computeAllTokenSignals().
+ * Uses a real in-memory SQLite database (same pattern as other integration tests)
+ * and passes the test db instance to computeAllTokenSignals().
  */
-import { createTestDb } from '../../../tests/unit/db/setup.js';
+import Database from 'better-sqlite3';
+import { drizzle } from 'drizzle-orm/better-sqlite3';
+import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
+import * as schema from '../../db/schema.js';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { eq } from 'drizzle-orm';
 import { computeAllTokenSignals } from '../engine.js';
 import {
@@ -14,6 +19,18 @@ import {
   wallet_flags,
   token_signals,
 } from '../../db/schema.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const MIGRATIONS_FOLDER = path.resolve(__dirname, '../../db/migrations');
+
+function createTestDb() {
+  const sqlite = new Database(':memory:');
+  sqlite.pragma('journal_mode = WAL');
+  sqlite.pragma('foreign_keys = ON');
+  const db = drizzle(sqlite, { schema });
+  migrate(db, { migrationsFolder: MIGRATIONS_FOLDER });
+  return { db, sqlite };
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -68,7 +85,7 @@ function nowSec(): number {
 
 describe('computeAllTokenSignals', () => {
   let db: TestDb;
-  let sqlite: ReturnType<typeof createTestDb>['sqlite'];
+  let sqlite: Database.Database;
 
   beforeEach(() => {
     const testDb = createTestDb();

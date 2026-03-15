@@ -6,6 +6,7 @@ import { parseSwaps, applyFifo } from '../parsers/swap.js';
 import { runDetectionIfNeeded } from '../detection/engine.js';
 import { scoreWalletIfNeeded } from '../scoring/engine.js';
 import { checkRemovalPolicies } from './removal.js';
+import { computeAllTokenSignals } from '../signals/engine.js';
 
 const CYCLE_INTERVAL_MS = 30_000;
 const STARTUP_STAGGER_MS = 200; // stagger wallet fetches on first cycle to avoid burst
@@ -174,5 +175,16 @@ export class MonitorLoop {
     console.log(
       `[monitor] cycle complete — ${processed} processed, ${removed} removed, ${failed} failed in ${durationMs}ms`,
     );
+
+    // Post-cycle: update token signals (non-fatal — wrapped in try/catch)
+    try {
+      const { updated, suppressed } = computeAllTokenSignals();
+      console.log(`[monitor] signals — ${updated} updated, ${suppressed} suppressed`);
+    } catch (err) {
+      console.error(
+        '[monitor] signal engine error (non-fatal):',
+        err instanceof Error ? err.message : err,
+      );
+    }
   }
 }
