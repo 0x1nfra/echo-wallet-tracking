@@ -1,0 +1,59 @@
+<section>
+  <h2>Signal Feed</h2>
+  <div x-data="{ activeTier: 'all' }">
+    <div class="chip-bar">
+      <button class="chip" :class="{ active: activeTier === 'all' }" @click="activeTier = 'all'">All</button>
+      <button class="chip" :class="{ active: activeTier === 'strong' }" @click="activeTier = 'strong'">Strong</button>
+      <button class="chip" :class="{ active: activeTier === 'moderate' }" @click="activeTier = 'moderate'">Moderate</button>
+      <button class="chip" :class="{ active: activeTier === 'weak' }" @click="activeTier = 'weak'">Weak</button>
+    </div>
+    <div hx-ext="sse" sse-connect="/events/cycle">
+      <table>
+        <thead>
+          <tr>
+            <th>Token</th>
+            <th>Score</th>
+            <th>Tier</th>
+            <th>Smart Holders</th>
+            <th>Updated</th>
+          </tr>
+        </thead>
+        <tbody id="signal-rows"
+          hx-get="/api/signals/partial"
+          hx-trigger="sse:cycle"
+          hx-target="#signal-rows"
+          hx-swap="innerHTML">
+          <%- include('partials/signal_rows', { rows }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Tracked Wallets</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Address</th>
+        <th>Label</th>
+        <th>Score</th>
+        <th>Status</th>
+        <th>Detection</th>
+        <th>Last Active</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% wallets.forEach(function(w) { %>
+      <tr>
+        <td><a href="/wallets/<%= w.address %>"><code><%= w.address.slice(0, 8) %>...</code></a></td>
+        <td><%= w.label ?? '—' %></td>
+        <td><%= w.score != null ? w.score.toFixed(1) : '—' %></td>
+        <td><%= w.status %></td>
+        <td><%= w.detection_status ?? 'pending' %></td>
+        <td><%= w.last_trade_at ? new Date(w.last_trade_at).toLocaleDateString() : '—' %></td>
+      </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</section>
