@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 07-api-dashboard-and-telegram-alerts plan 03 — wallet detail page, grammY bot, alert dispatcher, 3 post-checkpoint bug fixes, Phase 7 complete
-last_updated: "2026-03-16T04:45:02.784Z"
+stopped_at: Completed 08-wallet-discovery plan 01 — probation_until column, discoveryRuns and discoveryCandidates tables, migration 0007
+last_updated: "2026-03-16T15:29:29.606Z"
 last_activity: 2026-03-15 — Phase 06 plan 01 complete; signal_tier + coordinated_wallet_count columns added, 153 tests passing
 progress:
   total_phases: 8
   completed_phases: 7
-  total_plans: 24
-  completed_plans: 24
+  total_plans: 28
+  completed_plans: 25
   percent: 100
 ---
 
@@ -106,6 +106,7 @@ Progress: [██░░░░░░░░] 67% (Phase 6)
 | Phase 07-api-dashboard-and-telegram-alerts P01 | 4 | 3 tasks | 7 files |
 | Phase 07-api-dashboard-and-telegram-alerts P02 | 12 | 2 tasks | 9 files |
 | Phase 07-api-dashboard-and-telegram-alerts P03 | 90 | 3 tasks | 10 files |
+| Phase 08-wallet-discovery P01 | 2 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -176,6 +177,8 @@ Recent decisions affecting current work:
 - [Phase 07-api-dashboard-and-telegram-alerts]: Global @fastify/view layout option removed — breaks HTMX partials; layout now passed per full-page route call only via { layout: 'layout' } third argument
 - [Phase 07-api-dashboard-and-telegram-alerts]: SSE route requires { sse: true } in Fastify route options for @fastify/sse v0.4 — missing option silently prevented reply.sse from being attached
 - [Phase 07-api-dashboard-and-telegram-alerts]: cli.ts refactored to explicit 'serve' subcommand — implicit auto-start ran server on all CLI invocations including wallet/signal subcommands
+- [Phase 08-wallet-discovery]: probation_until added as nullable INTEGER on wallets table (no status enum change) to preserve 11 existing eq(wallets.status, 'tracked') queries
+- [Phase 08-wallet-discovery]: Migration 0007 journal when:1773510000002 (one higher than 0006's 1773510000001) required for Drizzle migrate() to apply it
 
 ### Pending Todos
 
@@ -188,6 +191,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-16T04:45:02.781Z
-Stopped at: Completed 07-api-dashboard-and-telegram-alerts plan 03 — wallet detail page, grammY bot, alert dispatcher, 3 post-checkpoint bug fixes, Phase 7 complete
+Last session: 2026-03-16T15:29:29.603Z
+Stopped at: Completed 08-wallet-discovery plan 01 — probation_until column, discoveryRuns and discoveryCandidates tables, migration 0007
 Resume file: None

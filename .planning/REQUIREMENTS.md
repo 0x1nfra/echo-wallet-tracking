@@ -70,7 +70,7 @@
 
 - [ ] **DISC-01**: User can trigger discovery from a token contract address to extract wallets that bought early and profited
 - [ ] **DISC-02**: System scores each candidate wallet and only adds those scoring above 70
-- [ ] **DISC-03**: Newly discovered wallets enter 7-day probation status and are excluded from signal scoring during probation
+- [x] **DISC-03**: Newly discovered wallets enter 7-day probation status and are excluded from signal scoring during probation
 - [ ] **DISC-04**: System discovers additional wallet candidates via graph traversal (wallets that co-traded with known smart money)
 
 ## v2 Requirements
@@ -140,7 +140,7 @@
 | TGRM-03 | Phase 7 | Complete |
 | DISC-01 | Phase 8 | Pending |
 | DISC-02 | Phase 8 | Pending |
-| DISC-03 | Phase 8 | Pending |
+| DISC-03 | Phase 8 | Complete |
 | DISC-04 | Phase 8 | Pending |
 
 **Coverage:**
