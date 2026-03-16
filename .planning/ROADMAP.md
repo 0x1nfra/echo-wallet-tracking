@@ -134,9 +134,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 06-01-PLAN.md — Schema migration: signal_tier + coordinated_wallet_count columns
-- [ ] 06-02-PLAN.md — Signal scorer TDD: pure computeSignalScore() function
-- [ ] 06-03-PLAN.md — Signal engine, MonitorLoop hook, signal list CLI command
+- [ ] 07-01-PLAN.md — Install deps (fastify, grammy, etc.), add alert_log + token_metadata schema + migration, wire cycleEmitter into MonitorLoop
+- [ ] 07-02-PLAN.md — Fastify REST + SSE API routes, HTMX/Alpine.js dashboard views (signal feed + wallet list), wire server startup into CLI
+- [ ] 07-03-PLAN.md — Wallet detail page + grammY Telegram bot (commands + alert dispatcher with dedup and accumulation override)
 
 ### Phase 8: Wallet Discovery
 **Goal**: The user can grow the tracked wallet list automatically by discovering profitable early traders from a token contract address
