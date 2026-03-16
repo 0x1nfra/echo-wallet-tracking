@@ -43,6 +43,13 @@
       "when": 1773510000000,
       "tag": "0005_token_signal_columns",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1773510000001,
+      "tag": "0006_alert_log_token_metadata",
+      "breakpoints": true
     }
   ]
 }
