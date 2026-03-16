@@ -85,6 +85,49 @@ export class HeliusFetcher {
   }
 
   /**
+   * Fetch the first N SWAP transactions for a mint address, sorted by order.
+   * Used for early buyer discovery — no pagination, returns raw response for caller filtering.
+   * Rate-limited via heliusQueue + pRetry (same pattern as fetchSwapHistory).
+   * @param mint - Solana mint address
+   * @param limit - Max transactions to return (default: 200)
+   * @param sortOrder - Sort direction: 'asc' for oldest-first (default)
+   * @returns Array of HeliusTransactions (no filtering applied)
+   */
+  async fetchEarlySwapsForMint(
+    mint: string,
+    limit: number = 200,
+    sortOrder: 'asc' | 'desc' = 'asc'
+  ): Promise<HeliusTransaction[]> {
+    const params: Record<string, string | number> = {
+      'api-key': this.apiKey,
+      limit,
+      type: 'SWAP',
+      'sort-order': sortOrder,
+    };
+
+    return pRetry(
+      () => heliusQueue.add(async () => {
+        const res = await this.client.get(
+          `/addresses/${mint}/transactions`,
+          { params }
+        );
+        return (res.data ?? []) as HeliusTransaction[];
+      }),
+      {
+        retries: 5,
+        onFailedAttempt: async (error) => {
+          const status = (error as any).response?.status;
+          if (status === 401) throw error;
+          if (status === 429) {
+            const delayMs = Math.pow(2, error.attemptNumber) * 1000;
+            await new Promise(resolve => setTimeout(resolve, delayMs));
+          }
+        },
+      }
+    ) as Promise<HeliusTransaction[]>;
+  }
+
+  /**
    * Fetch a single page of transactions for any Solana address (wallet or mint).
    * Rate-limited via heliusQueue. No pagination — returns at most `limit` results.
    */
