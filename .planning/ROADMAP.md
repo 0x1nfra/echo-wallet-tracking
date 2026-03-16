@@ -13,12 +13,12 @@ Echo is built in strict dependency order — each phase unblocks the next. Raw t
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Data Foundation** - SQLite schema, drizzle-orm migrations, WAL mode, and CLI wallet registry (completed 2026-03-11)
-- [x] **Phase 2: Transaction Parsing** - Helius enhanced transaction normalization, DEX-specific parsers, full history import, FIFO position tracking (completed 2026-03-11)
-- [x] **Phase 3: Bundle/Scam Detection** - Bundler, dev wallet, sniper, and wash trader detection with tiered confidence gating (completed 2026-03-12)
-- [x] **Phase 4: Metrics and Scoring** - WalletMetrics calculation and 0-100 wallet score with risk-adjusted return weighting (completed 2026-03-13)
-- [x] **Phase 5: Monitoring Loop and Auto-Removal** - 30s cron loop with p-queue rate limiting, incremental fetching, and auditable auto-removal (completed 2026-03-13)
-- [x] **Phase 6: Token Signal Engine** - Per-token 0-100 signal score aggregating smart wallet activity, buy velocity, exit pressure, and coordination discounting (completed 2026-03-15)
-- [x] **Phase 7: API, Dashboard, and Telegram Alerts** - Fastify REST+SSE API, HTMX dashboard, and grammy Telegram bot with threshold alerts (completed 2026-03-16)
+- [x] **Phase 2: Transaction Parsing** - Helius enhanced transaction normalization, DEX-specific parsers, full history import, FIFO position tracking (completed 2026-03-11)
+- [x] **Phase 3: Bundle/Scam Detection** - Bundler, dev wallet, sniper, and wash trader detection with tiered confidence gating (completed 2026-03-12)
+- [x] **Phase 4: Metrics and Scoring** - WalletMetrics calculation and 0-100 wallet score with risk-adjusted return weighting (completed 2026-03-13)
+- [x] **Phase 5: Monitoring Loop and Auto-Removal** - 30s cron loop with p-queue rate limiting, incremental fetching, and auditable auto-removal (completed 2026-03-13)
+- [x] **Phase 6: Token Signal Engine** - Per-token 0-100 signal score aggregating smart wallet activity, buy velocity, exit pressure, and coordination discounting (completed 2026-03-15)
+- [x] **Phase 7: API, Dashboard, and Telegram Alerts** - Fastify REST+SSE API, HTMX dashboard, and grammy Telegram bot with threshold alerts (completed 2026-03-16)
 - [ ] **Phase 8: Wallet Discovery** - Token-CA candidate extraction, scoring gate, 7-day probation, and graph traversal discovery
 
 ## Phase Details
@@ -147,12 +147,13 @@ Plans:
   2. Only discovered wallets that score above 70 are added to the tracker — low-quality wallets are rejected automatically
   3. Newly discovered wallets enter a 7-day probation period and are excluded from token signal scoring during that window
   4. The system can extend discovery via graph traversal — identifying wallet candidates that co-traded with known smart money wallets
-**Plans**: 3 plans
+**Plans**: 4 plans
 
 Plans:
-- [ ] 06-01-PLAN.md — Schema migration: signal_tier + coordinated_wallet_count columns
-- [ ] 06-02-PLAN.md — Signal scorer TDD: pure computeSignalScore() function
-- [ ] 06-03-PLAN.md — Signal engine, MonitorLoop hook, signal list CLI command
+- [ ] 08-01-PLAN.md — Schema migration: probation_until column + discovery_runs + discovery_candidates tables
+- [ ] 08-02-PLAN.md — HeliusFetcher.fetchEarlySwapsForMint + fetchEarlyBuyers TDD (Wave 1, parallel)
+- [ ] 08-03-PLAN.md — Signal engine probation guard (TDD) + graph traversal + discovery orchestrator
+- [ ] 08-04-PLAN.md — CLI wallet discover command + probation section in wallet list + dashboard probation view
 
 ## Progress
 
@@ -168,4 +169,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 5. Monitoring Loop and Auto-Removal | 4/4 | Complete    | 2026-03-15 |
 | 6. Token Signal Engine | 3/3 | Complete   | 2026-03-15 |
 | 7. API, Dashboard, and Telegram Alerts | 3/3 | Complete   | 2026-03-16 |
-| 8. Wallet Discovery | 0/TBD | Not started | - |
+| 8. Wallet Discovery | 0/4 | Not started | - |
