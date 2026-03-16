@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 08-wallet-discovery plan 01 — probation_until column, discoveryRuns and discoveryCandidates tables, migration 0007
-last_updated: "2026-03-16T15:29:29.606Z"
+stopped_at: Completed 08-wallet-discovery plan 02 — fetchEarlySwapsForMint on HeliusFetcher, fetchEarlyBuyers with TDD, 6 tests, 173 total green
+last_updated: "2026-03-16T15:30:07.653Z"
 last_activity: 2026-03-15 — Phase 06 plan 01 complete; signal_tier + coordinated_wallet_count columns added, 153 tests passing
 progress:
   total_phases: 8
   completed_phases: 7
   total_plans: 28
-  completed_plans: 25
+  completed_plans: 26
   percent: 100
 ---
 
@@ -107,6 +107,7 @@ Progress: [██░░░░░░░░] 67% (Phase 6)
 | Phase 07-api-dashboard-and-telegram-alerts P02 | 12 | 2 tasks | 9 files |
 | Phase 07-api-dashboard-and-telegram-alerts P03 | 90 | 3 tasks | 10 files |
 | Phase 08-wallet-discovery P01 | 2 | 2 tasks | 3 files |
+| Phase 08-wallet-discovery P02 | 12 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -179,6 +180,9 @@ Recent decisions affecting current work:
 - [Phase 07-api-dashboard-and-telegram-alerts]: cli.ts refactored to explicit 'serve' subcommand — implicit auto-start ran server on all CLI invocations including wallet/signal subcommands
 - [Phase 08-wallet-discovery]: probation_until added as nullable INTEGER on wallets table (no status enum change) to preserve 11 existing eq(wallets.status, 'tracked') queries
 - [Phase 08-wallet-discovery]: Migration 0007 journal when:1773510000002 (one higher than 0006's 1773510000001) required for Drizzle migrate() to apply it
+- [Phase 08-wallet-discovery]: fetchEarlyBuyers accepts optional fetcher parameter (not jest.mock) — project ESM pattern prohibits jest.mock; injectable deps match Phases 3 and 6 pattern
+- [Phase 08-wallet-discovery]: fetchEarlySwapsForMint uses heliusQueue+pRetry with 429 backoff — consistent rate-limit handling across all Helius fetch methods
+- [Phase 08-wallet-discovery]: EARLY_WINDOW_SECONDS=1800 and MAX_EARLY_BUYERS=50 as named constants in early-buyers.ts
 
 ### Pending Todos
 
@@ -191,6 +195,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-16T15:29:29.603Z
-Stopped at: Completed 08-wallet-discovery plan 01 — probation_until column, discoveryRuns and discoveryCandidates tables, migration 0007
+Last session: 2026-03-16T15:30:07.651Z
+Stopped at: Completed 08-wallet-discovery plan 02 — fetchEarlySwapsForMint on HeliusFetcher, fetchEarlyBuyers with TDD, 6 tests, 173 total green
 Resume file: None
