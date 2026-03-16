@@ -19,7 +19,6 @@ export async function buildServer() {
   await app.register(ViewPlugin, {
     engine: { ejs },
     root: path.join(__dirname, 'views'),
-    layout: 'layout',
   });
 
   await app.register(import('./routes/signals.js'));
@@ -60,7 +59,7 @@ export async function buildServer() {
       return { ...w, score: metrics?.score_total ?? null };
     });
 
-    return reply.view('dashboard', { rows, wallets: walletRows });
+    return reply.view('dashboard', { rows, wallets: walletRows }, { layout: 'layout' });
   });
 
   return app;

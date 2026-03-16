@@ -110,7 +110,7 @@
       <tbody>
         <% recentTrades.forEach(function(t) { %>
         <tr>
-          <td><%= new Date(t.timestamp).toLocaleString() %></td>
+          <td><%= new Date(t.timestamp * 1000).toLocaleString() %></td>
           <td><code><%= t.token_mint.slice(0, 8) %>...</code></td>
           <td class="side-<%= t.side %>"><%= t.side.toUpperCase() %></td>
           <td><%= t.sol_amount.toFixed(4) %> SOL</td>

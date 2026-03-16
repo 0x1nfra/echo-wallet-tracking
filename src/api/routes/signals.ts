@@ -60,7 +60,7 @@ export default async function signalsRoutes(app: FastifyInstance) {
   });
 
   // SSE: broadcast 'cycle' event after each MonitorLoop cycle
-  app.get('/events/cycle', async (_req, reply) => {
+  app.get('/events/cycle', { sse: true }, async (_req, reply) => {
     reply.sse.onClose(() => { /* cleanup handled by generator break */ });
 
     await reply.sse.send((async function* () {

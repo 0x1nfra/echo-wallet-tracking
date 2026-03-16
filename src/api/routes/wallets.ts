@@ -52,6 +52,6 @@ export default async function walletsRoutes(app: FastifyInstance) {
       .sort((a, b) => b.quantity - a.quantity)
       .slice(0, 10);
 
-    return reply.view('wallet', { wallet, metrics, flags, recentTrades, holdings });
+    return reply.view('wallet', { wallet, metrics, flags, recentTrades, holdings }, { layout: 'layout' });
   });
 }
