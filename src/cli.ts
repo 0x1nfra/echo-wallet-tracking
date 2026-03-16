@@ -6,6 +6,7 @@ import { createWalletCommand, monitorLoop } from '@/commands/wallet.js';
 import { createSignalCommand } from '@/commands/signal.js';
 import { resumeImportingWallets } from '@/importers/history.js';
 import { buildServer } from './api/server.js';
+import { startBot } from './api/bot/index.js';
 
 const program = new Command();
 
@@ -36,6 +37,7 @@ resumeImportingWallets()
         console.error('[api] server failed to start:', err instanceof Error ? err.message : err);
         // Non-fatal: monitor continues even if API fails
       }
+      startBot(); // non-blocking — returns null if TELEGRAM_BOT_TOKEN not set
     }
   });
 
