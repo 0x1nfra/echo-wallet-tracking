@@ -364,6 +364,161 @@ describe('computeAllTokenSignals', () => {
   });
 
   // Test 14 — Net position: wallet that bought then sold all → not a current holder
+  // ---------------------------------------------------------------------------
+  // Probation guard tests (DISC-03)
+  // ---------------------------------------------------------------------------
+
+  // Test P1 — Wallet on active probation (probation_until in future) is excluded
+  // Two wallets trade the same token. Without the guard: 2 holders → updated=1.
+  // With the probation guard: probation wallet excluded → 1 holder → score=0 → updated=0.
+  it('excludes wallet with probation_until in the future from smart wallet query', () => {
+    const { db: testDb, sqlite: testSqlite } = createTestDb();
+    const futureProbation = Date.now() + 86400000; // 24h from now
+
+    // Insert wallet on probation
+    testDb.insert(wallets).values({
+      address: 'wallet_probation',
+      status: 'tracked',
+      detection_status: 'confirmed_passing',
+      probation_until: futureProbation,
+    }).run();
+    testDb.insert(wallet_metrics).values({
+      wallet_address: 'wallet_probation',
+      score_total: 80,
+    }).run();
+
+    // Insert a normal (non-probation) wallet to pair with it
+    testDb.insert(wallets).values({
+      address: 'wallet_normal_p1',
+      status: 'tracked',
+      detection_status: 'confirmed_passing',
+      // probation_until = null (non-probationary)
+    }).run();
+    testDb.insert(wallet_metrics).values({
+      wallet_address: 'wallet_normal_p1',
+      score_total: 75,
+    }).run();
+
+    // Both wallets buy the same token in the last 24h
+    const ts = nowSec() - 1800;
+    for (const addr of ['wallet_probation', 'wallet_normal_p1']) {
+      const sig = `sig_p1_${addr}_${Math.random().toString(36).slice(2)}`;
+      testDb.insert(swaps).values({
+        wallet_address: addr,
+        tx_signature: sig,
+        dex: 'raydium',
+        token_mint: 'tokenProbation',
+        side: 'buy',
+        token_amount: 100,
+        sol_amount: 1.0,
+        timestamp: ts,
+        slot: 1,
+      }).run();
+    }
+
+    const result = computeAllTokenSignals(testDb);
+    // Wallet on probation excluded → only 1 holder (wallet_normal_p1) → score=0 → updated=0
+    expect(result).toEqual({ updated: 0, suppressed: 0 });
+
+    testSqlite.close();
+  });
+
+  // Test P2 — Wallet with probation_until in the past IS included
+  it('includes wallet with probation_until in the past in smart wallet query', () => {
+    const { db: testDb, sqlite: testSqlite } = createTestDb();
+    const pastProbation = Date.now() - 86400000; // 24h ago
+
+    testDb.insert(wallets).values({
+      address: 'wallet_past_prob',
+      status: 'tracked',
+      detection_status: 'confirmed_passing',
+      probation_until: pastProbation,
+    }).run();
+    testDb.insert(wallet_metrics).values({
+      wallet_address: 'wallet_past_prob',
+      score_total: 80,
+    }).run();
+    testDb.insert(wallets).values({
+      address: 'wallet_past_prob_2',
+      status: 'tracked',
+      detection_status: 'confirmed_passing',
+      probation_until: pastProbation,
+    }).run();
+    testDb.insert(wallet_metrics).values({
+      wallet_address: 'wallet_past_prob_2',
+      score_total: 75,
+    }).run();
+
+    const ts = nowSec() - 1800;
+    for (const addr of ['wallet_past_prob', 'wallet_past_prob_2']) {
+      const sig = `sig_past_prob_${addr}_${Math.random().toString(36).slice(2)}`;
+      testDb.insert(swaps).values({
+        wallet_address: addr,
+        tx_signature: sig,
+        dex: 'raydium',
+        token_mint: 'tokenPastProb',
+        side: 'buy',
+        token_amount: 100,
+        sol_amount: 1.0,
+        timestamp: ts,
+        slot: 1,
+      }).run();
+    }
+
+    const result = computeAllTokenSignals(testDb);
+    // Probation expired → wallet included → 2 holders → signal computed
+    expect(result.updated).toBe(1);
+
+    testSqlite.close();
+  });
+
+  // Test P3 — Wallet with probation_until = null IS included (non-probationary)
+  it('includes wallet with probation_until = null in smart wallet query', () => {
+    const { db: testDb, sqlite: testSqlite } = createTestDb();
+
+    testDb.insert(wallets).values({
+      address: 'wallet_no_prob',
+      status: 'tracked',
+      detection_status: 'confirmed_passing',
+      // probation_until defaults to null
+    }).run();
+    testDb.insert(wallet_metrics).values({
+      wallet_address: 'wallet_no_prob',
+      score_total: 80,
+    }).run();
+    testDb.insert(wallets).values({
+      address: 'wallet_no_prob_2',
+      status: 'tracked',
+      detection_status: 'confirmed_passing',
+    }).run();
+    testDb.insert(wallet_metrics).values({
+      wallet_address: 'wallet_no_prob_2',
+      score_total: 75,
+    }).run();
+
+    const ts = nowSec() - 1800;
+    for (const addr of ['wallet_no_prob', 'wallet_no_prob_2']) {
+      const sig = `sig_no_prob_${addr}_${Math.random().toString(36).slice(2)}`;
+      testDb.insert(swaps).values({
+        wallet_address: addr,
+        tx_signature: sig,
+        dex: 'raydium',
+        token_mint: 'tokenNoProb',
+        side: 'buy',
+        token_amount: 100,
+        sol_amount: 1.0,
+        timestamp: ts,
+        slot: 1,
+      }).run();
+    }
+
+    const result = computeAllTokenSignals(testDb);
+    // No probation → wallet included → 2 holders → signal computed
+    expect(result.updated).toBe(1);
+
+    testSqlite.close();
+  });
+
   it('correctly computes current holders using net position (buy_amt > sell_amt)', () => {
     insertSmartWallet(db, 'wallet1', 80);
     insertSmartWallet(db, 'wallet2', 80);
