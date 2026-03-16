@@ -7,6 +7,7 @@ import { runDetectionIfNeeded } from '../detection/engine.js';
 import { scoreWalletIfNeeded } from '../scoring/engine.js';
 import { checkRemovalPolicies } from './removal.js';
 import { computeAllTokenSignals } from '../signals/engine.js';
+import { cycleEmitter } from '../api/cycle-events.js';
 
 const CYCLE_INTERVAL_MS = 30_000;
 const STARTUP_STAGGER_MS = 200; // stagger wallet fetches on first cycle to avoid burst
@@ -180,6 +181,7 @@ export class MonitorLoop {
     try {
       const { updated, suppressed } = computeAllTokenSignals();
       console.log(`[monitor] signals — ${updated} updated, ${suppressed} suppressed`);
+      cycleEmitter.emit('cycle', { timestamp: Date.now() });
     } catch (err) {
       console.error(
         '[monitor] signal engine error (non-fatal):',
