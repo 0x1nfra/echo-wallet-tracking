@@ -56,9 +56,9 @@
 ### Web Dashboard
 
 - [x] **DASH-01**: User can view a live token signal feed sorted by signal score
-- [ ] **DASH-02**: User can view all tracked wallets with their current score, detection status, and last active time
+- [x] **DASH-02**: User can view all tracked wallets with their current score, detection status, and last active time
 - [ ] **DASH-03**: User can drill into a wallet to see recent trades, score breakdown, and detection flags
-- [ ] **DASH-04**: Dashboard receives live score updates via SSE without manual page refresh
+- [x] **DASH-04**: Dashboard receives live score updates via SSE without manual page refresh
 
 ### Telegram Bot
 
@@ -132,9 +132,9 @@
 | SGNL-02 | Phase 6 | Complete |
 | SGNL-03 | Phase 6 | Complete |
 | DASH-01 | Phase 7 | Complete |
-| DASH-02 | Phase 7 | Pending |
+| DASH-02 | Phase 7 | Complete |
 | DASH-03 | Phase 7 | Pending |
-| DASH-04 | Phase 7 | Pending |
+| DASH-04 | Phase 7 | Complete |
 | TGRM-01 | Phase 7 | Complete |
 | TGRM-02 | Phase 7 | Pending |
 | TGRM-03 | Phase 7 | Complete |
