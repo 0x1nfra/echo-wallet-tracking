@@ -55,16 +55,16 @@
 
 ### Web Dashboard
 
-- [ ] **DASH-01**: User can view a live token signal feed sorted by signal score
+- [x] **DASH-01**: User can view a live token signal feed sorted by signal score
 - [ ] **DASH-02**: User can view all tracked wallets with their current score, detection status, and last active time
 - [ ] **DASH-03**: User can drill into a wallet to see recent trades, score breakdown, and detection flags
 - [ ] **DASH-04**: Dashboard receives live score updates via SSE without manual page refresh
 
 ### Telegram Bot
 
-- [ ] **TGRM-01**: User receives a Telegram alert when a token signal score crosses a configured threshold
+- [x] **TGRM-01**: User receives a Telegram alert when a token signal score crosses a configured threshold
 - [ ] **TGRM-02**: System deduplicates alerts — no more than 1 alert per token per 2 hours
-- [ ] **TGRM-03**: User can query the bot with /status, /top (top current signals), and /wallet <address>
+- [x] **TGRM-03**: User can query the bot with /status, /top (top current signals), and /wallet <address>
 
 ### Wallet Discovery
 
@@ -131,13 +131,13 @@
 | SGNL-01 | Phase 6 | Complete |
 | SGNL-02 | Phase 6 | Complete |
 | SGNL-03 | Phase 6 | Complete |
-| DASH-01 | Phase 7 | Pending |
+| DASH-01 | Phase 7 | Complete |
 | DASH-02 | Phase 7 | Pending |
 | DASH-03 | Phase 7 | Pending |
 | DASH-04 | Phase 7 | Pending |
-| TGRM-01 | Phase 7 | Pending |
+| TGRM-01 | Phase 7 | Complete |
 | TGRM-02 | Phase 7 | Pending |
-| TGRM-03 | Phase 7 | Pending |
+| TGRM-03 | Phase 7 | Complete |
 | DISC-01 | Phase 8 | Pending |
 | DISC-02 | Phase 8 | Pending |
 | DISC-03 | Phase 8 | Pending |
