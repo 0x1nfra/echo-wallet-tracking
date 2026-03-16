@@ -123,3 +123,18 @@ export const score_history = sqliteTable('score_history', {
     .notNull()
     .default(sql`(unixepoch('now') * 1000)`),
 });
+
+export const alert_log = sqliteTable('alert_log', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  token_mint: text('token_mint').notNull().unique(),
+  last_alerted_at: integer('last_alerted_at', { mode: 'number' }),
+  last_holder_count: integer('last_holder_count').notNull().default(0),
+});
+
+export const token_metadata = sqliteTable('token_metadata', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  token_mint: text('token_mint').notNull().unique(),
+  name: text('name'),
+  symbol: text('symbol'),
+  fetched_at: integer('fetched_at', { mode: 'number' }),
+});

@@ -5,6 +5,8 @@ import chalk from 'chalk';
 import { createWalletCommand, monitorLoop } from '@/commands/wallet.js';
 import { createSignalCommand } from '@/commands/signal.js';
 import { resumeImportingWallets } from '@/importers/history.js';
+import { buildServer } from './api/server.js';
+import { startBot } from './api/bot/index.js';
 
 const program = new Command();
 
@@ -16,18 +18,23 @@ program
 program.addCommand(createWalletCommand());
 program.addCommand(createSignalCommand());
 
-// Gate: skip auto-start when user is explicitly running 'wallet monitor start'
-// (the action handler starts the loop itself in that case)
-const isMonitorStart =
-  process.argv.includes('monitor') && process.argv.includes('start');
-
-// At startup: resume any interrupted imports, then start the monitoring loop
-resumeImportingWallets()
-  .catch(() => {}) // silent — incomplete imports are retried on next cycle
-  .then(() => {
-    if (!isMonitorStart) {
-      monitorLoop.start();
+program
+  .command('serve')
+  .description('Start the monitoring loop, API dashboard, and Telegram bot')
+  .action(async () => {
+    // Start server immediately so the dashboard is available right away
+    try {
+      const server = await buildServer();
+      await server.listen({ port: 3000, host: '0.0.0.0' });
+      console.log('[api] dashboard running at http://localhost:3000');
+    } catch (err) {
+      console.error('[api] server failed to start:', err instanceof Error ? err.message : err);
     }
+    startBot();
+    // Resume imports and start monitor loop after server is up
+    resumeImportingWallets()
+      .catch(() => {})
+      .then(() => monitorLoop.start());
   });
 
 program.parse();

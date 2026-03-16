@@ -1,0 +1,24 @@
+<% rows.forEach(function(row) { %>
+<tr data-tier="<%= row.signal_tier ?? 'weak' %>"
+    x-show="activeTier === 'all' || $el.dataset.tier === activeTier"
+    class="row-updated">
+  <td>
+    <% if (row.name) { %>
+      <strong><%= row.name %></strong><br>
+      <small><%= row.token_mint.slice(0,8) %>...</small>
+    <% } else { %>
+      <code><%= row.token_mint.slice(0,12) %>...</code>
+    <% } %>
+  </td>
+  <td><strong><%= row.signal_score?.toFixed(1) ?? '—' %></strong></td>
+  <td><span class="tier-badge tier-<%= row.signal_tier ?? 'weak' %>"><%= row.signal_tier ?? 'weak' %></span></td>
+  <td>
+    <% if (row.topHolderAddress) { %>
+      <a href="/wallets/<%= row.topHolderAddress %>"><%= row.smart_wallet_count ?? 0 %></a>
+    <% } else { %>
+      <%= row.smart_wallet_count ?? 0 %>
+    <% } %>
+  </td>
+  <td><%= row.updated_at ? new Date(row.updated_at).toLocaleTimeString() : '—' %></td>
+</tr>
+<% }); %>

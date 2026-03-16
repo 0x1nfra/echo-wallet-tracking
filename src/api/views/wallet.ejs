@@ -1,0 +1,156 @@
+<section>
+  <p><a href="/">← Back to Dashboard</a></p>
+
+  <h2>
+    <code><%= wallet.address %></code>
+    <% if (wallet.label) { %><span class="label-badge"><%= wallet.label %></span><% } %>
+    <span class="detection-badge detection-<%= wallet.detection_status ?? 'pending' %>">
+      <%= wallet.detection_status ?? 'pending' %>
+    </span>
+  </h2>
+</section>
+
+<section>
+  <h3>Score Card</h3>
+  <div class="score-card">
+    <div class="score-total"><%= metrics?.score_total?.toFixed(1) ?? '—' %></div>
+    <div class="score-label">/ 100</div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Sub-Score</th>
+        <th>Weight</th>
+        <th>Score</th>
+        <th>Raw Metric</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Risk-Adjusted Return</td>
+        <td>40%</td>
+        <td><%= metrics?.score_risk_adjusted?.toFixed(2) ?? '—' %></td>
+        <td>Sharpe: <%= metrics?.sharpe_ratio?.toFixed(3) ?? '—' %> | PnL: <%= metrics?.realized_pnl_sol?.toFixed(4) ?? '—' %> SOL</td>
+      </tr>
+      <tr>
+        <td>Win Rate</td>
+        <td>20%</td>
+        <td><%= metrics?.score_win_rate?.toFixed(2) ?? '—' %></td>
+        <td><%= metrics?.win_rate != null ? (metrics.win_rate * 100).toFixed(1) + '%' : '—' %></td>
+      </tr>
+      <tr>
+        <td>Consistency &amp; Recency</td>
+        <td>20%</td>
+        <td><%= metrics?.score_consistency_recency?.toFixed(2) ?? '—' %></td>
+        <td>Recency score: <%= metrics?.recency_score?.toFixed(3) ?? '—' %></td>
+      </tr>
+      <tr>
+        <td>Activity Health</td>
+        <td>20%</td>
+        <td><%= metrics?.score_activity_health?.toFixed(2) ?? '—' %></td>
+        <td>Trades: <%= metrics?.trade_count ?? '—' %> total, <%= metrics?.recent_trade_count ?? '—' %> recent</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h3>Detection Flags</h3>
+  <% if (flags.length === 0) { %>
+    <p class="clean-badge">All detectors: clean</p>
+  <% } else { %>
+    <table>
+      <thead>
+        <tr>
+          <th>Detector</th>
+          <th>Confidence</th>
+          <th>Evidence Summary</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% flags.forEach(function(flag) {
+          let evidence = {};
+          try { evidence = JSON.parse(flag.evidence_summary); } catch(e) {}
+        %>
+        <tr>
+          <td><%= flag.detector %></td>
+          <td><span class="confidence-badge confidence-<%= flag.confidence %>"><%= flag.confidence %></span></td>
+          <td>
+            <% const keys = Object.keys(evidence); %>
+            <% if (keys.length > 0) { %>
+              <ul class="evidence-list">
+                <% keys.forEach(function(k) { %><li><b><%= k %>:</b> <%= evidence[k] %></li><% }); %>
+              </ul>
+            <% } else { %>
+              <%= flag.evidence_summary %>
+            <% } %>
+          </td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
+
+<section>
+  <h3>Recent Trades (last 20)</h3>
+  <% if (recentTrades.length === 0) { %>
+    <p>No trades recorded.</p>
+  <% } else { %>
+    <table>
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Token</th>
+          <th>Direction</th>
+          <th>SOL Amount</th>
+          <th>Realized PnL</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% recentTrades.forEach(function(t) { %>
+        <tr>
+          <td><%= new Date(t.timestamp * 1000).toLocaleString() %></td>
+          <td><code><%= t.token_mint.slice(0, 8) %>...</code></td>
+          <td class="side-<%= t.side %>"><%= t.side.toUpperCase() %></td>
+          <td><%= t.sol_amount.toFixed(4) %> SOL</td>
+          <td>
+            <% if (t.realized_pnl_sol != null) { %>
+              <span class="<%= t.realized_pnl_sol >= 0 ? 'pnl-positive' : 'pnl-negative' %>">
+                <%= t.realized_pnl_sol >= 0 ? '+' : '' %><%= t.realized_pnl_sol.toFixed(4) %> SOL
+              </span>
+            <% } else { %>
+              —
+            <% } %>
+          </td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
+
+<section>
+  <h3>Current Holdings (top 10 positive positions)</h3>
+  <p class="note">Note: rough estimates from raw amounts without FIFO adjustment.</p>
+  <% if (holdings.length === 0) { %>
+    <p>No open positions detected.</p>
+  <% } else { %>
+    <table>
+      <thead>
+        <tr>
+          <th>Token</th>
+          <th>Estimated Quantity</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% holdings.forEach(function(h) { %>
+        <tr>
+          <td><code><%= h.mint.slice(0, 8) %>...</code></td>
+          <td><%= h.quantity.toFixed(4) %></td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
