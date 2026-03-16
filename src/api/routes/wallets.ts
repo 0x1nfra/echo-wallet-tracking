@@ -8,19 +8,17 @@ export default async function walletsRoutes(app: FastifyInstance) {
     const allWallets = db.select().from(wallets)
       .where(eq(wallets.status, 'tracked'))
       .all();
-    const result = allWallets.map(w => {
-      const metrics = db.select().from(wallet_metrics)
-        .where(eq(wallet_metrics.wallet_address, w.address)).get();
-      return {
-        address: w.address,
-        label: w.label,
-        status: w.status,
-        detection_status: w.detection_status,
-        score: metrics?.score_total ?? null,
-        last_active: w.last_trade_at,
-        added_at: w.added_at,
-      };
-    });
+    const allMetrics = db.select().from(wallet_metrics).all();
+    const metricsMap = new Map(allMetrics.map(m => [m.wallet_address, m]));
+    const result = allWallets.map(w => ({
+      address: w.address,
+      label: w.label,
+      status: w.status,
+      detection_status: w.detection_status,
+      score: metricsMap.get(w.address)?.score_total ?? null,
+      last_active: w.last_trade_at,
+      added_at: w.added_at,
+    }));
     return reply.send(result);
   });
 

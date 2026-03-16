@@ -29,35 +29,38 @@ export async function buildServer() {
   app.get('/', async (_req, reply) => {
     const { db } = await import('../db/index.js');
     const { token_signals, token_metadata, wallets, wallet_metrics, swaps } = await import('../db/schema.js');
-    const { desc, eq, and } = await import('drizzle-orm');
+    const { desc, eq } = await import('drizzle-orm');
 
     const signals = db.select().from(token_signals).orderBy(desc(token_signals.signal_score)).all();
     const metas = db.select().from(token_metadata).all();
     const metaMap = new Map(metas.map(m => [m.token_mint, m]));
 
+    // Pre-load tracked wallets once — avoid N+1 per signal
+    const trackedSet = new Set(
+      db.select({ address: wallets.address }).from(wallets).where(eq(wallets.status, 'tracked')).all().map(w => w.address)
+    );
+
     const rows = signals.map(s => {
-      const trackedBuyer = db.select({ wallet_address: swaps.wallet_address })
+      const buyerRows = db.select({ wallet_address: swaps.wallet_address })
         .from(swaps)
-        .where(and(eq(swaps.token_mint, s.token_mint), eq(swaps.side, 'buy')))
+        .where(eq(swaps.token_mint, s.token_mint))
         .orderBy(desc(swaps.timestamp))
-        .all()
-        .find(row => {
-          const w = db.select().from(wallets)
-            .where(and(eq(wallets.address, row.wallet_address), eq(wallets.status, 'tracked'))).get();
-          return !!w;
-        });
+        .all();
+      const topHolderAddress = buyerRows.find(r => trackedSet.has(r.wallet_address))?.wallet_address ?? null;
       return {
         ...s,
         name: metaMap.get(s.token_mint)?.name ?? null,
-        topHolderAddress: trackedBuyer?.wallet_address ?? null,
+        topHolderAddress,
       };
     });
 
-    const allWallets = db.select().from(wallets).where(eq(wallets.status, 'tracked')).all();
-    const walletRows = allWallets.map(w => {
-      const metrics = db.select().from(wallet_metrics).where(eq(wallet_metrics.wallet_address, w.address)).get();
-      return { ...w, score: metrics?.score_total ?? null };
-    });
+    // Batch load all wallet metrics in one query, keyed by address
+    const allWallets = [...trackedSet].map(address =>
+      db.select().from(wallets).where(eq(wallets.address, address)).get()!
+    );
+    const allMetrics = db.select().from(wallet_metrics).all();
+    const metricsMap = new Map(allMetrics.map(m => [m.wallet_address, m]));
+    const walletRows = allWallets.map(w => ({ ...w, score: metricsMap.get(w.address)?.score_total ?? null }));
 
     return reply.view('dashboard', { rows, wallets: walletRows }, { layout: 'layout' });
   });

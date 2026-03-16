@@ -11,14 +11,16 @@ const ACCUMULATION_DELTA = 3;
  * Strategy: find swaps for this token_mint from tracked wallets, group by wallet_address,
  * order by most-recent buy timestamp DESC, return top 3 distinct addresses.
  */
-function getTopHolders(tokenMint: string): string[] {
-  const trackedWalletAddresses = db.select({ address: wallets.address })
-    .from(wallets)
-    .where(eq(wallets.status, 'tracked'))
-    .all()
-    .map(w => w.address);
+export function getTopHolders(tokenMint: string): string[] {
+  const trackedSet = new Set(
+    db.select({ address: wallets.address })
+      .from(wallets)
+      .where(eq(wallets.status, 'tracked'))
+      .all()
+      .map(w => w.address)
+  );
 
-  if (trackedWalletAddresses.length === 0) return [];
+  if (trackedSet.size === 0) return [];
 
   const rows = db.select({ wallet_address: swaps.wallet_address, ts: swaps.timestamp })
     .from(swaps)
@@ -29,7 +31,7 @@ function getTopHolders(tokenMint: string): string[] {
   const seen = new Set<string>();
   const result: string[] = [];
   for (const row of rows) {
-    if (!seen.has(row.wallet_address) && trackedWalletAddresses.includes(row.wallet_address)) {
+    if (!seen.has(row.wallet_address) && trackedSet.has(row.wallet_address)) {
       seen.add(row.wallet_address);
       result.push(row.wallet_address);
       if (result.length >= 3) break;

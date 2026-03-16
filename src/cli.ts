@@ -22,13 +22,14 @@ program
   .command('serve')
   .description('Start the monitoring loop, API dashboard, and Telegram bot')
   .action(async () => {
-    // Start server immediately so the dashboard is available right away
+    // Start server first — if it fails, abort rather than running a monitor with no dashboard
     try {
       const server = await buildServer();
-      await server.listen({ port: 3000, host: '0.0.0.0' });
+      await server.listen({ port: 3000, host: '127.0.0.1' });
       console.log('[api] dashboard running at http://localhost:3000');
     } catch (err) {
       console.error('[api] server failed to start:', err instanceof Error ? err.message : err);
+      process.exit(1);
     }
     startBot();
     // Resume imports and start monitor loop after server is up

@@ -4,6 +4,15 @@ import { token_signals, token_metadata, swaps, wallets } from '../../db/schema.j
 import { desc, eq, and } from 'drizzle-orm';
 import { cycleEmitter } from '../cycle-events.js';
 
+function getTopHolderAddress(tokenMint: string, trackedSet: Set<string>): string | null {
+  const rows = db.select({ wallet_address: swaps.wallet_address })
+    .from(swaps)
+    .where(and(eq(swaps.token_mint, tokenMint), eq(swaps.side, 'buy')))
+    .orderBy(desc(swaps.timestamp))
+    .all();
+  return rows.find(r => trackedSet.has(r.wallet_address))?.wallet_address ?? null;
+}
+
 export default async function signalsRoutes(app: FastifyInstance) {
   // REST: all signals sorted by score DESC
   app.get('/api/signals', async (_req, reply) => {
@@ -37,24 +46,15 @@ export default async function signalsRoutes(app: FastifyInstance) {
       .all();
     const metas = db.select().from(token_metadata).all();
     const metaMap = new Map(metas.map(m => [m.token_mint, m]));
+    const trackedSet = new Set(
+      db.select({ address: wallets.address }).from(wallets).where(eq(wallets.status, 'tracked')).all().map(w => w.address)
+    );
 
-    const rows = signals.map(s => {
-      const trackedBuyer = db.select({ wallet_address: swaps.wallet_address })
-        .from(swaps)
-        .where(and(eq(swaps.token_mint, s.token_mint), eq(swaps.side, 'buy')))
-        .orderBy(desc(swaps.timestamp))
-        .all()
-        .find(row => {
-          const w = db.select().from(wallets)
-            .where(and(eq(wallets.address, row.wallet_address), eq(wallets.status, 'tracked'))).get();
-          return !!w;
-        });
-      return {
-        ...s,
-        name: metaMap.get(s.token_mint)?.name ?? s.token_mint.slice(0, 12) + '...',
-        topHolderAddress: trackedBuyer?.wallet_address ?? null,
-      };
-    });
+    const rows = signals.map(s => ({
+      ...s,
+      name: metaMap.get(s.token_mint)?.name ?? s.token_mint.slice(0, 12) + '...',
+      topHolderAddress: getTopHolderAddress(s.token_mint, trackedSet),
+    }));
 
     return reply.view('partials/signal_rows', { rows });
   });
