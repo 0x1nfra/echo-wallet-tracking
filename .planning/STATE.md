@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 08-wallet-discovery plan 02 — fetchEarlySwapsForMint on HeliusFetcher, fetchEarlyBuyers with TDD, 6 tests, 173 total green
-last_updated: "2026-03-16T15:30:07.653Z"
+stopped_at: Completed 08-wallet-discovery plan 03 — probation guard TDD, fetchCoTraders graph traversal, runDiscovery orchestrator, 184 total tests green
+last_updated: "2026-03-16T15:37:33.556Z"
 last_activity: 2026-03-15 — Phase 06 plan 01 complete; signal_tier + coordinated_wallet_count columns added, 153 tests passing
 progress:
   total_phases: 8
   completed_phases: 7
   total_plans: 28
-  completed_plans: 26
+  completed_plans: 27
   percent: 100
 ---
 
@@ -108,6 +108,7 @@ Progress: [██░░░░░░░░] 67% (Phase 6)
 | Phase 07-api-dashboard-and-telegram-alerts P03 | 90 | 3 tasks | 10 files |
 | Phase 08-wallet-discovery P01 | 2 | 2 tasks | 3 files |
 | Phase 08-wallet-discovery P02 | 12 | 2 tasks | 3 files |
+| Phase 08-wallet-discovery P03 | 5 | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -183,6 +184,9 @@ Recent decisions affecting current work:
 - [Phase 08-wallet-discovery]: fetchEarlyBuyers accepts optional fetcher parameter (not jest.mock) — project ESM pattern prohibits jest.mock; injectable deps match Phases 3 and 6 pattern
 - [Phase 08-wallet-discovery]: fetchEarlySwapsForMint uses heliusQueue+pRetry with 429 backoff — consistent rate-limit handling across all Helius fetch methods
 - [Phase 08-wallet-discovery]: EARLY_WINDOW_SECONDS=1800 and MAX_EARLY_BUYERS=50 as named constants in early-buyers.ts
+- [Phase 08-wallet-discovery]: Probation guard uses OR(isNull(probation_until), lt(probation_until, nowMs)) — null is non-probationary (included)
+- [Phase 08-wallet-discovery]: DiscoveryDeps injectable interface enables in-memory SQLite testing of full runDiscovery orchestrator — avoids jest.mock of global singletons
+- [Phase 08-wallet-discovery]: dry_run in runDiscovery skips wallet row insertion entirely (not insert-then-delete) — cleaner and avoids partial state
 
 ### Pending Todos
 
@@ -195,6 +199,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-16T15:30:07.651Z
-Stopped at: Completed 08-wallet-discovery plan 02 — fetchEarlySwapsForMint on HeliusFetcher, fetchEarlyBuyers with TDD, 6 tests, 173 total green
+Last session: 2026-03-16T15:37:33.554Z
+Stopped at: Completed 08-wallet-discovery plan 03 — probation guard TDD, fetchCoTraders graph traversal, runDiscovery orchestrator, 184 total tests green
 Resume file: None
