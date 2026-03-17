@@ -31,7 +31,7 @@
 </section>
 
 <section>
-  <h2>Tracked Wallets</h2>
+  <h2>Active Wallets</h2>
   <table>
     <thead>
       <tr>
@@ -44,7 +44,7 @@
       </tr>
     </thead>
     <tbody>
-      <% wallets.forEach(function(w) { %>
+      <% active.forEach(function(w) { %>
       <tr>
         <td><a href="/wallets/<%= w.address %>"><code><%= w.address.slice(0, 8) %>...</code></a></td>
         <td><%= w.label ?? '—' %></td>
@@ -54,6 +54,36 @@
         <td><%= w.last_trade_at ? new Date(w.last_trade_at).toLocaleDateString() : '—' %></td>
       </tr>
       <% }); %>
+      <% if (active.length === 0) { %>
+      <tr><td colspan="6" style="text-align:center;color:#888;">(none)</td></tr>
+      <% } %>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Probationary Wallets <small style="font-weight:normal;color:#888;">(excluded from signals)</small></h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Address</th>
+        <th>Label</th>
+        <th>Score</th>
+        <th>Probation Until</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% probationary.forEach(function(w) { %>
+      <tr>
+        <td><a href="/wallets/<%= w.address %>"><code><%= w.address.slice(0, 8) %>...<%= w.address.slice(-4) %></code></a></td>
+        <td><%= w.label ?? '—' %></td>
+        <td><%= w.score != null ? w.score.toFixed(1) : '—' %></td>
+        <td><%= w.probation_until ? new Date(w.probation_until).toUTCString() : '—' %></td>
+      </tr>
+      <% }); %>
+      <% if (probationary.length === 0) { %>
+      <tr><td colspan="4" style="text-align:center;color:#888;">(none)</td></tr>
+      <% } %>
     </tbody>
   </table>
 </section>

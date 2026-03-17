@@ -1,16 +1,25 @@
 import { FastifyInstance } from 'fastify';
 import { db } from '../../db/index.js';
 import { wallets, wallet_metrics, wallet_flags, swaps } from '../../db/schema.js';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, isNull, isNotNull, lt, gt, or } from 'drizzle-orm';
 
 export default async function walletsRoutes(app: FastifyInstance) {
   app.get('/api/wallets', async (_req, reply) => {
-    const allWallets = db.select().from(wallets)
-      .where(eq(wallets.status, 'tracked'))
-      .all();
+    const nowMs = Date.now();
     const allMetrics = db.select().from(wallet_metrics).all();
     const metricsMap = new Map(allMetrics.map(m => [m.wallet_address, m]));
-    const result = allWallets.map(w => ({
+
+    // Active wallets: status='tracked' AND (probation_until IS NULL OR probation_until < now)
+    const activeWalletRows = db.select().from(wallets)
+      .where(and(eq(wallets.status, 'tracked'), or(isNull(wallets.probation_until), lt(wallets.probation_until, nowMs))))
+      .all();
+
+    // Probationary wallets: status='tracked' AND probation_until IS NOT NULL AND probation_until > now
+    const probationaryWalletRows = db.select().from(wallets)
+      .where(and(eq(wallets.status, 'tracked'), isNotNull(wallets.probation_until), gt(wallets.probation_until, nowMs)))
+      .all();
+
+    const mapRow = (w: typeof activeWalletRows[number]) => ({
       address: w.address,
       label: w.label,
       status: w.status,
@@ -18,8 +27,13 @@ export default async function walletsRoutes(app: FastifyInstance) {
       score: metricsMap.get(w.address)?.score_total ?? null,
       last_active: w.last_trade_at,
       added_at: w.added_at,
-    }));
-    return reply.send(result);
+      probation_until: w.probation_until,
+    });
+
+    return reply.send({
+      active: activeWalletRows.map(mapRow),
+      probationary: probationaryWalletRows.map(mapRow),
+    });
   });
 
   // HTML page route — wallet detail view

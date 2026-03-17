@@ -29,7 +29,7 @@ export async function buildServer() {
   app.get('/', async (_req, reply) => {
     const { db } = await import('../db/index.js');
     const { token_signals, token_metadata, wallets, wallet_metrics, swaps } = await import('../db/schema.js');
-    const { desc, eq } = await import('drizzle-orm');
+    const { desc, eq, and, or, isNull, isNotNull, lt, gt } = await import('drizzle-orm');
 
     const signals = db.select().from(token_signals).orderBy(desc(token_signals.signal_score)).all();
     const metas = db.select().from(token_metadata).all();
@@ -55,14 +55,24 @@ export async function buildServer() {
     });
 
     // Batch load all wallet metrics in one query, keyed by address
-    const allWallets = [...trackedSet].map(address =>
-      db.select().from(wallets).where(eq(wallets.address, address)).get()!
-    );
     const allMetrics = db.select().from(wallet_metrics).all();
     const metricsMap = new Map(allMetrics.map(m => [m.wallet_address, m]));
-    const walletRows = allWallets.map(w => ({ ...w, score: metricsMap.get(w.address)?.score_total ?? null }));
 
-    return reply.view('dashboard', { rows, wallets: walletRows }, { layout: 'layout' });
+    const nowMs = Date.now();
+
+    // Active wallets: status='tracked' AND (probation_until IS NULL OR probation_until < now)
+    const activeWalletRows = db.select().from(wallets)
+      .where(and(eq(wallets.status, 'tracked'), or(isNull(wallets.probation_until), lt(wallets.probation_until, nowMs))))
+      .all()
+      .map(w => ({ ...w, score: metricsMap.get(w.address)?.score_total ?? null }));
+
+    // Probationary wallets: status='tracked' AND probation_until IS NOT NULL AND probation_until > now
+    const probationaryWalletRows = db.select().from(wallets)
+      .where(and(eq(wallets.status, 'tracked'), isNotNull(wallets.probation_until), gt(wallets.probation_until, nowMs)))
+      .all()
+      .map(w => ({ ...w, score: metricsMap.get(w.address)?.score_total ?? null }));
+
+    return reply.view('dashboard', { rows, active: activeWalletRows, probationary: probationaryWalletRows }, { layout: 'layout' });
   });
 
   return app;
