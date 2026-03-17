@@ -155,10 +155,44 @@ Plans:
 - [ ] 08-03-PLAN.md — Signal engine probation guard (TDD) + graph traversal + discovery orchestrator
 - [ ] 08-04-PLAN.md — CLI wallet discover command + probation section in wallet list + dashboard probation view
 
+### Phase 9: Fix Incremental Detection Timestamp Bug
+**Goal:** Incremental monitoring cycles correctly re-run bundle/scam detection on new swaps so wallets that become scammers post-import are caught and auto-removed
+**Depends on:** Phase 3, Phase 5
+**Requirements:** DETC-01, DETC-02, DETC-03, DETC-04, RMVL-02
+**Gap Closure:** Closes gaps from v1.0 audit — timestamp units mismatch in `runDetectionIfNeeded()`
+**Success Criteria** (what must be TRUE):
+  1. After the fix, `runDetectionIfNeeded()` fires on every wallet that has new swaps since its last check — not just on initial import
+  2. A wallet that exhibits bundler/sniper/dev/wash-trader behavior in swaps added after initial import is detected and flagged on the next monitoring cycle
+  3. A wallet confirmed as a scam post-import is automatically removed (RMVL-02 satisfied end-to-end)
+  4. A regression test verifies the timestamp comparison uses the same units on both sides
+
+### Phase 10: Tech Debt Cleanup
+**Goal:** Remove schema type violations, dead exports, and leftover scaffolding that create false impressions of system behavior
+**Depends on:** Phase 9
+**Requirements:** None (internal code quality)
+**Gap Closure:** Closes tech debt items from v1.0 audit
+**Success Criteria** (what must be TRUE):
+  1. `wallet_flags.detector` enum includes `'manual'` — no `as any` cast needed in the flag command
+  2. `getEligibleWallets()` is either wired up or removed — no dead exports presenting false cross-phase linkage
+  3. `scoreWallet()` stub is removed from `src/index.ts` — no leftover scaffold in entry point
+  4. TypeScript compiles cleanly with no type errors after changes
+
+### Phase 11: Helius RPC Provider Rotation
+**Goal:** The system survives Helius 429 outages by rotating to a fallback RPC provider, scoped to handle per-provider response normalization explicitly
+**Depends on:** Phase 10
+**Requirements:** MNTR-03 (resilience extension)
+**Gap Closure:** Closes Phase 8 tech debt — no fallback when Helius returns 429 during wallet discovery
+**Success Criteria** (what must be TRUE):
+  1. A provider abstraction interface wraps all Helius API calls — each provider implements `fetchTransactions()`, `fetchEarlySwapsForMint()`, and `fetchEarlyBuyers()` separately
+  2. When Helius returns 429 and exhausts backoff retries, the system rotates to the next configured provider rather than failing
+  3. Each provider's response normalization is isolated — no shared parsing path that assumes Helius response shape
+  4. Provider rotation is transparent to callers (MonitorLoop, discovery orchestrator) — no callsite changes needed
+  5. System degrades gracefully if all providers are exhausted (logs error, skips wallet cycle, does not crash)
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -170,3 +204,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 6. Token Signal Engine | 3/3 | Complete   | 2026-03-15 |
 | 7. API, Dashboard, and Telegram Alerts | 3/3 | Complete   | 2026-03-16 |
 | 8. Wallet Discovery | 4/4 | Complete   | 2026-03-17 |
+| 9. Fix Incremental Detection Timestamp Bug | 0/? | Pending | — |
+| 10. Tech Debt Cleanup | 0/? | Pending | — |
+| 11. Helius RPC Provider Rotation | 0/? | Pending | — |

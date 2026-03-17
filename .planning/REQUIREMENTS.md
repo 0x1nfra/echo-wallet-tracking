@@ -21,10 +21,10 @@
 
 ### Bundle/Scam Detection
 
-- [x] **DETC-01**: System detects bundler wallets (same-block coordinated buys from wallets sharing a funding source)
-- [x] **DETC-02**: System detects dev wallets (wallet received tokens directly from the token deployer address)
-- [x] **DETC-03**: System detects sniper bots (wallet consistently buys in first 2-3 blocks of token launches)
-- [x] **DETC-04**: System detects wash traders (circular trades between related wallets)
+- [ ] **DETC-01**: System detects bundler wallets (same-block coordinated buys from wallets sharing a funding source)
+- [ ] **DETC-02**: System detects dev wallets (wallet received tokens directly from the token deployer address)
+- [ ] **DETC-03**: System detects sniper bots (wallet consistently buys in first 2-3 blocks of token launches)
+- [ ] **DETC-04**: System detects wash traders (circular trades between related wallets)
 - [x] **DETC-05**: System applies tiered confidence to detection (suspected → review → confirmed) before flagging a wallet
 - [x] **DETC-06**: Only wallets with passing detection status are eligible for scoring
 
@@ -43,7 +43,7 @@
 ### Auto-Removal
 
 - [x] **RMVL-01**: System automatically removes a wallet when its score falls below threshold over a rolling 30-day window for N consecutive cycles
-- [x] **RMVL-02**: System automatically removes a wallet when bundle/scam detection reaches "confirmed" confidence level
+- [ ] **RMVL-02**: System automatically removes a wallet when bundle/scam detection reaches "confirmed" confidence level
 - [x] **RMVL-03**: System automatically removes a wallet after configurable days of inactivity (no trades)
 - [x] **RMVL-04**: System logs all removals with reason, timestamp, and detection details — removals are auditable and reversible
 
@@ -112,10 +112,10 @@
 | PARS-01 | Phase 2 | Complete |
 | PARS-02 | Phase 2 | Complete |
 | PARS-03 | Phase 2 | Complete |
-| DETC-01 | Phase 3 | Complete |
-| DETC-02 | Phase 3 | Complete |
-| DETC-03 | Phase 3 | Complete |
-| DETC-04 | Phase 3 | Complete |
+| DETC-01 | Phase 9 | Pending |
+| DETC-02 | Phase 9 | Pending |
+| DETC-03 | Phase 9 | Pending |
+| DETC-04 | Phase 9 | Pending |
 | DETC-05 | Phase 3 | Complete |
 | DETC-06 | Phase 3 | Complete |
 | SCOR-01 | Phase 4 | Complete |
@@ -125,7 +125,7 @@
 | MNTR-02 | Phase 5 | Complete |
 | MNTR-03 | Phase 5 | Complete |
 | RMVL-01 | Phase 5 | Complete |
-| RMVL-02 | Phase 5 | Complete |
+| RMVL-02 | Phase 9 | Pending |
 | RMVL-03 | Phase 5 | Complete |
 | RMVL-04 | Phase 5 | Complete |
 | SGNL-01 | Phase 6 | Complete |
@@ -147,6 +147,7 @@
 - v1 requirements: 37 total
 - Mapped to phases: 37
 - Unmapped: 0 ✓
+- Pending (gap closure): 5 (DETC-01, DETC-02, DETC-03, DETC-04, RMVL-02 → Phase 9)
 
 ---
 *Requirements defined: 2026-03-11*
