@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 08-wallet-discovery plan 03 — probation guard TDD, fetchCoTraders graph traversal, runDiscovery orchestrator, 184 total tests green
-last_updated: "2026-03-16T15:37:33.556Z"
+stopped_at: Completed 08-wallet-discovery plan 04 — wallet discover CLI, probationary wallet list/dashboard/API, 184 tests green, Phase 8 and v1.0 milestone complete
+last_updated: "2026-03-17T07:02:57.576Z"
 last_activity: 2026-03-15 — Phase 06 plan 01 complete; signal_tier + coordinated_wallet_count columns added, 153 tests passing
 progress:
   total_phases: 8
-  completed_phases: 7
+  completed_phases: 8
   total_plans: 28
-  completed_plans: 27
+  completed_plans: 28
   percent: 100
 ---
 
@@ -109,6 +109,7 @@ Progress: [██░░░░░░░░] 67% (Phase 6)
 | Phase 08-wallet-discovery P01 | 2 | 2 tasks | 3 files |
 | Phase 08-wallet-discovery P02 | 12 | 2 tasks | 3 files |
 | Phase 08-wallet-discovery P03 | 5 | 3 tasks | 6 files |
+| Phase 08-wallet-discovery P04 | 10 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -187,6 +188,8 @@ Recent decisions affecting current work:
 - [Phase 08-wallet-discovery]: Probation guard uses OR(isNull(probation_until), lt(probation_until, nowMs)) — null is non-probationary (included)
 - [Phase 08-wallet-discovery]: DiscoveryDeps injectable interface enables in-memory SQLite testing of full runDiscovery orchestrator — avoids jest.mock of global singletons
 - [Phase 08-wallet-discovery]: dry_run in runDiscovery skips wallet row insertion entirely (not insert-then-delete) — cleaner and avoids partial state
+- [Phase 08-wallet-discovery]: wallet discover uses dynamic import of runDiscovery — avoids circular dependency at module load time, consistent with Phase 5 pattern
+- [Phase 08-wallet-discovery]: /api/wallets shape changed from flat array to { active, probationary } — breaking change accepted as dashboard was only consumer
 
 ### Pending Todos
 
@@ -199,6 +202,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-16T15:37:33.554Z
-Stopped at: Completed 08-wallet-discovery plan 03 — probation guard TDD, fetchCoTraders graph traversal, runDiscovery orchestrator, 184 total tests green
+Last session: 2026-03-17T07:02:57.574Z
+Stopped at: Completed 08-wallet-discovery plan 04 — wallet discover CLI, probationary wallet list/dashboard/API, 184 tests green, Phase 8 and v1.0 milestone complete
 Resume file: None
