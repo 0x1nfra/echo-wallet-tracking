@@ -4,7 +4,7 @@ milestone: v1.0
 milestone_name: milestone
 status: planning
 stopped_at: Completed 08-wallet-discovery plan 04 — wallet discover CLI, probationary wallet list/dashboard/API, 184 tests green, Phase 8 and v1.0 milestone complete
-last_updated: "2026-03-17T07:02:57.576Z"
+last_updated: "2026-03-17T07:20:21.941Z"
 last_activity: 2026-03-15 — Phase 06 plan 01 complete; signal_tier + coordinated_wallet_count columns added, 153 tests passing
 progress:
   total_phases: 8
