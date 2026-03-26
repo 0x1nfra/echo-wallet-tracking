@@ -7,6 +7,7 @@ import { db } from '../db/index.js';
 import { wallets, wallet_flags, wallet_metrics, removal_log } from '../db/schema.js';
 import { importWalletHistory } from '../importers/history.js';
 import { computeOverallStatus } from '../detection/engine.js';
+import type { DetectorId } from '../detection/types.js';
 import { CLEAR_THRESHOLD_MULTIPLIER_FACTOR, MAX_THRESHOLD_MULTIPLIER } from '../detection/thresholds.js';
 import { MonitorLoop, writePid, readPid, clearPid } from '../monitor/index.js';
 
@@ -258,8 +259,8 @@ export function createWalletCommand(): Command {
         .all();
 
       const newStatus = computeOverallStatus(remainingFlags.map(f => ({
-        detector: f.detector as any,
-        confidence: f.confidence as any,
+        detector: f.detector,
+        confidence: f.confidence,
         cleared: false,
         threshold_multiplier: f.threshold_multiplier,
       })));
@@ -314,7 +315,7 @@ export function createWalletCommand(): Command {
       // Insert new wallet_flag row with cleared=false
       db.insert(wallet_flags).values({
         wallet_address: address,
-        detector: options.detector as any,
+        detector: options.detector as DetectorId,
         confidence: options.tier as ValidTier,
         evidence_summary: JSON.stringify({ manual: true, set_by: 'user', tier: options.tier }),
         evidence_detail: JSON.stringify({ note: 'Manually force-promoted by user via wallet flag command' }),
@@ -328,8 +329,8 @@ export function createWalletCommand(): Command {
         .all();
 
       const newStatus = computeOverallStatus(allActiveFlags.map(f => ({
-        detector: f.detector as any,
-        confidence: f.confidence as any,
+        detector: f.detector,
+        confidence: f.confidence,
         cleared: false,
         threshold_multiplier: f.threshold_multiplier,
       })));

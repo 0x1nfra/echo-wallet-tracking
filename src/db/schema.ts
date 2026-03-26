@@ -97,7 +97,7 @@ export const wallet_flags = sqliteTable('wallet_flags', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   wallet_address: text('wallet_address').notNull(),
   detector: text('detector', {
-    enum: ['bundler', 'dev_wallet', 'sniper', 'wash_trader'],
+    enum: ['bundler', 'dev_wallet', 'sniper', 'wash_trader', 'manual'],
   }).notNull(),
   confidence: text('confidence', {
     enum: ['suspected', 'review', 'confirmed_suspicious'],

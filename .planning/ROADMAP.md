@@ -19,7 +19,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 5: Monitoring Loop and Auto-Removal** - 30s cron loop with p-queue rate limiting, incremental fetching, and auditable auto-removal (completed 2026-03-13)
 - [x] **Phase 6: Token Signal Engine** - Per-token 0-100 signal score aggregating smart wallet activity, buy velocity, exit pressure, and coordination discounting (completed 2026-03-15)
 - [x] **Phase 7: API, Dashboard, and Telegram Alerts** - Fastify REST+SSE API, HTMX dashboard, and grammy Telegram bot with threshold alerts (completed 2026-03-16)
-- [x] **Phase 8: Wallet Discovery** - Token-CA candidate extraction, scoring gate, 7-day probation, and graph traversal discovery (completed 2026-03-17)
+- [x] **Phase 8: Wallet Discovery** - Token-CA candidate extraction, scoring gate, 7-day probation, and graph traversal discovery (completed 2026-03-17)
 
 ## Phase Details
 
@@ -176,6 +176,10 @@ Plans:
   2. `getEligibleWallets()` is either wired up or removed — no dead exports presenting false cross-phase linkage
   3. `scoreWallet()` stub is removed from `src/index.ts` — no leftover scaffold in entry point
   4. TypeScript compiles cleanly with no type errors after changes
+**Plans**: 1 plan
+
+Plans:
+- [x] 10-01-PLAN.md — Add 'manual' to DetectorId + schema enum, remove as-any casts, delete getEligibleWallets() and scoreWallet() stub
 
 ### Phase 11: Helius RPC Provider Rotation
 **Goal:** The system survives Helius 429 outages by rotating to a fallback RPC provider, scoped to handle per-provider response normalization explicitly
@@ -205,5 +209,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 7. API, Dashboard, and Telegram Alerts | 3/3 | Complete   | 2026-03-16 |
 | 8. Wallet Discovery | 4/4 | Complete   | 2026-03-17 |
 | 9. Fix Incremental Detection Timestamp Bug | 0/? | Pending | — |
-| 10. Tech Debt Cleanup | 0/? | Pending | — |
+| 10. Tech Debt Cleanup | 1/1 | Complete    | 2026-03-26 |
 | 11. Helius RPC Provider Rotation | 0/? | Pending | — |
