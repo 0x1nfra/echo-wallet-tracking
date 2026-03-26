@@ -120,10 +120,3 @@ export async function runDetectionIfNeeded(walletAddress: string): Promise<void>
 
   await runDetection(walletAddress);
 }
-
-export function getEligibleWallets(): string[] {
-  return db.select({ address: wallets.address }).from(wallets)
-    .where(eq(wallets.detection_status, 'confirmed_passing'))
-    .all()
-    .map(r => r.address);
-}
