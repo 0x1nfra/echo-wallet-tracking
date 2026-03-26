@@ -187,7 +187,7 @@ Plans:
 **Requirements:** MNTR-03 (resilience extension)
 **Gap Closure:** Closes Phase 8 tech debt — no fallback when Helius returns 429 during wallet discovery
 **Success Criteria** (what must be TRUE):
-  1. A provider abstraction interface wraps all Helius API calls — each provider implements `fetchTransactions()`, `fetchEarlySwapsForMint()`, and `fetchEarlyBuyers()` separately
+  1. A provider abstraction interface wraps all Helius API calls — each provider implements `fetchSwapHistory()`, `fetchEarlySwapsForMint()`, and `fetchOnePage()` separately
   2. When Helius returns 429 and exhausts backoff retries, the system rotates to the next configured provider rather than failing
   3. Each provider's response normalization is isolated — no shared parsing path that assumes Helius response shape
   4. Provider rotation is transparent to callers (MonitorLoop, discovery orchestrator) — no callsite changes needed
