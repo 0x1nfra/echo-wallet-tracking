@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 11-helius-rpc-provider-rotation plan 01 — RpcProvider interface + HeliusProvider wrapper + TDD delegation tests, 187 tests green
-last_updated: "2026-03-26T18:50:31.669Z"
+stopped_at: Completed 11-helius-rpc-provider-rotation plan 02 — ProviderRouter failover engine + createProviderRouter() factory, 197 tests green
+last_updated: "2026-03-26T18:56:01.554Z"
 last_activity: 2026-03-15 — Phase 06 plan 01 complete; signal_tier + coordinated_wallet_count columns added, 153 tests passing
 progress:
   total_phases: 11
   completed_phases: 9
   total_plans: 33
-  completed_plans: 30
+  completed_plans: 31
   percent: 100
 ---
 
@@ -112,6 +112,7 @@ Progress: [██░░░░░░░░] 67% (Phase 6)
 | Phase 08-wallet-discovery P04 | 10 | 2 tasks | 4 files |
 | Phase 10-tech-debt-cleanup P01 | 2 | 2 tasks | 4 files |
 | Phase 11-helius-rpc-provider-rotation P01 | 12 | 3 tasks | 4 files |
+| Phase 11-helius-rpc-provider-rotation PP02 | 3 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -197,6 +198,9 @@ Recent decisions affecting current work:
 - [Phase 11-helius-rpc-provider-rotation]: ProviderTransaction aliased to HeliusTransaction (not a new type) — minimizes callsite churn when providers rotate
 - [Phase 11-helius-rpc-provider-rotation]: HeliusProvider constructor accepts HeliusFetcher instance (not apiKey string) — constructor injection enables testing without module mocking
 - [Phase 11-helius-rpc-provider-rotation]: getTransaction excluded from RpcProvider interface — only bundler/wash-trader detectors need it; they bypass the router directly via HeliusFetcher
+- [Phase 11-helius-rpc-provider-rotation]: tryCall* uses three explicit per-method helpers (not generic Parameters<union>) to avoid TypeScript union type error
+- [Phase 11-helius-rpc-provider-rotation]: Date.now reassignment (not jest.spyOn) used in ESM cooldown expiry tests — jest global unavailable without explicit import
+- [Phase 11-helius-rpc-provider-rotation]: ShyftProvider wiring deferred via TODO(11-03) comments in index.ts — compiles clean without the file
 
 ### Pending Todos
 
@@ -209,6 +213,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-26T18:50:31.667Z
-Stopped at: Completed 11-helius-rpc-provider-rotation plan 01 — RpcProvider interface + HeliusProvider wrapper + TDD delegation tests, 187 tests green
+Last session: 2026-03-26T18:56:01.552Z
+Stopped at: Completed 11-helius-rpc-provider-rotation plan 02 — ProviderRouter failover engine + createProviderRouter() factory, 197 tests green
 Resume file: None
