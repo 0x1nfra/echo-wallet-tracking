@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 10-tech-debt-cleanup plan 01 — DetectorId union + schema enum updated with 'manual', as-any casts removed, dead exports deleted, 184 tests green
-last_updated: "2026-03-26T13:37:18.959Z"
+stopped_at: Completed 11-helius-rpc-provider-rotation plan 01 — RpcProvider interface + HeliusProvider wrapper + TDD delegation tests, 187 tests green
+last_updated: "2026-03-26T18:50:31.669Z"
 last_activity: 2026-03-15 — Phase 06 plan 01 complete; signal_tier + coordinated_wallet_count columns added, 153 tests passing
 progress:
   total_phases: 11
   completed_phases: 9
-  total_plans: 29
-  completed_plans: 29
+  total_plans: 33
+  completed_plans: 30
   percent: 100
 ---
 
@@ -111,6 +111,7 @@ Progress: [██░░░░░░░░] 67% (Phase 6)
 | Phase 08-wallet-discovery P03 | 5 | 3 tasks | 6 files |
 | Phase 08-wallet-discovery P04 | 10 | 2 tasks | 4 files |
 | Phase 10-tech-debt-cleanup P01 | 2 | 2 tasks | 4 files |
+| Phase 11-helius-rpc-provider-rotation P01 | 12 | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -193,6 +194,9 @@ Recent decisions affecting current work:
 - [Phase 08-wallet-discovery]: /api/wallets shape changed from flat array to { active, probationary } — breaking change accepted as dashboard was only consumer
 - [Phase 10-tech-debt-cleanup]: options.detector cast as DetectorId (not as any) in wallet.ts flag command — Commander types options as string; DetectorId is the correct narrowing since 'manual' is now in the union
 - [Phase 10-tech-debt-cleanup]: [Phase 10-tech-debt-cleanup]: 'manual' added to DetectorId union and wallet_flags.detector schema enum; as-any casts on detector/confidence fields removed by type alignment
+- [Phase 11-helius-rpc-provider-rotation]: ProviderTransaction aliased to HeliusTransaction (not a new type) — minimizes callsite churn when providers rotate
+- [Phase 11-helius-rpc-provider-rotation]: HeliusProvider constructor accepts HeliusFetcher instance (not apiKey string) — constructor injection enables testing without module mocking
+- [Phase 11-helius-rpc-provider-rotation]: getTransaction excluded from RpcProvider interface — only bundler/wash-trader detectors need it; they bypass the router directly via HeliusFetcher
 
 ### Pending Todos
 
@@ -205,6 +209,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-26T13:37:18.957Z
-Stopped at: Completed 10-tech-debt-cleanup plan 01 — DetectorId union + schema enum updated with 'manual', as-any casts removed, dead exports deleted, 184 tests green
+Last session: 2026-03-26T18:50:31.667Z
+Stopped at: Completed 11-helius-rpc-provider-rotation plan 01 — RpcProvider interface + HeliusProvider wrapper + TDD delegation tests, 187 tests green
 Resume file: None
