@@ -179,7 +179,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 10-01-PLAN.md — Add 'manual' to DetectorId + schema enum, remove as-any casts, delete getEligibleWallets() and scoreWallet() stub
+- [x] 10-01-PLAN.md — Add 'manual' to DetectorId + schema enum, remove as-any casts, delete getEligibleWallets() and scoreWallet() stub
 
 ### Phase 11: Helius RPC Provider Rotation
 **Goal:** The system survives Helius 429 outages by rotating to a fallback RPC provider, scoped to handle per-provider response normalization explicitly
@@ -209,5 +209,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 7. API, Dashboard, and Telegram Alerts | 3/3 | Complete   | 2026-03-16 |
 | 8. Wallet Discovery | 4/4 | Complete   | 2026-03-17 |
 | 9. Fix Incremental Detection Timestamp Bug | 0/? | Pending | — |
-| 10. Tech Debt Cleanup | 1/1 | Complete   | 2026-03-26 |
+| 10. Tech Debt Cleanup | 1/1 | Complete    | 2026-03-26 |
 | 11. Helius RPC Provider Rotation | 0/? | Pending | — |
