@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { and, desc, eq, inArray, isNotNull } from 'drizzle-orm';
+import { and, desc, eq, gt, inArray, isNotNull } from 'drizzle-orm';
 import Table from 'cli-table3';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
@@ -66,23 +66,36 @@ export function createWalletCommand(): Command {
     .command('list')
     .description('List all tracked wallets')
     .action(() => {
+      const nowMs = Date.now();
+
+      // Probationary wallets: status='tracked' AND probation_until IS NOT NULL AND probation_until > now
+      const probationaryRows = db.select().from(wallets)
+        .where(and(eq(wallets.status, 'tracked'), isNotNull(wallets.probation_until), gt(wallets.probation_until, nowMs)))
+        .orderBy(desc(wallets.added_at))
+        .all();
+
+      const probationaryAddresses = new Set(probationaryRows.map(r => r.address));
+
+      // Active wallets: tracked/importing but NOT on probation
       const allRows = db.select().from(wallets)
         .where(inArray(wallets.status, ['tracked', 'importing']))
         .orderBy(desc(wallets.added_at))
         .all();
 
-      const cleanRows = allRows.filter(r =>
+      const activeRows = allRows.filter(r => !probationaryAddresses.has(r.address));
+
+      const cleanRows = activeRows.filter(r =>
         !r.detection_status ||
         r.detection_status === 'pending' ||
         r.detection_status === 'confirmed_passing'
       );
-      const flaggedRows = allRows.filter(r =>
+      const flaggedRows = activeRows.filter(r =>
         r.detection_status === 'suspected' ||
         r.detection_status === 'review' ||
         r.detection_status === 'confirmed_suspicious'
       );
 
-      if (allRows.length === 0) {
+      if (allRows.length === 0 && probationaryRows.length === 0) {
         console.log('No wallets tracked yet.\n\nGet started: echo wallet add <address>');
         return;
       }
@@ -112,6 +125,20 @@ export function createWalletCommand(): Command {
         }
         console.log(flagTable.toString());
         console.log(chalk.gray(`\nRun 'echo wallet review' to see flag details.`));
+      }
+
+      // Section 3: Probationary wallets
+      if (probationaryRows.length > 0) {
+        console.log(chalk.bold('\nProbationary Wallets') + chalk.gray(' (7-day probation — excluded from signal scoring)'));
+        const probTable = new Table({ head: ['ADDRESS', 'LABEL', 'PROBATION UNTIL'], style: { head: ['magenta'] } });
+        for (const row of probationaryRows) {
+          probTable.push([
+            truncateAddress(row.address),
+            row.label ?? chalk.gray('-'),
+            new Date(row.probation_until!).toUTCString(),
+          ]);
+        }
+        console.log(probTable.toString());
       }
     });
 
@@ -401,6 +428,42 @@ export function createWalletCommand(): Command {
         console.log(chalk.gray(`Trades: ${metrics.trade_count ?? '-'}  |  Recent (180d): ${metrics.recent_trade_count ?? '-'}  |  Last scored: ${metrics.calculated_at ? new Date(metrics.calculated_at).toLocaleDateString() : '-'}`));
       } else {
         console.log(chalk.yellow('Usage: echo wallet score <address> | --all'));
+      }
+    });
+
+  wallet
+    .command('discover <mint>')
+    .description('Discover profitable early traders from a token contract address')
+    .option('--min-score <number>', 'Minimum score threshold for adding a wallet', '70')
+    .option('--dry-run', 'Score candidates but do not add them to tracking')
+    .action(async (mint: string, options: { minScore: string; dryRun?: boolean }) => {
+      try {
+        const { runDiscovery } = await import('../discovery/index.js');
+        const result = await runDiscovery(mint, {
+          minScore: parseFloat(options.minScore),
+          dryRun: options.dryRun ?? false,
+        });
+
+        console.log(chalk.bold('\nDiscovery complete'));
+        const summaryTable = new Table({ style: { head: ['cyan'] } });
+        summaryTable.push(
+          [chalk.gray('Total evaluated'), String(result.totalCandidates)],
+          [chalk.gray('Added'), chalk.green(String(result.added))],
+          [chalk.gray('Rejected'), chalk.red(String(result.rejected))],
+          [chalk.gray('Already tracked'), String(result.alreadyTracked)],
+        );
+        console.log(summaryTable.toString());
+
+        if (result.dryRun) {
+          console.log(chalk.yellow('[DRY RUN — no wallets were added]'));
+        }
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          console.error(chalk.red(err.message));
+        } else {
+          console.error(chalk.red(String(err)));
+        }
+        process.exit(1);
       }
     });
 

@@ -2,6 +2,7 @@ import { Bot } from 'grammy';
 import { db } from '../../db/index.js';
 import { wallets, wallet_metrics, wallet_flags, token_signals, token_metadata, swaps } from '../../db/schema.js';
 import { eq, and, desc, count, gt } from 'drizzle-orm';
+import { getTopHolders } from './alerts.js';
 
 export function registerCommands(bot: Bot): void {
   // /status — system health
@@ -34,25 +35,10 @@ export function registerCommands(bot: Bot): void {
     const metas = db.select().from(token_metadata).all();
     const metaMap = new Map(metas.map(m => [m.token_mint, m]));
 
-    // For each token, find the top-scoring tracked wallet currently holding it.
-    function getTopHolder(tokenMint: string): string | null {
-      const rows = db.select({ wallet_address: swaps.wallet_address })
-        .from(swaps)
-        .where(and(eq(swaps.token_mint, tokenMint), eq(swaps.side, 'buy')))
-        .orderBy(desc(swaps.timestamp))
-        .all();
-      for (const row of rows) {
-        const w = db.select().from(wallets)
-          .where(and(eq(wallets.address, row.wallet_address), eq(wallets.status, 'tracked'))).get();
-        if (w) return w.address;
-      }
-      return null;
-    }
-
     const lines = top.map((s, i) => {
       const meta = metaMap.get(s.token_mint);
       const name = meta?.symbol ?? s.token_mint.slice(0, 10) + '...';
-      const topHolder = getTopHolder(s.token_mint);
+      const topHolder = getTopHolders(s.token_mint)[0] ?? null;
       const holderStr = topHolder ? `\n   holder: <code>${topHolder.slice(0, 16)}...</code>` : '';
       return `${i + 1}. <b>${name}</b> — score <b>${s.signal_score?.toFixed(1)}</b> [${s.signal_tier ?? 'weak'}]` + holderStr;
     });

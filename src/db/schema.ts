@@ -17,6 +17,7 @@ export const wallets = sqliteTable('wallets', {
   history_complete: integer('history_complete', { mode: 'boolean' }).notNull().default(false),
   low_score_streak: integer('low_score_streak').notNull().default(0),
   last_trade_at: integer('last_trade_at', { mode: 'number' }),
+  probation_until: integer('probation_until', { mode: 'number' }),
 });
 
 export const swaps = sqliteTable('swaps', {
@@ -137,4 +138,27 @@ export const token_metadata = sqliteTable('token_metadata', {
   name: text('name'),
   symbol: text('symbol'),
   fetched_at: integer('fetched_at', { mode: 'number' }),
+});
+
+// Tracks each wallet discover <CA> invocation
+export const discoveryRuns = sqliteTable('discovery_runs', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  token_mint: text('token_mint').notNull(),
+  started_at: integer('started_at', { mode: 'number' }).notNull().default(sql`(unixepoch('now') * 1000)`),
+  completed_at: integer('completed_at', { mode: 'number' }),
+  total_candidates: integer('total_candidates').notNull().default(0),
+  added_count: integer('added_count').notNull().default(0),
+  rejected_count: integer('rejected_count').notNull().default(0),
+  dry_run: integer('dry_run', { mode: 'boolean' }).notNull().default(false),
+});
+
+// One row per evaluated candidate address per run — audit log
+export const discoveryCandidates = sqliteTable('discovery_candidates', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  run_id: integer('run_id').notNull().references(() => discoveryRuns.id, { onDelete: 'cascade' }),
+  address: text('address').notNull(),
+  source: text('source', { enum: ['direct', 'graph'] }).notNull(),
+  score: real('score'),
+  result: text('result', { enum: ['added', 'rejected', 'already_tracked', 'dry_run'] }).notNull(),
+  evaluated_at: integer('evaluated_at', { mode: 'number' }).notNull().default(sql`(unixepoch('now') * 1000)`),
 });

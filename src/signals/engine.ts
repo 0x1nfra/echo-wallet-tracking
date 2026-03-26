@@ -6,7 +6,7 @@
  *
  * Requirements: SGNL-02
  */
-import { and, eq, gte, inArray, gt } from 'drizzle-orm';
+import { and, eq, gte, inArray, gt, isNull, lt, or } from 'drizzle-orm';
 import { db as defaultDb } from '../db/index.js';
 import { swaps, wallets, wallet_metrics, wallet_flags, token_signals } from '../db/schema.js';
 import { computeSignalScore } from './scorer.js';
@@ -60,6 +60,7 @@ export function computeAllTokenSignals(
     .where(and(
       eq(wallets.status, 'tracked'),
       eq(wallets.detection_status, 'confirmed_passing'),
+      or(isNull(wallets.probation_until), lt(wallets.probation_until, nowMs)),
     ))
     .all();
 
