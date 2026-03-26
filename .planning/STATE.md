@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 11-helius-rpc-provider-rotation plan 02 — ProviderRouter failover engine + createProviderRouter() factory, 197 tests green
-last_updated: "2026-03-26T18:56:01.554Z"
+stopped_at: Completed 11-helius-rpc-provider-rotation plan 03 — ShyftProvider with normalization, 210 tests green, phase 11 complete
+last_updated: "2026-03-26T19:00:58.283Z"
 last_activity: 2026-03-15 — Phase 06 plan 01 complete; signal_tier + coordinated_wallet_count columns added, 153 tests passing
 progress:
   total_phases: 11
   completed_phases: 9
   total_plans: 33
-  completed_plans: 31
+  completed_plans: 32
   percent: 100
 ---
 
@@ -113,6 +113,7 @@ Progress: [██░░░░░░░░] 67% (Phase 6)
 | Phase 10-tech-debt-cleanup P01 | 2 | 2 tasks | 4 files |
 | Phase 11-helius-rpc-provider-rotation P01 | 12 | 3 tasks | 4 files |
 | Phase 11-helius-rpc-provider-rotation PP02 | 3 | 2 tasks | 3 files |
+| Phase 11-helius-rpc-provider-rotation P03 | 3 | 1 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -201,6 +202,9 @@ Recent decisions affecting current work:
 - [Phase 11-helius-rpc-provider-rotation]: tryCall* uses three explicit per-method helpers (not generic Parameters<union>) to avoid TypeScript union type error
 - [Phase 11-helius-rpc-provider-rotation]: Date.now reassignment (not jest.spyOn) used in ESM cooldown expiry tests — jest global unavailable without explicit import
 - [Phase 11-helius-rpc-provider-rotation]: ShyftProvider wiring deferred via TODO(11-03) comments in index.ts — compiles clean without the file
+- [Phase 11-helius-rpc-provider-rotation]: ShyftProvider accepts optional AxiosInstance in constructor for testing — avoids ESM jest.mock limitations
+- [Phase 11-helius-rpc-provider-rotation]: events explicitly set to undefined on ShyftProvider normalize() output — forces tokenTransfers fallback path in parseSwaps
+- [Phase 11-helius-rpc-provider-rotation]: shyftQueue concurrency: 2 for Shyft free tier — more conservative than heliusQueue (concurrency: 5)
 
 ### Pending Todos
 
@@ -213,6 +217,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-26T18:56:01.552Z
-Stopped at: Completed 11-helius-rpc-provider-rotation plan 02 — ProviderRouter failover engine + createProviderRouter() factory, 197 tests green
+Last session: 2026-03-26T19:00:58.281Z
+Stopped at: Completed 11-helius-rpc-provider-rotation plan 03 — ShyftProvider with normalization, 210 tests green, phase 11 complete
 Resume file: None
