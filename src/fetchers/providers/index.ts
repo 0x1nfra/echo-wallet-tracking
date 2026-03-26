@@ -3,10 +3,7 @@ import { HeliusProvider } from './helius-provider.js';
 import { ProviderRouter } from './router.js';
 import type { RpcProvider } from './types.js';
 
-// ShyftProvider is added in Plan 03. When SHYFT_API_KEY is present, it is
-// imported and appended to the provider list below.
-// TODO(11-03): uncomment when shyft-provider.ts is created
-// import { ShyftProvider } from './shyft-provider.js';
+import { ShyftProvider } from './shyft-provider.js';
 
 async function sendProviderExhaustedAlert(): Promise<void> {
   const { botInstance } = await import('../../api/bot/index.js');
@@ -30,10 +27,9 @@ export function createProviderRouter(): ProviderRouter {
   if (!shyftKey) {
     console.warn('[provider] SHYFT_API_KEY not set — running with Helius-only, no fallback');
   } else {
-    // TODO(11-03): instantiate and push ShyftProvider once shyft-provider.ts exists
-    // const shyftProvider = new ShyftProvider(shyftKey);
-    // providers.push(shyftProvider);
-    console.log('[provider] SHYFT_API_KEY found — ShyftProvider will be wired in Plan 03');
+    const shyftProvider = new ShyftProvider(shyftKey);
+    providers.push(shyftProvider);
+    console.log('[provider] SHYFT_API_KEY found — ShyftProvider added as fallback provider');
   }
 
   const onAllExhausted = () => {
