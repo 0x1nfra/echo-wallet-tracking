@@ -44,7 +44,7 @@ export async function fetchEarlyBuyers(
 ): Promise<string[]> {
   const f = fetcher ?? createHeliusFetcher();
 
-  const txs = await f.fetchEarlySwapsForMint(mint, 200, 'asc');
+  const txs = await f.fetchEarlySwapsForMint(mint, 100, 'asc');
 
   if (txs.length === 0) {
     return [];

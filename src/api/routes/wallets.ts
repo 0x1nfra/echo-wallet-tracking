@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { db } from '../../db/index.js';
 import { wallets, wallet_metrics, wallet_flags, swaps } from '../../db/schema.js';
-import { eq, and, desc, isNull, isNotNull, lt, gt, or } from 'drizzle-orm';
+import { eq, and, desc, isNull, isNotNull, lt, lte, gt, or } from 'drizzle-orm';
 
 export default async function walletsRoutes(app: FastifyInstance) {
   app.get('/api/wallets', async (_req, reply) => {
@@ -9,9 +9,9 @@ export default async function walletsRoutes(app: FastifyInstance) {
     const allMetrics = db.select().from(wallet_metrics).all();
     const metricsMap = new Map(allMetrics.map(m => [m.wallet_address, m]));
 
-    // Active wallets: status='tracked' AND (probation_until IS NULL OR probation_until < now)
+    // Active wallets: status='tracked' AND (probation_until IS NULL OR probation_until <= now)
     const activeWalletRows = db.select().from(wallets)
-      .where(and(eq(wallets.status, 'tracked'), or(isNull(wallets.probation_until), lt(wallets.probation_until, nowMs))))
+      .where(and(eq(wallets.status, 'tracked'), or(isNull(wallets.probation_until), lte(wallets.probation_until, nowMs))))
       .all();
 
     // Probationary wallets: status='tracked' AND probation_until IS NOT NULL AND probation_until > now

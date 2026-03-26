@@ -57,6 +57,13 @@
       "when": 1773510000002,
       "tag": "0007_wallet_discovery",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1773510000003,
+      "tag": "0008_discovery_candidates_fk",
+      "breakpoints": true
     }
   ]
 }

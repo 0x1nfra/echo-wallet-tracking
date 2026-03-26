@@ -155,7 +155,7 @@ export const discoveryRuns = sqliteTable('discovery_runs', {
 // One row per evaluated candidate address per run — audit log
 export const discoveryCandidates = sqliteTable('discovery_candidates', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  run_id: integer('run_id').notNull(),
+  run_id: integer('run_id').notNull().references(() => discoveryRuns.id, { onDelete: 'cascade' }),
   address: text('address').notNull(),
   source: text('source', { enum: ['direct', 'graph'] }).notNull(),
   score: real('score'),

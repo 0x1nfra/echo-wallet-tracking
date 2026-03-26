@@ -103,37 +103,37 @@ async function evaluateCandidate(
   let score: number | null = null;
 
   try {
-    // 3. Import wallet history
-    await deps.importHistoryFn(address, { fullHistory: true });
+    if (!dryRun) {
+      // 3. Import wallet history
+      await deps.importHistoryFn(address, { fullHistory: true });
 
-    // 4. Score all eligible wallets (includes this candidate after history_complete=true)
-    deps.scoreAllEligibleFn();
+      // 4. Score all eligible wallets (includes this candidate after history_complete=true)
+      deps.scoreAllEligibleFn();
 
-    // 5. Re-read wallet row to get computed score and detection_status
-    const walletRow = db.select({
-      score: wallets.score,
-      detection_status: wallets.detection_status,
-    })
-      .from(wallets)
-      .where(eq(wallets.address, address))
-      .get();
+      // 5. Re-read wallet row to get computed score and detection_status
+      const walletRow = db.select({
+        score: wallets.score,
+        detection_status: wallets.detection_status,
+      })
+        .from(wallets)
+        .where(eq(wallets.address, address))
+        .get();
 
-    score = walletRow?.score ?? null;
-    const detectionStatus = walletRow?.detection_status;
+      score = walletRow?.score ?? null;
+      const detectionStatus = walletRow?.detection_status;
 
-    // 6. If detection_status='confirmed_suspicious' → reject
-    if (detectionStatus === 'confirmed_suspicious') {
-      if (!dryRun) {
+      // 6. If detection_status='confirmed_suspicious' → reject
+      if (detectionStatus === 'confirmed_suspicious') {
         db.delete(wallets).where(eq(wallets.address, address)).run();
+        db.insert(discoveryCandidates).values({
+          run_id: runId,
+          address,
+          source,
+          score,
+          result: 'rejected',
+        }).run();
+        return { result: 'rejected', score };
       }
-      db.insert(discoveryCandidates).values({
-        run_id: runId,
-        address,
-        source,
-        score,
-        result: 'rejected',
-      }).run();
-      return { result: 'rejected', score };
     }
 
     // 7. If score < minScore → reject
@@ -217,16 +217,13 @@ export async function runDiscovery(
     scoreAllEligibleFn: () => scoreAllEligible(),
   };
 
-  // Insert discovery_runs row
-  db.insert(discoveryRuns).values({
+  // Insert discovery_runs row and capture the new row id atomically
+  const insertResult = db.insert(discoveryRuns).values({
     token_mint: mint,
     dry_run: dryRun,
   }).run();
 
-  const runId = db.select({ id: discoveryRuns.id })
-    .from(discoveryRuns)
-    .all()
-    .at(-1)!.id;
+  const runId = Number(insertResult.lastInsertRowid);
 
   let added = 0;
   let rejected = 0;

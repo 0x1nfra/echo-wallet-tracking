@@ -29,7 +29,7 @@ export async function buildServer() {
   app.get('/', async (_req, reply) => {
     const { db } = await import('../db/index.js');
     const { token_signals, token_metadata, wallets, wallet_metrics, swaps } = await import('../db/schema.js');
-    const { desc, eq, and, or, isNull, isNotNull, lt, gt } = await import('drizzle-orm');
+    const { desc, eq, and, or, isNull, isNotNull, lt, lte, gt } = await import('drizzle-orm');
 
     const signals = db.select().from(token_signals).orderBy(desc(token_signals.signal_score)).all();
     const metas = db.select().from(token_metadata).all();
@@ -60,9 +60,9 @@ export async function buildServer() {
 
     const nowMs = Date.now();
 
-    // Active wallets: status='tracked' AND (probation_until IS NULL OR probation_until < now)
+    // Active wallets: status='tracked' AND (probation_until IS NULL OR probation_until <= now)
     const activeWalletRows = db.select().from(wallets)
-      .where(and(eq(wallets.status, 'tracked'), or(isNull(wallets.probation_until), lt(wallets.probation_until, nowMs))))
+      .where(and(eq(wallets.status, 'tracked'), or(isNull(wallets.probation_until), lte(wallets.probation_until, nowMs))))
       .all()
       .map(w => ({ ...w, score: metricsMap.get(w.address)?.score_total ?? null }));
 

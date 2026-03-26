@@ -89,18 +89,18 @@ export class HeliusFetcher {
    * Used for early buyer discovery — no pagination, returns raw response for caller filtering.
    * Rate-limited via heliusQueue + pRetry (same pattern as fetchSwapHistory).
    * @param mint - Solana mint address
-   * @param limit - Max transactions to return (default: 200)
+   * @param limit - Max transactions to return (default: 100, max: 100)
    * @param sortOrder - Sort direction: 'asc' for oldest-first (default)
    * @returns Array of HeliusTransactions (no filtering applied)
    */
   async fetchEarlySwapsForMint(
     mint: string,
-    limit: number = 200,
+    limit: number = 100,
     sortOrder: 'asc' | 'desc' = 'asc'
   ): Promise<HeliusTransaction[]> {
     const params: Record<string, string | number> = {
       'api-key': this.apiKey,
-      limit,
+      limit: Math.min(limit, 100),
       type: 'SWAP',
       'sort-order': sortOrder,
     };
