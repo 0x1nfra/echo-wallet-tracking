@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 08-wallet-discovery plan 04 — wallet discover CLI, probationary wallet list/dashboard/API, 184 tests green, Phase 8 and v1.0 milestone complete
-last_updated: "2026-03-17T07:20:21.941Z"
+stopped_at: Completed 10-tech-debt-cleanup plan 01 — DetectorId union + schema enum updated with 'manual', as-any casts removed, dead exports deleted, 184 tests green
+last_updated: "2026-03-26T13:37:18.959Z"
 last_activity: 2026-03-15 — Phase 06 plan 01 complete; signal_tier + coordinated_wallet_count columns added, 153 tests passing
 progress:
-  total_phases: 8
-  completed_phases: 8
-  total_plans: 28
-  completed_plans: 28
+  total_phases: 11
+  completed_phases: 9
+  total_plans: 29
+  completed_plans: 29
   percent: 100
 ---
 
@@ -110,6 +110,7 @@ Progress: [██░░░░░░░░] 67% (Phase 6)
 | Phase 08-wallet-discovery P02 | 12 | 2 tasks | 3 files |
 | Phase 08-wallet-discovery P03 | 5 | 3 tasks | 6 files |
 | Phase 08-wallet-discovery P04 | 10 | 2 tasks | 4 files |
+| Phase 10-tech-debt-cleanup P01 | 2 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -190,6 +191,8 @@ Recent decisions affecting current work:
 - [Phase 08-wallet-discovery]: dry_run in runDiscovery skips wallet row insertion entirely (not insert-then-delete) — cleaner and avoids partial state
 - [Phase 08-wallet-discovery]: wallet discover uses dynamic import of runDiscovery — avoids circular dependency at module load time, consistent with Phase 5 pattern
 - [Phase 08-wallet-discovery]: /api/wallets shape changed from flat array to { active, probationary } — breaking change accepted as dashboard was only consumer
+- [Phase 10-tech-debt-cleanup]: options.detector cast as DetectorId (not as any) in wallet.ts flag command — Commander types options as string; DetectorId is the correct narrowing since 'manual' is now in the union
+- [Phase 10-tech-debt-cleanup]: [Phase 10-tech-debt-cleanup]: 'manual' added to DetectorId union and wallet_flags.detector schema enum; as-any casts on detector/confidence fields removed by type alignment
 
 ### Pending Todos
 
@@ -202,6 +205,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-17T07:02:57.574Z
-Stopped at: Completed 08-wallet-discovery plan 04 — wallet discover CLI, probationary wallet list/dashboard/API, 184 tests green, Phase 8 and v1.0 milestone complete
+Last session: 2026-03-26T13:37:18.957Z
+Stopped at: Completed 10-tech-debt-cleanup plan 01 — DetectorId union + schema enum updated with 'manual', as-any casts removed, dead exports deleted, 184 tests green
 Resume file: None
