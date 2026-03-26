@@ -10,7 +10,7 @@ export type DetectionStatus =
   | 'confirmed_passing';
 
 // Detector identifiers
-export type DetectorId = 'bundler' | 'dev_wallet' | 'sniper' | 'wash_trader';
+export type DetectorId = 'bundler' | 'dev_wallet' | 'sniper' | 'wash_trader' | 'manual';
 
 // Input config for each detector — includes raised threshold after user clear
 export interface DetectorConfig {

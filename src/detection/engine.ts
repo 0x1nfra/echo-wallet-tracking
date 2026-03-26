@@ -2,7 +2,7 @@ import { and, eq, gt } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { wallets, swaps, wallet_flags } from '../db/schema.js';
 import { SEVERITY_ORDER } from './thresholds.js';
-import type { ActiveFlag, DetectionStatus, DetectionTier } from './types.js';
+import type { ActiveFlag, DetectionStatus, DetectionTier, DetectorId } from './types.js';
 import { detectBundler } from './bundler.js';
 import { detectDevWallet } from './dev-wallet.js';
 import { detectSniper } from './sniper.js';
@@ -15,7 +15,9 @@ export function computeOverallStatus(activeFlags: ActiveFlag[]): DetectionStatus
   if (unclearedFlags.length === 0) return 'confirmed_passing';
 
   // Pre-pass: collect flags whose detector is NOT in SEVERITY_ORDER (e.g. 'manual')
-  const outOfBandFlags = unclearedFlags.filter(f => !SEVERITY_ORDER.includes(f.detector as any));
+  const outOfBandFlags = unclearedFlags.filter(
+    f => !(SEVERITY_ORDER as readonly DetectorId[]).includes(f.detector)
+  );
   let outOfBandWorst: DetectionTier | null = null;
   for (const tier of TIER_ORDER) {
     if (outOfBandFlags.some(f => f.confidence === tier)) {
