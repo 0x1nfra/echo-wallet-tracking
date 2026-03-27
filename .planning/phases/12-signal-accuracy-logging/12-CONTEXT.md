@@ -51,6 +51,11 @@ After each monitoring cycle fires a token signal (0-100 score), the system logs 
 - Retention policy: determine appropriate retention window (30 days, 90 days, or indefinite)
 - Control group feasibility: whether to sample random token launches as a baseline comparison
 
+### Hit rate calculation
+- Hit rate = (signals that met threshold) / (total signals with resolved outcomes)
+- Signals with pending outcomes (not yet 24h old) excluded from calculation
+- Failed outcomes (rugs) count toward denominator — they are resolved, just negative
+
 ### Minimum sample size
 - Accuracy stats displayed only after N=20 signals per tier
 - Below threshold: show "Insufficient data (X/20)" instead of percentages
