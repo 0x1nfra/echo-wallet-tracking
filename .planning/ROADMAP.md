@@ -195,10 +195,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 11-01-PLAN.md — RpcProvider interface + HeliusProvider wrapper + delegation tests
-- [ ] 11-02-PLAN.md — ProviderRouter (priority failover, 60s cooldown) + createProviderRouter() factory + router tests
-- [ ] 11-03-PLAN.md — ShyftProvider with Shyft API normalization to HeliusTransaction + normalization tests
-- [ ] 11-04-PLAN.md — Migrate 4 callsites to createProviderRouter() + startup warning + full regression
+- [x] 11-01-PLAN.md — RpcProvider interface + HeliusProvider wrapper + delegation tests
+- [x] 11-02-PLAN.md — ProviderRouter (priority failover, 60s cooldown) + createProviderRouter() factory + router tests
+- [x] 11-03-PLAN.md — ShyftProvider with Shyft API normalization to HeliusTransaction + normalization tests
+- [x] 11-04-PLAN.md — Migrate 4 callsites to createProviderRouter() + startup warning + full regression
 
 ## Progress
 
@@ -217,4 +217,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 8. Wallet Discovery | 4/4 | Complete   | 2026-03-17 |
 | 9. Fix Incremental Detection Timestamp Bug | 0/? | Pending | — |
 | 10. Tech Debt Cleanup | 1/1 | Complete    | 2026-03-26 |
-| 11. Helius RPC Provider Rotation | 4/4 | Complete   | 2026-03-27 |
+| 11. Helius RPC Provider Rotation | 4/4 | Complete    | 2026-03-27 |
