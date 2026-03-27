@@ -115,3 +115,15 @@ None - no external service configuration required.
 ---
 *Phase: 11-helius-rpc-provider-rotation*
 *Completed: 2026-03-26*
+
+## Self-Check: PASSED
+
+- FOUND: src/fetchers/providers/types.ts
+- FOUND: src/fetchers/providers/helius-provider.ts
+- FOUND: src/fetchers/providers/__tests__/helius-provider.test.ts
+- FOUND: .planning/phases/11-helius-rpc-provider-rotation/11-01-SUMMARY.md
+- FOUND: ec167b5 (chore ROADMAP.md update)
+- FOUND: 92e16df (feat types.ts)
+- FOUND: c02a96e (test RED)
+- FOUND: 2e52456 (feat GREEN helius-provider.ts)
+- FOUND: 157376e (docs metadata commit)

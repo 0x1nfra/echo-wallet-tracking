@@ -218,3 +218,12 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 9. Fix Incremental Detection Timestamp Bug | 0/? | Pending | — |
 | 10. Tech Debt Cleanup | 1/1 | Complete    | 2026-03-26 |
 | 11. Helius RPC Provider Rotation | 4/4 | Complete    | 2026-03-27 |
+
+### Phase 12: Signal Accuracy Logging
+
+**Goal:** [To be planned]
+**Depends on:** Phase 11
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 12 to break down)
