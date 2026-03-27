@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 12-signal-accuracy-logging plan 02 — outcome-resolver and accuracy aggregation, TDD tests, 237 total tests green
-last_updated: "2026-03-27T05:36:42.655Z"
+stopped_at: Completed 12-signal-accuracy-logging plan 03 — async engine with tier transition detection, loop awaits engine + resolveOutcomes, 237 tests green
+last_updated: "2026-03-27T05:43:30.910Z"
 last_activity: 2026-03-15 — Phase 06 plan 01 complete; signal_tier + coordinated_wallet_count columns added, 153 tests passing
 progress:
   total_phases: 12
   completed_phases: 10
   total_plans: 37
-  completed_plans: 35
+  completed_plans: 36
   percent: 92
 ---
 
@@ -133,6 +133,7 @@ Progress: [██░░░░░░░░] 67% (Phase 6)
 | Phase 11-helius-rpc-provider-rotation P04 | 6 | 2 tasks | 6 files |
 | Phase 12-signal-accuracy-logging P01 | 7 | 2 tasks | 3 files |
 | Phase 12-signal-accuracy-logging P02 | 16 | 2 tasks | 4 files |
+| Phase 12-signal-accuracy-logging P03 | 5 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -233,6 +234,8 @@ Recent decisions affecting current work:
 - [Phase 12-signal-accuracy-logging]: signal_events decoupled from token_signals (no FK) — append-only log for accuracy without coupling to signal engine
 - [Phase 12-signal-accuracy-logging]: resolveOutcomes uses three explicit window blocks (1h, 4h, 24h) — drizzle set() requires static keys, not dynamic column references
 - [Phase 12-signal-accuracy-logging]: MIN_SAMPLE=20 exported from accuracy.ts so dashboard and Telegram can import it for consistent display
+- [Phase 12-signal-accuracy-logging]: computeAllTokenSignals async change backward-compatible: db injection preserved, dexFetcher injectable parameter has default value
+- [Phase 12-signal-accuracy-logging]: Tier transition condition excludes inactive: existingTier !== newTier && newTier !== 'inactive' — suppression events do not flood signal_events
 
 ### Pending Todos
 
@@ -245,6 +248,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T05:36:42.653Z
-Stopped at: Completed 12-signal-accuracy-logging plan 02 — outcome-resolver and accuracy aggregation, TDD tests, 237 total tests green
+Last session: 2026-03-27T05:43:30.908Z
+Stopped at: Completed 12-signal-accuracy-logging plan 03 — async engine with tier transition detection, loop awaits engine + resolveOutcomes, 237 tests green
 Resume file: None
