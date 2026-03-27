@@ -1,0 +1,93 @@
+<%
+// Tier display order: strong, moderate, weak (in that order)
+const TIER_ORDER = ['strong', 'moderate', 'weak'];
+const statsMap = {};
+(stats || []).forEach(function(s) { statsMap[s.tier] = s; });
+%>
+
+<!-- Aggregate accuracy stats by tier -->
+<div class="accuracy-stats">
+  <table>
+    <thead>
+      <tr>
+        <th>Tier</th>
+        <th>Signals</th>
+        <th>Hit Rate (24h)</th>
+        <th>Avg 1h</th>
+        <th>Avg 4h</th>
+        <th>Avg 24h</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% TIER_ORDER.filter(function(t) { return t !== 'weak'; }).forEach(function(tier) { %>
+      <%
+        const s = statsMap[tier];
+        const totalResolved = s ? s.total_resolved : 0;
+        const hitRateStr = !s ? '—'
+          : s.hit_rate_24h === null ? 'Insufficient data (' + totalResolved + '/20)'
+          : (s.hit_rate_24h * 100).toFixed(1) + '%';
+        const avg1h = s && s.avg_return_1h != null ? (s.avg_return_1h * 100).toFixed(1) + '%' : '—';
+        const avg4h = s && s.avg_return_4h != null ? (s.avg_return_4h * 100).toFixed(1) + '%' : '—';
+        const avg24h = s && s.avg_return_24h != null ? (s.avg_return_24h * 100).toFixed(1) + '%' : '—';
+      %>
+      <tr>
+        <td><%= tier %></td>
+        <td><%= totalResolved %></td>
+        <td><%= hitRateStr %></td>
+        <td><%= avg1h %></td>
+        <td><%= avg4h %></td>
+        <td><%= avg24h %></td>
+      </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</div>
+
+<!-- Recent signal events (all tiers including weak) -->
+<div class="recent-events">
+  <h3>Recent Signal Events</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Token</th>
+        <th>Score</th>
+        <th>Tier</th>
+        <th>Entry Price</th>
+        <th>1h</th>
+        <th>4h</th>
+        <th>24h</th>
+        <th>Fired</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% (recentEvents || []).forEach(function(e) { %>
+      <%
+        function fmtPct(pct, status) {
+          if (status === 'failed') return 'rug';
+          if (pct == null) return '—';
+          return (pct >= 0 ? '+' : '') + (pct * 100).toFixed(1) + '%';
+        }
+        function fmtStatus(status) {
+          if (!status) return '';
+          if (status === 'hit') return ' ✓';
+          if (status === 'miss') return ' ✗';
+          return '';
+        }
+      %>
+      <tr>
+        <td><code><%= e.token_mint.slice(0, 8) %>...</code></td>
+        <td><%= e.signal_score != null ? e.signal_score.toFixed(1) : '—' %></td>
+        <td><%= e.tier %></td>
+        <td><%= e.entry_price != null ? '$' + e.entry_price.toPrecision(4) : '—' %></td>
+        <td><%= fmtPct(e.outcome_1h_pct, e.outcome_1h_status) %><%= fmtStatus(e.outcome_1h_status) %></td>
+        <td><%= fmtPct(e.outcome_4h_pct, e.outcome_4h_status) %><%= fmtStatus(e.outcome_4h_status) %></td>
+        <td><%= fmtPct(e.outcome_24h_pct, e.outcome_24h_status) %><%= fmtStatus(e.outcome_24h_status) %></td>
+        <td><%= e.fired_at ? new Date(e.fired_at).toLocaleDateString() : '—' %></td>
+      </tr>
+      <% }); %>
+      <% if (!recentEvents || recentEvents.length === 0) { %>
+      <tr><td colspan="8" style="text-align:center;color:#888;">(no signal events yet)</td></tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>

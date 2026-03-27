@@ -24,6 +24,7 @@ export async function buildServer() {
   await app.register(import('./routes/signals.js'));
   await app.register(import('./routes/wallets.js'));
   await app.register(import('./routes/status.js'));
+  await app.register(import('./routes/accuracy.js'));
 
   // Dashboard root — query and pass data for initial server-side render
   app.get('/', async (_req, reply) => {
