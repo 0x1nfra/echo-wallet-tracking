@@ -29,8 +29,9 @@ export async function buildServer() {
   // Dashboard root — query and pass data for initial server-side render
   app.get('/', async (_req, reply) => {
     const { db } = await import('../db/index.js');
-    const { token_signals, token_metadata, wallets, wallet_metrics, swaps } = await import('../db/schema.js');
+    const { token_signals, token_metadata, wallets, wallet_metrics, swaps, signal_events } = await import('../db/schema.js');
     const { desc, eq, and, or, isNull, isNotNull, lt, lte, gt } = await import('drizzle-orm');
+    const { getAccuracyStats, MIN_SAMPLE } = await import('../signals/accuracy.js');
 
     const signals = db.select().from(token_signals).orderBy(desc(token_signals.signal_score)).all();
     const metas = db.select().from(token_metadata).all();
@@ -73,7 +74,13 @@ export async function buildServer() {
       .all()
       .map(w => ({ ...w, score: metricsMap.get(w.address)?.score_total ?? null }));
 
-    return reply.view('dashboard', { rows, active: activeWalletRows, probationary: probationaryWalletRows }, { layout: 'layout' });
+    const accuracyStats = getAccuracyStats();
+    const recentSignalEvents = db.select().from(signal_events)
+      .orderBy(desc(signal_events.fired_at))
+      .limit(50)
+      .all();
+
+    return reply.view('dashboard', { rows, active: activeWalletRows, probationary: probationaryWalletRows, accuracyStats, recentSignalEvents, MIN_SAMPLE }, { layout: 'layout' });
   });
 
   return app;
