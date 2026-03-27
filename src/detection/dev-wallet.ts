@@ -191,8 +191,8 @@ async function getDefaultDb(): Promise<DevWalletDb> {
 }
 
 async function getDefaultFetcher(): Promise<DevWalletFetcher> {
-  const { createHeliusFetcher } = await import('../fetchers/helius.js');
-  const f = createHeliusFetcher();
+  const { createProviderRouter } = await import('../fetchers/providers/index.js');
+  const f = createProviderRouter();
 
   // Adapt HeliusFetcher to DevWalletFetcher interface
   return {
@@ -207,8 +207,6 @@ async function getDefaultFetcher(): Promise<DevWalletFetcher> {
         return [];
       }
     },
-    getTransaction: async (sig: string) => {
-      return f.getTransaction(sig) as any;
-    },
+    // getTransaction not available on ProviderRouter (locked decision: only bundler/wash-trader use it)
   };
 }

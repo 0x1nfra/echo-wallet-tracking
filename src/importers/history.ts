@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { wallets, swaps, parse_errors } from '../db/schema.js';
-import { createHeliusFetcher } from '../fetchers/helius.js';
+import { createProviderRouter } from '../fetchers/providers/index.js';
 import { parseSwaps, applyFifo } from '../parsers/swap.js';
 import type { SwapRow } from '../types/transaction.js';
 import type { HeliusTransaction } from '../types/index.js';
@@ -17,7 +17,7 @@ export async function importWalletHistory(
   address: string,
   options: ImportOptions = {}
 ): Promise<void> {
-  const fetcher = createHeliusFetcher();
+  const fetcher = createProviderRouter();
   const afterTimestamp = options.fullHistory
     ? 0
     : Math.floor(Date.now() / 1000) - DAYS_180_IN_SECONDS;

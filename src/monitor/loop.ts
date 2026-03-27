@@ -1,7 +1,7 @@
 import { eq, inArray } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { wallets, swaps } from '../db/schema.js';
-import { createHeliusFetcher } from '../fetchers/helius.js';
+import { createProviderRouter } from '../fetchers/providers/index.js';
 import { parseSwaps, applyFifo } from '../parsers/swap.js';
 import { runDetectionIfNeeded } from '../detection/engine.js';
 import { scoreWalletIfNeeded } from '../scoring/engine.js';
@@ -92,7 +92,7 @@ export class MonitorLoop {
 
     console.log(`[monitor] cycle start — ${trackedWallets.length} wallets`);
 
-    const fetcher = createHeliusFetcher();
+    const fetcher = createProviderRouter();
     let processed = 0;
     let removed = 0;
     let failed = 0;

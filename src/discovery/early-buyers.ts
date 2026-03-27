@@ -5,7 +5,7 @@
  * after the first recorded swap — direct discovery candidates.
  */
 
-import { createHeliusFetcher } from '../fetchers/helius.js';
+import { createProviderRouter } from '../fetchers/providers/index.js';
 import type { HeliusTransaction } from '../types/index.js';
 
 /** Window after launch (seconds) to consider a buyer "early" */
@@ -42,7 +42,7 @@ export async function fetchEarlyBuyers(
   mint: string,
   fetcher?: EarlySwapsFetcher
 ): Promise<string[]> {
-  const f = fetcher ?? createHeliusFetcher();
+  const f = fetcher ?? createProviderRouter();
 
   const txs = await f.fetchEarlySwapsForMint(mint, 100, 'asc');
 

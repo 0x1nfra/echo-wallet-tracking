@@ -7,7 +7,7 @@
  * Requirements: DISC-04
  */
 
-import { createHeliusFetcher } from '../fetchers/helius.js';
+import { createProviderRouter } from '../fetchers/providers/index.js';
 import type { HeliusTransaction } from '../types/index.js';
 
 /** Maximum unique co-trader addresses to return */
@@ -42,7 +42,7 @@ export async function fetchCoTraders(
   knownAddresses: string[],
   fetcher?: CoTraderFetcher,
 ): Promise<string[]> {
-  const f = fetcher ?? createHeliusFetcher();
+  const f = fetcher ?? createProviderRouter();
   const knownSet = new Set(knownAddresses);
   const seen = new Set<string>();
   const coTraders: string[] = [];
