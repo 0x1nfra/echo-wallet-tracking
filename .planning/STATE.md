@@ -118,6 +118,10 @@ Progress: [██░░░░░░░░] 67% (Phase 6)
 
 ## Accumulated Context
 
+### Roadmap Evolution
+
+- Phase 12 added: Signal Accuracy Logging
+
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
