@@ -254,11 +254,12 @@ describe('resolveOutcomes', () => {
     // resolved counts total across all windows — 20 for 1h window
     expect(resolved).toBe(20);
 
-    // Verify 5 rows still have null outcome_1h_price
-    const unresolved = db.select().from(signal_events)
-      .where(eq(signal_events.is_fully_resolved, false))
-      .all();
-    expect(unresolved.length).toBe(5);
+    // Verify 5 rows still have null outcome_1h_price (not yet processed)
+    const allRows = db.select().from(signal_events).all();
+    const withNull1h = allRows.filter((r) => r.outcome_1h_price === null);
+    const withResolved1h = allRows.filter((r) => r.outcome_1h_price !== null);
+    expect(withResolved1h.length).toBe(20);
+    expect(withNull1h.length).toBe(5);
   });
 
   it('is idempotent — calling resolveOutcomes twice does not overwrite already-resolved outcome_1h_price', async () => {
