@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 12-signal-accuracy-logging plan 03 — async engine with tier transition detection, loop awaits engine + resolveOutcomes, 237 tests green
-last_updated: "2026-03-27T05:43:30.910Z"
+stopped_at: Completed 12-signal-accuracy-logging plan 04 — accuracy dashboard section + /accuracy Telegram command, Phase 12 complete, 237 tests green
+last_updated: "2026-03-27T05:47:46.763Z"
 last_activity: 2026-03-15 — Phase 06 plan 01 complete; signal_tier + coordinated_wallet_count columns added, 153 tests passing
 progress:
   total_phases: 12
-  completed_phases: 10
+  completed_phases: 11
   total_plans: 37
-  completed_plans: 36
+  completed_plans: 37
   percent: 92
 ---
 
@@ -134,6 +134,7 @@ Progress: [██░░░░░░░░] 67% (Phase 6)
 | Phase 12-signal-accuracy-logging P01 | 7 | 2 tasks | 3 files |
 | Phase 12-signal-accuracy-logging P02 | 16 | 2 tasks | 4 files |
 | Phase 12-signal-accuracy-logging P03 | 5 | 2 tasks | 3 files |
+| Phase 12-signal-accuracy-logging P04 | 2 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -236,6 +237,8 @@ Recent decisions affecting current work:
 - [Phase 12-signal-accuracy-logging]: MIN_SAMPLE=20 exported from accuracy.ts so dashboard and Telegram can import it for consistent display
 - [Phase 12-signal-accuracy-logging]: computeAllTokenSignals async change backward-compatible: db injection preserved, dexFetcher injectable parameter has default value
 - [Phase 12-signal-accuracy-logging]: Tier transition condition excludes inactive: existingTier !== newTier && newTier !== 'inactive' — suppression events do not flood signal_events
+- [Phase 12-signal-accuracy-logging]: Weak tier excluded from primary accuracy stats table but included in recent signal events table — accurate history visible without inflating primary metrics
+- [Phase 12-signal-accuracy-logging]: /accuracy command is on-demand only, consistent with all other bot commands
 
 ### Pending Todos
 
@@ -248,6 +251,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T05:43:30.908Z
-Stopped at: Completed 12-signal-accuracy-logging plan 03 — async engine with tier transition detection, loop awaits engine + resolveOutcomes, 237 tests green
+Last session: 2026-03-27T05:47:46.761Z
+Stopped at: Completed 12-signal-accuracy-logging plan 04 — accuracy dashboard section + /accuracy Telegram command, Phase 12 complete, 237 tests green
 Resume file: None
