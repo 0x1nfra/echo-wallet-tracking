@@ -3,11 +3,27 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
+stopped_at: Completed 12-signal-accuracy-logging plan 01 — signal_events table added to schema and SQLite, migration 0009 applied, 210 tests green
+last_updated: "2026-03-27T05:17:58.434Z"
+last_activity: 2026-03-15 — Phase 06 plan 01 complete; signal_tier + coordinated_wallet_count columns added, 153 tests passing
+progress:
+  total_phases: 12
+  completed_phases: 10
+  total_plans: 37
+  completed_plans: 34
+  percent: 92
+---
+
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: planning
 stopped_at: Completed 11-helius-rpc-provider-rotation plan 04 — 5 callsites migrated to createProviderRouter, 210 tests green, phase 11 complete
 last_updated: "2026-03-27T02:45:25.649Z"
 last_activity: 2026-03-15 — Phase 06 plan 01 complete; signal_tier + coordinated_wallet_count columns added, 153 tests passing
 progress:
-  total_phases: 11
+  [█████████░] 92%
   completed_phases: 11
   total_plans: 33
   completed_plans: 33
@@ -115,6 +131,7 @@ Progress: [██░░░░░░░░] 67% (Phase 6)
 | Phase 11-helius-rpc-provider-rotation PP02 | 3 | 2 tasks | 3 files |
 | Phase 11-helius-rpc-provider-rotation P03 | 3 | 1 tasks | 3 files |
 | Phase 11-helius-rpc-provider-rotation P04 | 6 | 2 tasks | 6 files |
+| Phase 12-signal-accuracy-logging P01 | 7 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -211,6 +228,8 @@ Recent decisions affecting current work:
 - [Phase 11-helius-rpc-provider-rotation]: events explicitly set to undefined on ShyftProvider normalize() output — forces tokenTransfers fallback path in parseSwaps
 - [Phase 11-helius-rpc-provider-rotation]: shyftQueue concurrency: 2 for Shyft free tier — more conservative than heliusQueue (concurrency: 5)
 - [Phase 11-helius-rpc-provider-rotation]: dev-wallet getDefaultFetcher adapter omits optional getTransaction when backed by ProviderRouter — DevWalletFetcher.getTransaction is optional, detectDevWallet guards usage with if(fetcher.getTransaction)
+- [Phase 12-signal-accuracy-logging]: Migration 0009 journal when:1773510000004 — strictly greater than 0008's 1773510000003 for drizzle migrate() to apply
+- [Phase 12-signal-accuracy-logging]: signal_events decoupled from token_signals (no FK) — append-only log for accuracy without coupling to signal engine
 
 ### Pending Todos
 
@@ -223,6 +242,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T02:45:25.646Z
-Stopped at: Completed 11-helius-rpc-provider-rotation plan 04 — 5 callsites migrated to createProviderRouter, 210 tests green, phase 11 complete
+Last session: 2026-03-27T05:17:58.430Z
+Stopped at: Completed 12-signal-accuracy-logging plan 01 — signal_events table added to schema and SQLite, migration 0009 applied, 210 tests green
 Resume file: None
