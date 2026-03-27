@@ -8,8 +8,9 @@
  */
 import { and, eq, gte, inArray, gt, isNull, lt, or } from 'drizzle-orm';
 import { db as defaultDb } from '../db/index.js';
-import { swaps, wallets, wallet_metrics, wallet_flags, token_signals } from '../db/schema.js';
+import { swaps, wallets, wallet_metrics, wallet_flags, token_signals, signal_events } from '../db/schema.js';
 import { computeSignalScore } from './scorer.js';
+import { DexScreenerFetcher } from '../fetchers/dexscreener.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -44,9 +45,10 @@ export interface SignalCycleSummary {
  *   - signalScore === 0 AND existing record with score > 0: mark inactive, increment `suppressed`
  *   - signalScore === 0 AND no existing record: skip (do not insert)
  */
-export function computeAllTokenSignals(
+export async function computeAllTokenSignals(
   db: typeof defaultDb = defaultDb,
-): SignalCycleSummary {
+  dexFetcher: DexScreenerFetcher = new DexScreenerFetcher(),
+): Promise<SignalCycleSummary> {
   const nowSec = Math.floor(Date.now() / 1000);
   const nowMs = Date.now();
   const oneHourAgoSec = nowSec - 3600;
@@ -137,6 +139,12 @@ export function computeAllTokenSignals(
   let suppressed = 0;
 
   for (const tokenMint of allTokenMints) {
+    // Read current tier before upsert (for transition detection)
+    const existingTier = db.select({ signal_tier: token_signals.signal_tier })
+      .from(token_signals)
+      .where(eq(token_signals.token_mint, tokenMint))
+      .get()?.signal_tier ?? null;
+
     // Load ALL swaps for this token from smart wallets (no time filter — for holder calc)
     const tokenSwaps = db.select({
       wallet_address: swaps.wallet_address,
@@ -194,6 +202,30 @@ export function computeAllTokenSignals(
       sellsLast1h,
       totalSmartBuysLast24h,
     });
+
+    // ---------------------------------------------------------------------------
+    // Tier transition detection — insert signal_events row on any active tier change
+    // ---------------------------------------------------------------------------
+    const newTier = result.signalTier;  // 'strong' | 'moderate' | 'weak' | 'inactive'
+    const isTransition =
+      existingTier !== newTier &&
+      newTier !== 'inactive';  // transitions TO inactive are NOT signal fire events
+
+    if (isTransition) {
+      // Fetch entry price immediately at transition moment
+      const entryPrice = await dexFetcher.getTokenPrice(tokenMint);
+      db.insert(signal_events).values({
+        token_mint: tokenMint,
+        fired_at: nowMs,
+        tier: newTier as 'strong' | 'moderate' | 'weak',
+        signal_score: result.signalScore,
+        smart_wallet_count: result.smartWalletCount,
+        buy_velocity: result.buyVelocity1h,
+        holder_score: result.pnlWeightedHolderScore,
+        coordinated_wallet_count: result.coordinatedWalletCount,
+        entry_price: entryPrice,
+      }).run();
+    }
 
     const hasExistingRecord = existingActiveSet.has(tokenMint);
 
