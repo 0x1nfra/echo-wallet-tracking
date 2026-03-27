@@ -7,6 +7,7 @@ import { runDetectionIfNeeded } from '../detection/engine.js';
 import { scoreWalletIfNeeded } from '../scoring/engine.js';
 import { checkRemovalPolicies } from './removal.js';
 import { computeAllTokenSignals } from '../signals/engine.js';
+import { resolveOutcomes } from '../signals/outcome-resolver.js';
 import { cycleEmitter } from '../api/cycle-events.js';
 
 const CYCLE_INTERVAL_MS = 30_000;
@@ -177,10 +178,12 @@ export class MonitorLoop {
       `[monitor] cycle complete — ${processed} processed, ${removed} removed, ${failed} failed in ${durationMs}ms`,
     );
 
-    // Post-cycle: update token signals (non-fatal — wrapped in try/catch)
+    // Post-cycle: update token signals and resolve outcomes (non-fatal — wrapped in try/catch)
     try {
-      const { updated, suppressed } = computeAllTokenSignals();
+      const { updated, suppressed } = await computeAllTokenSignals();
       console.log(`[monitor] signals — ${updated} updated, ${suppressed} suppressed`);
+      const resolvedCount = await resolveOutcomes();
+      console.log(`[monitor] outcomes resolved: ${resolvedCount}`);
       cycleEmitter.emit('cycle', { timestamp: Date.now() });
     } catch (err) {
       console.error(

@@ -162,3 +162,30 @@ export const discoveryCandidates = sqliteTable('discovery_candidates', {
   result: text('result', { enum: ['added', 'rejected', 'already_tracked', 'dry_run'] }).notNull(),
   evaluated_at: integer('evaluated_at', { mode: 'number' }).notNull().default(sql`(unixepoch('now') * 1000)`),
 });
+
+// Append-only audit log for tier transition events — Phase 12 Signal Accuracy Logging
+export const signal_events = sqliteTable('signal_events', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  token_mint: text('token_mint').notNull(),
+  fired_at: integer('fired_at', { mode: 'number' }).notNull(),
+  tier: text('tier', { enum: ['strong', 'moderate', 'weak'] }).notNull(),
+  signal_score: real('signal_score').notNull(),
+  smart_wallet_count: integer('smart_wallet_count').notNull(),
+  buy_velocity: real('buy_velocity').notNull(),
+  holder_score: real('holder_score').notNull(),
+  coordinated_wallet_count: integer('coordinated_wallet_count').notNull(),
+  entry_price: real('entry_price'),
+  outcome_1h_price: real('outcome_1h_price'),
+  outcome_1h_pct: real('outcome_1h_pct'),
+  outcome_1h_status: text('outcome_1h_status', { enum: ['hit', 'miss', 'failed'] }),
+  outcome_4h_price: real('outcome_4h_price'),
+  outcome_4h_pct: real('outcome_4h_pct'),
+  outcome_4h_status: text('outcome_4h_status', { enum: ['hit', 'miss', 'failed'] }),
+  outcome_24h_price: real('outcome_24h_price'),
+  outcome_24h_pct: real('outcome_24h_pct'),
+  outcome_24h_status: text('outcome_24h_status', { enum: ['hit', 'miss', 'failed'] }),
+  is_fully_resolved: integer('is_fully_resolved', { mode: 'boolean' }).notNull().default(false),
+  created_at: integer('created_at', { mode: 'number' })
+    .notNull()
+    .default(sql`(unixepoch('now') * 1000)`),
+});

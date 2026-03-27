@@ -1,4 +1,17 @@
 <section>
+  <h2>Signal Accuracy</h2>
+  <div hx-ext="sse" sse-connect="/events/cycle">
+    <div id="accuracy-stats"
+      hx-get="/api/accuracy/partial"
+      hx-trigger="sse:cycle"
+      hx-target="#accuracy-stats"
+      hx-swap="innerHTML">
+      <%- include('partials/accuracy_stats', { stats: accuracyStats, recentEvents: recentSignalEvents, MIN_SAMPLE: 20 }) %>
+    </div>
+  </div>
+</section>
+
+<section>
   <h2>Signal Feed</h2>
   <div x-data="{ activeTier: 'all' }">
     <div class="chip-bar">

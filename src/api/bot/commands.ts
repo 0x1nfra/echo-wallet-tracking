@@ -3,6 +3,7 @@ import { db } from '../../db/index.js';
 import { wallets, wallet_metrics, wallet_flags, token_signals, token_metadata, swaps } from '../../db/schema.js';
 import { eq, and, desc, count, gt } from 'drizzle-orm';
 import { getTopHolders } from './alerts.js';
+import { getAccuracyStats, MIN_SAMPLE } from '../../signals/accuracy.js';
 
 export function registerCommands(bot: Bot): void {
   // /status — system health
@@ -111,6 +112,40 @@ export function registerCommands(bot: Bot): void {
       `Exit pressure: ${signal.exit_pressure?.toFixed(2) ?? '—'}\n` +
       `Coordinated wallets: ${signal.coordinated_wallet_count ?? 0}\n` +
       `Updated: ${signal.updated_at ? new Date(signal.updated_at).toLocaleString() : 'unknown'}`,
+      { parse_mode: 'HTML' }
+    );
+  });
+
+  // /accuracy — signal accuracy stats by tier
+  bot.command('accuracy', async (ctx) => {
+    const stats = getAccuracyStats();
+
+    if (stats.length === 0) {
+      return ctx.reply('No resolved signal outcomes yet. Check back after 24h of monitoring.');
+    }
+
+    const statsMap = new Map(stats.map(s => [s.tier, s]));
+    const lines = ['strong', 'moderate'].map(tier => {
+      const s = statsMap.get(tier);
+      if (!s) return `<b>${tier}:</b> No data`;
+      if (s.total_resolved < MIN_SAMPLE) {
+        return `<b>${tier}:</b> Insufficient data (${s.total_resolved}/${MIN_SAMPLE})`;
+      }
+      const hr = (s.hit_rate_24h! * 100).toFixed(1);
+      const avg24 = s.avg_return_24h != null ? (s.avg_return_24h * 100).toFixed(1) + '%' : '—';
+      const avg1h = s.avg_return_1h != null ? (s.avg_return_1h * 100).toFixed(1) + '%' : '—';
+      return `<b>${tier}:</b> ${hr}% hit rate | 1h avg: ${avg1h} | 24h avg: ${avg24} | n=${s.total_resolved}`;
+    });
+
+    // Include weak tier stats if available (for tier differentiation info, not primary display)
+    const weakStats = statsMap.get('weak');
+    if (weakStats && weakStats.total_resolved >= MIN_SAMPLE) {
+      const weakDir = weakStats.hit_rate_24h != null ? (weakStats.hit_rate_24h * 100).toFixed(1) + '% directional' : '—';
+      lines.push(`<b>weak:</b> ${weakDir} | n=${weakStats.total_resolved}`);
+    }
+
+    await ctx.reply(
+      `<b>Signal Accuracy</b>\n\nThresholds: Strong ≥+50%, Moderate ≥+25%, Weak=directional\n\n${lines.join('\n')}`,
       { parse_mode: 'HTML' }
     );
   });

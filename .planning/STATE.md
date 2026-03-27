@@ -3,11 +3,27 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
+stopped_at: Completed 12-signal-accuracy-logging plan 04 — accuracy dashboard section + /accuracy Telegram command, Phase 12 complete, 237 tests green
+last_updated: "2026-03-27T05:47:46.763Z"
+last_activity: 2026-03-15 — Phase 06 plan 01 complete; signal_tier + coordinated_wallet_count columns added, 153 tests passing
+progress:
+  total_phases: 12
+  completed_phases: 11
+  total_plans: 37
+  completed_plans: 37
+  percent: 92
+---
+
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: planning
 stopped_at: Completed 11-helius-rpc-provider-rotation plan 04 — 5 callsites migrated to createProviderRouter, 210 tests green, phase 11 complete
 last_updated: "2026-03-27T02:45:25.649Z"
 last_activity: 2026-03-15 — Phase 06 plan 01 complete; signal_tier + coordinated_wallet_count columns added, 153 tests passing
 progress:
-  total_phases: 11
+  [█████████░] 92%
   completed_phases: 11
   total_plans: 33
   completed_plans: 33
@@ -115,6 +131,10 @@ Progress: [██░░░░░░░░] 67% (Phase 6)
 | Phase 11-helius-rpc-provider-rotation PP02 | 3 | 2 tasks | 3 files |
 | Phase 11-helius-rpc-provider-rotation P03 | 3 | 1 tasks | 3 files |
 | Phase 11-helius-rpc-provider-rotation P04 | 6 | 2 tasks | 6 files |
+| Phase 12-signal-accuracy-logging P01 | 7 | 2 tasks | 3 files |
+| Phase 12-signal-accuracy-logging P02 | 16 | 2 tasks | 4 files |
+| Phase 12-signal-accuracy-logging P03 | 5 | 2 tasks | 3 files |
+| Phase 12-signal-accuracy-logging P04 | 2 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -211,6 +231,14 @@ Recent decisions affecting current work:
 - [Phase 11-helius-rpc-provider-rotation]: events explicitly set to undefined on ShyftProvider normalize() output — forces tokenTransfers fallback path in parseSwaps
 - [Phase 11-helius-rpc-provider-rotation]: shyftQueue concurrency: 2 for Shyft free tier — more conservative than heliusQueue (concurrency: 5)
 - [Phase 11-helius-rpc-provider-rotation]: dev-wallet getDefaultFetcher adapter omits optional getTransaction when backed by ProviderRouter — DevWalletFetcher.getTransaction is optional, detectDevWallet guards usage with if(fetcher.getTransaction)
+- [Phase 12-signal-accuracy-logging]: Migration 0009 journal when:1773510000004 — strictly greater than 0008's 1773510000003 for drizzle migrate() to apply
+- [Phase 12-signal-accuracy-logging]: signal_events decoupled from token_signals (no FK) — append-only log for accuracy without coupling to signal engine
+- [Phase 12-signal-accuracy-logging]: resolveOutcomes uses three explicit window blocks (1h, 4h, 24h) — drizzle set() requires static keys, not dynamic column references
+- [Phase 12-signal-accuracy-logging]: MIN_SAMPLE=20 exported from accuracy.ts so dashboard and Telegram can import it for consistent display
+- [Phase 12-signal-accuracy-logging]: computeAllTokenSignals async change backward-compatible: db injection preserved, dexFetcher injectable parameter has default value
+- [Phase 12-signal-accuracy-logging]: Tier transition condition excludes inactive: existingTier !== newTier && newTier !== 'inactive' — suppression events do not flood signal_events
+- [Phase 12-signal-accuracy-logging]: Weak tier excluded from primary accuracy stats table but included in recent signal events table — accurate history visible without inflating primary metrics
+- [Phase 12-signal-accuracy-logging]: /accuracy command is on-demand only, consistent with all other bot commands
 
 ### Pending Todos
 
@@ -223,6 +251,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T02:45:25.646Z
-Stopped at: Completed 11-helius-rpc-provider-rotation plan 04 — 5 callsites migrated to createProviderRouter, 210 tests green, phase 11 complete
+Last session: 2026-03-27T05:47:46.761Z
+Stopped at: Completed 12-signal-accuracy-logging plan 04 — accuracy dashboard section + /accuracy Telegram command, Phase 12 complete, 237 tests green
 Resume file: None

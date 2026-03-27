@@ -19,6 +19,11 @@ import {
   wallet_flags,
   token_signals,
 } from '../../db/schema.js';
+import { DexScreenerFetcher } from '../../fetchers/dexscreener.js';
+
+// Minimal no-op mock fetcher — avoids real HTTP calls in tests
+// entry_price = null is valid (excluded from accuracy calc denominator)
+const mockFetcher = { getTokenPrice: async (_mint: string) => null } as unknown as DexScreenerFetcher;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const MIGRATIONS_FOLDER = path.resolve(__dirname, '../../db/migrations');
@@ -98,29 +103,29 @@ describe('computeAllTokenSignals', () => {
   });
 
   // Test 1 — No smart wallets → return { updated: 0, suppressed: 0 }
-  it('returns zero counts when no confirmed-passing wallets exist', () => {
-    const result = computeAllTokenSignals(db);
+  it('returns zero counts when no confirmed-passing wallets exist', async () => {
+    const result = await computeAllTokenSignals(db, mockFetcher);
     expect(result).toEqual({ updated: 0, suppressed: 0 });
   });
 
   // Test 2 — Smart wallets exist but no swaps in last 24h → zero counts
-  it('returns zero counts when smart wallets have no recent swaps', () => {
+  it('returns zero counts when smart wallets have no recent swaps', async () => {
     insertSmartWallet(db, 'wallet1');
     // Insert swap older than 24h
     insertSwap(db, 'wallet1', 'tokenA', 'buy', 100, nowSec() - 90_000);
-    const result = computeAllTokenSignals(db);
+    const result = await computeAllTokenSignals(db, mockFetcher);
     expect(result).toEqual({ updated: 0, suppressed: 0 });
   });
 
   // Test 3 — Token with ≥2 current holders and recent buys → updated=1
-  it('upserts token signal when ≥2 current holders with recent activity', () => {
+  it('upserts token signal when ≥2 current holders with recent activity', async () => {
     insertSmartWallet(db, 'wallet1', 80);
     insertSmartWallet(db, 'wallet2', 75);
     const recentTs = nowSec() - 1800; // 30 min ago (within 24h and 1h)
     insertSwap(db, 'wallet1', 'tokenA', 'buy', 100, recentTs);
     insertSwap(db, 'wallet2', 'tokenA', 'buy', 100, recentTs);
 
-    const result = computeAllTokenSignals(db);
+    const result = await computeAllTokenSignals(db, mockFetcher);
     expect(result.updated).toBe(1);
     expect(result.suppressed).toBe(0);
 
@@ -135,13 +140,13 @@ describe('computeAllTokenSignals', () => {
   });
 
   // Test 4 — Token with 1 current holder (< MIN_SMART_WALLETS) + no existing record → skip (do not insert)
-  it('does NOT insert new record when token score is 0 and no existing record', () => {
+  it('does NOT insert new record when token score is 0 and no existing record', async () => {
     insertSmartWallet(db, 'wallet1', 80);
     const recentTs = nowSec() - 1800;
     insertSwap(db, 'wallet1', 'tokenA', 'buy', 100, recentTs);
     // Only 1 holder → score=0
 
-    const result = computeAllTokenSignals(db);
+    const result = await computeAllTokenSignals(db, mockFetcher);
     expect(result.updated).toBe(0);
     expect(result.suppressed).toBe(0);
 
@@ -152,7 +157,7 @@ describe('computeAllTokenSignals', () => {
   });
 
   // Test 5 — Token that previously had active signal but now has < 2 holders → suppressed=1
-  it('marks existing active record as inactive when score drops to 0 (suppressed)', () => {
+  it('marks existing active record as inactive when score drops to 0 (suppressed)', async () => {
     // Pre-insert an active signal record for tokenA
     db.insert(token_signals).values({
       token_mint: 'tokenA',
@@ -171,7 +176,7 @@ describe('computeAllTokenSignals', () => {
     const recentTs = nowSec() - 1800;
     insertSwap(db, 'wallet1', 'tokenA', 'buy', 100, recentTs);
 
-    const result = computeAllTokenSignals(db);
+    const result = await computeAllTokenSignals(db, mockFetcher);
     expect(result.updated).toBe(0);
     expect(result.suppressed).toBe(1);
 
@@ -185,7 +190,7 @@ describe('computeAllTokenSignals', () => {
   });
 
   // Test 6 — Non-smart wallets (status != 'tracked' or detection_status != 'confirmed_passing') are excluded
-  it('excludes wallets that are not confirmed-passing', () => {
+  it('excludes wallets that are not confirmed-passing', async () => {
     // Insert wallets with wrong statuses
     db.insert(wallets).values({ address: 'wallet_removed', status: 'removed', detection_status: 'confirmed_passing' }).run();
     db.insert(wallets).values({ address: 'wallet_suspected', status: 'tracked', detection_status: 'suspected' }).run();
@@ -194,13 +199,13 @@ describe('computeAllTokenSignals', () => {
     insertSwap(db, 'wallet_removed', 'tokenA', 'buy', 100, recentTs);
     insertSwap(db, 'wallet_suspected', 'tokenA', 'buy', 100, recentTs);
 
-    const result = computeAllTokenSignals(db);
+    const result = await computeAllTokenSignals(db, mockFetcher);
     expect(result.updated).toBe(0);
     expect(result.suppressed).toBe(0);
   });
 
   // Test 7 — Coordinated wallets (active bundler flag) reduce signal score
-  it('applies coordination discount when wallets have active bundler flags', () => {
+  it('applies coordination discount when wallets have active bundler flags', async () => {
     insertSmartWallet(db, 'wallet1', 80);
     insertSmartWallet(db, 'wallet2', 80);
     const recentTs = nowSec() - 1800;
@@ -216,7 +221,7 @@ describe('computeAllTokenSignals', () => {
       cleared: false,
     }).run();
 
-    const result = computeAllTokenSignals(db);
+    const result = await computeAllTokenSignals(db, mockFetcher);
     expect(result.updated).toBe(1);
 
     const row = db.select().from(token_signals)
@@ -231,7 +236,7 @@ describe('computeAllTokenSignals', () => {
   });
 
   // Test 8 — All holders coordinated → score=0, suppressed if existing record
-  it('suppresses token when all current holders are coordinated', () => {
+  it('suppresses token when all current holders are coordinated', async () => {
     // Pre-insert active signal
     db.insert(token_signals).values({
       token_mint: 'tokenA',
@@ -262,13 +267,13 @@ describe('computeAllTokenSignals', () => {
       }).run();
     }
 
-    const result = computeAllTokenSignals(db);
+    const result = await computeAllTokenSignals(db, mockFetcher);
     expect(result.suppressed).toBe(1);
     expect(result.updated).toBe(0);
   });
 
   // Test 9 — Cleared bundler flags do NOT count as coordinated
-  it('ignores cleared bundler flags when computing coordination', () => {
+  it('ignores cleared bundler flags when computing coordination', async () => {
     insertSmartWallet(db, 'wallet1', 80);
     insertSmartWallet(db, 'wallet2', 80);
     const recentTs = nowSec() - 1800;
@@ -285,7 +290,7 @@ describe('computeAllTokenSignals', () => {
       cleared_at: Date.now(),
     }).run();
 
-    const result = computeAllTokenSignals(db);
+    const result = await computeAllTokenSignals(db, mockFetcher);
     expect(result.updated).toBe(1);
 
     const row = db.select().from(token_signals)
@@ -296,7 +301,7 @@ describe('computeAllTokenSignals', () => {
   });
 
   // Test 10 — Multiple tokens processed in one call
-  it('processes multiple tokens in a single call', () => {
+  it('processes multiple tokens in a single call', async () => {
     insertSmartWallet(db, 'wallet1', 80);
     insertSmartWallet(db, 'wallet2', 75);
     const recentTs = nowSec() - 1800;
@@ -305,21 +310,21 @@ describe('computeAllTokenSignals', () => {
     insertSwap(db, 'wallet1', 'tokenB', 'buy', 100, recentTs);
     insertSwap(db, 'wallet2', 'tokenB', 'buy', 100, recentTs);
 
-    const result = computeAllTokenSignals(db);
+    const result = await computeAllTokenSignals(db, mockFetcher);
     expect(result.updated).toBe(2);
     expect(result.suppressed).toBe(0);
   });
 
   // Test 11 — Upsert: running again updates existing records (no duplicates)
-  it('upserts on conflict — running twice does not create duplicate rows', () => {
+  it('upserts on conflict — running twice does not create duplicate rows', async () => {
     insertSmartWallet(db, 'wallet1', 80);
     insertSmartWallet(db, 'wallet2', 75);
     const recentTs = nowSec() - 1800;
     insertSwap(db, 'wallet1', 'tokenA', 'buy', 100, recentTs);
     insertSwap(db, 'wallet2', 'tokenA', 'buy', 100, recentTs);
 
-    computeAllTokenSignals(db);
-    computeAllTokenSignals(db); // Second run should upsert, not throw
+    await computeAllTokenSignals(db, mockFetcher);
+    await computeAllTokenSignals(db, mockFetcher); // Second run should upsert, not throw
 
     const rows = db.select().from(token_signals)
       .where(eq(token_signals.token_mint, 'tokenA'))
@@ -329,7 +334,7 @@ describe('computeAllTokenSignals', () => {
   });
 
   // Test 12 — Timestamp is Unix seconds (24h cutoff correctness)
-  it('uses Unix seconds for timestamp cutoffs — excludes swaps older than 24h', () => {
+  it('uses Unix seconds for timestamp cutoffs — excludes swaps older than 24h', async () => {
     insertSmartWallet(db, 'wallet1', 80);
     insertSmartWallet(db, 'wallet2', 75);
     // Swaps older than 24h — should not count as recent 24h activity
@@ -337,14 +342,14 @@ describe('computeAllTokenSignals', () => {
     insertSwap(db, 'wallet1', 'tokenA', 'buy', 100, oldTs);
     insertSwap(db, 'wallet2', 'tokenA', 'buy', 100, oldTs);
 
-    const result = computeAllTokenSignals(db);
+    const result = await computeAllTokenSignals(db, mockFetcher);
     // No recent 24h swaps → no tokenA in recent tokens → skip (no existing record either)
     expect(result.updated).toBe(0);
     expect(result.suppressed).toBe(0);
   });
 
   // Test 13 — buysLast1h counts only swaps within last 1 hour
-  it('counts buysLast1h using 1-hour window cutoff', () => {
+  it('counts buysLast1h using 1-hour window cutoff', async () => {
     insertSmartWallet(db, 'wallet1', 80);
     insertSmartWallet(db, 'wallet2', 80);
     const recentTs24h = nowSec() - 3600 * 2; // 2h ago (in 24h window but NOT in 1h window)
@@ -354,7 +359,7 @@ describe('computeAllTokenSignals', () => {
     insertSwap(db, 'wallet1', 'tokenA', 'buy', 100, recentTs1h); // only this counts for 1h
     insertSwap(db, 'wallet2', 'tokenA', 'buy', 100, recentTs1h); // and this
 
-    const result = computeAllTokenSignals(db);
+    const result = await computeAllTokenSignals(db, mockFetcher);
     expect(result.updated).toBe(1);
 
     const row = db.select().from(token_signals)
@@ -371,7 +376,7 @@ describe('computeAllTokenSignals', () => {
   // Test P1 — Wallet on active probation (probation_until in future) is excluded
   // Two wallets trade the same token. Without the guard: 2 holders → updated=1.
   // With the probation guard: probation wallet excluded → 1 holder → score=0 → updated=0.
-  it('excludes wallet with probation_until in the future from smart wallet query', () => {
+  it('excludes wallet with probation_until in the future from smart wallet query', async () => {
     const { db: testDb, sqlite: testSqlite } = createTestDb();
     const futureProbation = Date.now() + 86400000; // 24h from now
 
@@ -416,7 +421,7 @@ describe('computeAllTokenSignals', () => {
       }).run();
     }
 
-    const result = computeAllTokenSignals(testDb);
+    const result = await computeAllTokenSignals(testDb, mockFetcher);
     // Wallet on probation excluded → only 1 holder (wallet_normal_p1) → score=0 → updated=0
     expect(result).toEqual({ updated: 0, suppressed: 0 });
 
@@ -424,7 +429,7 @@ describe('computeAllTokenSignals', () => {
   });
 
   // Test P2 — Wallet with probation_until in the past IS included
-  it('includes wallet with probation_until in the past in smart wallet query', () => {
+  it('includes wallet with probation_until in the past in smart wallet query', async () => {
     const { db: testDb, sqlite: testSqlite } = createTestDb();
     const pastProbation = Date.now() - 86400000; // 24h ago
 
@@ -465,7 +470,7 @@ describe('computeAllTokenSignals', () => {
       }).run();
     }
 
-    const result = computeAllTokenSignals(testDb);
+    const result = await computeAllTokenSignals(testDb, mockFetcher);
     // Probation expired → wallet included → 2 holders → signal computed
     expect(result.updated).toBe(1);
 
@@ -473,7 +478,7 @@ describe('computeAllTokenSignals', () => {
   });
 
   // Test P3 — Wallet with probation_until = null IS included (non-probationary)
-  it('includes wallet with probation_until = null in smart wallet query', () => {
+  it('includes wallet with probation_until = null in smart wallet query', async () => {
     const { db: testDb, sqlite: testSqlite } = createTestDb();
 
     testDb.insert(wallets).values({
@@ -512,14 +517,14 @@ describe('computeAllTokenSignals', () => {
       }).run();
     }
 
-    const result = computeAllTokenSignals(testDb);
+    const result = await computeAllTokenSignals(testDb, mockFetcher);
     // No probation → wallet included → 2 holders → signal computed
     expect(result.updated).toBe(1);
 
     testSqlite.close();
   });
 
-  it('correctly computes current holders using net position (buy_amt > sell_amt)', () => {
+  it('correctly computes current holders using net position (buy_amt > sell_amt)', async () => {
     insertSmartWallet(db, 'wallet1', 80);
     insertSmartWallet(db, 'wallet2', 80);
     // wallet1 buys 100, sells 100 → net = 0 → NOT a current holder
@@ -530,7 +535,7 @@ describe('computeAllTokenSignals', () => {
     insertSwap(db, 'wallet2', 'tokenA', 'buy', 100, ts);
     insertSwap(db, 'wallet2', 'tokenA', 'sell', 50, ts + 60);
 
-    const result = computeAllTokenSignals(db);
+    const result = await computeAllTokenSignals(db, mockFetcher);
     // Only 1 current holder (wallet2) → score=0, no insert
     expect(result.updated).toBe(0);
 
