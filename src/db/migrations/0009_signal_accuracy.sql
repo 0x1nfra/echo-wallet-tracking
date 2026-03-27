@@ -1,0 +1,23 @@
+CREATE TABLE `signal_events` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`token_mint` text NOT NULL,
+	`fired_at` integer NOT NULL,
+	`tier` text NOT NULL,
+	`signal_score` real NOT NULL,
+	`smart_wallet_count` integer NOT NULL,
+	`buy_velocity` real NOT NULL,
+	`holder_score` real NOT NULL,
+	`coordinated_wallet_count` integer NOT NULL,
+	`entry_price` real,
+	`outcome_1h_price` real,
+	`outcome_1h_pct` real,
+	`outcome_1h_status` text,
+	`outcome_4h_price` real,
+	`outcome_4h_pct` real,
+	`outcome_4h_status` text,
+	`outcome_24h_price` real,
+	`outcome_24h_pct` real,
+	`outcome_24h_status` text,
+	`is_fully_resolved` integer DEFAULT false NOT NULL,
+	`created_at` integer DEFAULT (unixepoch('now') * 1000) NOT NULL
+);
