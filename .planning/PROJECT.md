@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A personal Solana memecoin intelligence tool that automatically discovers profitable traders on-chain, monitors their activity in near-real-time, and generates token buy/sell scores based on smart money behavior. It surfaces actionable trading signals via a web dashboard and Telegram alerts — helping the user catch high-conviction plays before they pump.
+A personal Solana memecoin intelligence tool that automatically discovers profitable on-chain traders, monitors their activity in near-real-time, and generates token buy/sell signals based on smart money behavior. It filters out bots, bundlers, dev wallets, and wash traders before scoring — so signals reflect genuine alpha. Delivers a live web dashboard and Telegram alerts with per-tier accuracy tracking to calibrate signal weight over time.
 
 ## Core Value
 
@@ -12,61 +12,89 @@ Know what smart money is doing before the crowd does — and trust the signals b
 
 ### Validated
 
-- ✓ Helius API integration for Solana transaction fetching — existing
-- ✓ DexScreener API integration for token price data — existing
-- ✓ TypeScript type definitions for wallet, transaction, swap, metrics, scoring — existing
-- ✓ Project structure with layered architecture (fetchers, parsers, calculators, scoring, exporters) — existing
+- ✓ SQLite persistent data layer with WAL mode — v1.0
+- ✓ CLI wallet registry (add/remove/list) — v1.0
+- ✓ Helius enhanced transaction normalization for 5 DEXes (Pump.fun, Raydium, Jupiter, Orca, Meteora) — v1.0
+- ✓ FIFO cost basis and realized PnL calculation — v1.0
+- ✓ Bundle/scam detection engine: bundler, dev wallet, sniper bot, wash trader (tiered confidence: suspected→review→confirmed) — v1.0
+- ✓ Detection as prerequisite scoring gate (confirmed_passing only) — v1.0
+- ✓ 0-100 wallet score weighted on risk-adjusted return, win rate, consistency, activity health — v1.0
+- ✓ 30-second monitoring loop with incremental fetching and p-queue rate limiting — v1.0
+- ✓ Auto-removal policies: score degradation, scam confirmation, inactivity — v1.0
+- ✓ Auditable removal log (reversible) — v1.0
+- ✓ Per-token 0-100 signal engine with coordination discounting — v1.0
+- ✓ Fastify REST+SSE API with HTMX live dashboard — v1.0
+- ✓ grammY Telegram bot with threshold alerts, 2-hour dedup, /status /top /wallet /signal commands — v1.0
+- ✓ Wallet discovery: CA → early buyers → 70+ score gate → 7-day probation → graph traversal — v1.0
+- ✓ Helius ProviderRouter with Shyft fallback for 429 resilience — v1.0
+- ✓ Signal accuracy logging: signal_events, per-tier hit rates, MIN_SAMPLE=20 gate — v1.0 (v2 req delivered early)
 
 ### Active
 
-- [ ] Transaction parsing — convert Helius raw transactions to normalized Swap objects
-- [ ] Metrics calculation — PnL, win rate, ROI, Sharpe ratio, drawdown per wallet
-- [ ] Wallet discovery — extract top traders from a token address (on-chain graph traversal + KOL list seeding)
-- [ ] Bundle/scam detection — identify bundlers, dev wallets, wash traders, sniper bots and flag/exclude them
-- [ ] Wallet scoring system — 0-100 score based on risk-adjusted returns (not just win rate)
-- [ ] Auto wallet removal — remove wallets that drop below quality thresholds OR are flagged as scam/bundle
-- [ ] Token signal engine — per-token buy/sell score based on smart wallet accumulation, exit patterns, velocity, PnL weighting
-- [ ] Near-real-time monitoring — poll wallet activity every ~30s and update scores
-- [ ] Web dashboard — live token signal list, wallet table, drill-down per wallet/token
-- [ ] Telegram bot — push alerts when high-conviction signals fire
+- [ ] Multi-user Telegram bot (COMM-01): support multiple subscribers with individual alert thresholds
+- [ ] User management (COMM-02): add/remove Telegram subscribers
+- [ ] Signal weight calibration UI (QUAL-03): manual calibration based on historical accuracy data
 
 ### Out of Scope
 
-- OAuth / multi-user auth — personal tool, single-user only
-- Mobile app — web-first
-- Historical backtesting UI — out of v1 scope
-- Social graph visualization — interesting but not core to signal generation
+| Feature | Reason |
+|---------|---------|
+| Copy-trade execution | Signals only — user executes manually |
+| SaaS web platform with auth | Validate logic first; Telegram bot is the simpler commercial path |
+| Backtesting UI | Not needed to validate signal quality |
+| Social graph visualization | Nice to have, not signal-critical |
+| MEV / sandwich detection | Complex, out of scope for memecoin signal use case |
+| NFT wallet tracking | Memecoin focus only |
+| WebSocket streaming | ~30s polling is sufficient; avoids Helius WS API costs |
+| Multi-user web dashboard | Personal tool in v1; Telegram handles multi-user delivery |
 
 ## Context
 
-Existing codebase has the full architecture scaffolded: fetchers (Helius + DexScreener), type system, CLI stub, and directory structure for parsers/calculators/metrics/categorization/scoring/exporters. All core layers are empty placeholders — nothing from the pipeline is implemented yet.
+**Shipped v1.0** — 2026-03-30
 
-Key concerns from codebase audit:
-- No retry logic on API calls (rate limit fragility)
-- DexScreener price fetching is sequential (slow at scale)
-- No caching layer — every run re-fetches everything
-- Wallet addresses not validated before API calls
-- All "core" modules are stubs — nothing produces output yet
+~14,500 LOC TypeScript across 12 phases, 38 plans. 240 git commits.
 
-The scoring must go beyond win rate because high win rate can be achieved by bundling + rugging. Bundle/scam detection must be a prerequisite gate — wallets that pass detection are the only ones scored.
+Tech stack: Node.js + TypeScript, SQLite + Drizzle ORM, Fastify + HTMX + Alpine.js, grammY (Telegram), Helius API (primary) + Shyft (fallback), DexScreener (prices).
 
-## Constraints
+Key architecture:
+- `src/db/` — schema, migrations, singleton connection
+- `src/parsers/` — DEX-specific swap normalizers
+- `src/detection/` — bundler/dev/sniper/wash-trader engines
+- `src/scoring/` — metrics calculator + 0-100 score composer
+- `src/monitoring/` — MonitorLoop with ProviderRouter
+- `src/signals/` — token signal engine + accuracy resolver
+- `src/api/` — Fastify routes + SSE emitter
+- `src/views/` — EJS templates (dashboard + wallet detail + accuracy)
+- `src/telegram/` — grammY bot + alert dispatcher
 
-- **Tech Stack**: TypeScript + Node.js — continue existing stack, no rewrites
-- **APIs**: Helius (transactions), DexScreener (prices) — already integrated, extend not replace
-- **Latency**: ~30s refresh cycle for monitoring (near-real-time, not WebSocket)
-- **Solo use**: No auth, no multi-tenancy needed in v1
-- **Budget**: Helius free tier (300 req/min) — rate limiting is a real constraint
+Known tech debt (medium priority):
+- bundler.ts and wash-trader.ts use createHeliusFetcher() directly (no Shyft fallback for these detectors)
+- ShyftProvider field name mapping is MEDIUM confidence (defensive ?? fallbacks in place)
+- Telegram bot commands, discovery CLI, and accuracy section require live environment testing
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Score wallets on risk-adjusted returns, not win rate alone | Win rate gameable by bundlers/ruggers; risk-adj catches this | — Pending |
-| Bundle detection as prerequisite gate (not just a flag) | Keeps signal quality high; prevents poisoned smart money list | — Pending |
-| ~30s polling vs WebSocket streaming | Simpler to build, still actionable for most memecoin plays | — Pending |
-| Web dashboard + Telegram (both) | Dashboard for browsing alpha; Telegram for time-sensitive alerts | — Pending |
-| Personal tool (no auth/multi-user) | Reduces scope massively; can add later if needed | — Pending |
+| Score wallets on risk-adjusted returns, not win rate alone | Win rate gameable by bundlers/ruggers; risk-adj catches this | ✓ Good — detection gate + score weighting together make poisoned wallets unscorable |
+| Bundle detection as prerequisite gate (not just a flag) | Keeps signal quality high; prevents poisoned smart money list | ✓ Good — confirmed_passing gate working end-to-end in v1.0 |
+| ~30s polling vs WebSocket streaming | Simpler to build, still actionable for most memecoin plays | ✓ Good — adequate for use case, avoids Helius WS costs |
+| Web dashboard + Telegram (both) | Dashboard for browsing alpha; Telegram for time-sensitive alerts | ✓ Good — both delivered, SSE keeps dashboard live |
+| Personal tool (no auth/multi-user) | Reduces scope massively; can add later if needed | ✓ Good — v1 validated; multi-user path is Telegram subscribers (COMM-01) |
+| FIFO cost basis for PnL | Matches accounting convention; simpler than LIFO | ✓ Good — producing correct realized PnL across all DEXes |
+| Drizzle ORM + SQLite | Type-safe queries, WAL mode, zero deployment overhead | ✓ Good — migrations, unit test isolation via in-memory DB all work well |
+| p-queue (max 5 concurrent) for Helius | Helius free tier is 300 req/min — parallel without limit would 429 immediately | ✓ Good — no rate limit exhaustion in practice |
+| ProviderRouter with Shyft fallback | Helius 429 during discovery is a real risk at scale | ✓ Good — 5 callsites migrated; bundler/wash-trader remain Helius-only (getTransaction not on RpcProvider interface) |
+| Timestamp normalization: ms/1000 at query call site | swaps.timestamp = Unix seconds; last_checked_at = Date.now() ms — mismatch caused detection to skip all incremental cycles | ✓ Good — regression tests prevent recurrence; convention documented |
+| Signal accuracy logging in v1 (was v2) | Decided to deliver QUAL-01/02/03 as Phase 12 — data needed to calibrate weights | ✓ Good — signal_events table enables future weight calibration without schema changes |
+
+## Constraints
+
+- **Tech Stack**: TypeScript + Node.js — continue existing stack, no rewrites
+- **APIs**: Helius (primary), Shyft (fallback), DexScreener (prices)
+- **Latency**: ~30s refresh cycle for monitoring (near-real-time, not WebSocket)
+- **Solo use**: No auth, no multi-tenancy in v1 (Telegram multi-user is v2)
+- **Budget**: Helius free tier (300 req/min) — ProviderRouter manages this
 
 ---
-*Last updated: 2026-03-10 after initialization*
+*Last updated: 2026-03-30 after v1.0 milestone*
