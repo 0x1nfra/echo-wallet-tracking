@@ -90,7 +90,7 @@ export async function detectWashTrader(
   const fetcher = deps?.fetcher ?? (await getDefaultFetcher());
   const { walletAddress, thresholdMultiplier } = config;
 
-  const windowMs = WASH_TRADER.RELATIONSHIP_WINDOW_DAYS * 24 * 60 * 60 * 1000;
+  const windowSec = WASH_TRADER.RELATIONSHIP_WINDOW_DAYS * 24 * 60 * 60;
 
   // ------------------------------------------------------------------
   // Step 1: Load all swaps (target wallet buys + all other wallet sells)
@@ -158,7 +158,7 @@ export async function detectWashTrader(
       const matchingSell = sells.find(
         (sell) =>
           sell.timestamp > buy.timestamp &&
-          sell.timestamp < buy.timestamp + windowMs
+          sell.timestamp < buy.timestamp + windowSec
       );
 
       if (!matchingSell) continue;

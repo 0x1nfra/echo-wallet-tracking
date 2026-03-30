@@ -83,8 +83,8 @@ const WALLET = 'WashTraderWallet11111111111111111111111111111';
 const WALLET_B = 'RelatedWalletBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB';
 const WALLET_C = 'RelatedWalletCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC';
 
-const BASE_TIMESTAMP = 1_700_000_000_000; // ms
-const WINDOW_MS = WASH_TRADER.RELATIONSHIP_WINDOW_DAYS * 24 * 60 * 60 * 1000;
+const BASE_TIMESTAMP = 1_700_000_000; // Unix seconds (matches swaps.timestamp storage)
+const WINDOW_SEC = WASH_TRADER.RELATIONSHIP_WINDOW_DAYS * 24 * 60 * 60;
 
 /**
  * Build one complete circular pattern:
@@ -104,7 +104,7 @@ function buildCircularPattern(opts: {
 } {
   const wallet_b = opts.wallet_b ?? WALLET_B;
   const buy_ts = opts.buy_timestamp ?? BASE_TIMESTAMP;
-  const sell_ts = buy_ts + WINDOW_MS / 2; // well within window
+  const sell_ts = buy_ts + WINDOW_SEC / 2; // well within window
 
   const swapRows: MockSwapRow[] = [
     {
@@ -311,7 +311,7 @@ describe('detectWashTrader (DETC-04)', () => {
     // Two buys of the same token_mint, both with WALLET_B receiving — not independent
     const buy_ts1 = BASE_TIMESTAMP;
     const buy_ts2 = BASE_TIMESTAMP + 1000;
-    const sell_ts = buy_ts1 + WINDOW_MS / 2;
+    const sell_ts = buy_ts1 + WINDOW_SEC / 2;
 
     const swapRows: MockSwapRow[] = [
       { wallet_address: WALLET, tx_signature: 'buy-1', token_mint: 'TOKEN_A', side: 'buy', timestamp: buy_ts1 },
