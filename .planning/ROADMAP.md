@@ -193,7 +193,7 @@ Plans:
 3. A wallet confirmed as a scam post-import is automatically removed (RMVL-02 satisfied end-to-end)
 4. A regression test verifies the timestamp comparison uses the same units on both sides
 
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
 - [ ] 09-01-PLAN.md — Fix timestamp unit bugs (detection engine, wash-trader, scoring engine) and add regression tests
@@ -253,7 +253,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 6. Token Signal Engine                     | 3/3            | Complete | 2026-03-15 |
 | 7. API, Dashboard, and Telegram Alerts     | 3/3            | Complete | 2026-03-16 |
 | 8. Wallet Discovery                        | 4/4            | Complete | 2026-03-17 |
-| 9. Fix Incremental Detection Timestamp Bug | 0/?            | Pending  | —          |
+| 9. Fix Incremental Detection Timestamp Bug | 1/1 | Complete   | 2026-03-30 |
 | 10. Tech Debt Cleanup                      | 1/1            | Complete | 2026-03-26 |
 | 11. Helius RPC Provider Rotation           | 4/4            | Complete | 2026-03-27 |
 

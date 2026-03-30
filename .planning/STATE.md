@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 12-signal-accuracy-logging plan 04 — accuracy dashboard section + /accuracy Telegram command, Phase 12 complete, 237 tests green
-last_updated: "2026-03-27T05:47:46.763Z"
+stopped_at: Completed 09-fix-incremental-detection-timestamp-bug plan 01 — three timestamp unit fixes, 10 new regression tests, 147 tests green
+last_updated: "2026-03-30T05:21:46.049Z"
 last_activity: 2026-03-15 — Phase 06 plan 01 complete; signal_tier + coordinated_wallet_count columns added, 153 tests passing
 progress:
   total_phases: 12
-  completed_phases: 11
-  total_plans: 37
-  completed_plans: 37
+  completed_phases: 12
+  total_plans: 38
+  completed_plans: 38
   percent: 92
 ---
 
@@ -135,6 +135,7 @@ Progress: [██░░░░░░░░] 67% (Phase 6)
 | Phase 12-signal-accuracy-logging P02 | 16 | 2 tasks | 4 files |
 | Phase 12-signal-accuracy-logging P03 | 5 | 2 tasks | 3 files |
 | Phase 12-signal-accuracy-logging P04 | 2 | 2 tasks | 5 files |
+| Phase 09-fix-incremental-detection-timestamp-bug P01 | 6 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -239,6 +240,9 @@ Recent decisions affecting current work:
 - [Phase 12-signal-accuracy-logging]: Tier transition condition excludes inactive: existingTier !== newTier && newTier !== 'inactive' — suppression events do not flood signal_events
 - [Phase 12-signal-accuracy-logging]: Weak tier excluded from primary accuracy stats table but included in recent signal events table — accurate history visible without inflating primary metrics
 - [Phase 12-signal-accuracy-logging]: /accuracy command is on-demand only, consistent with all other bot commands
+- [Phase 09-fix-incremental-detection-timestamp-bug]: Math.floor(lastChecked / 1000) at call site in runDetectionIfNeeded() — single line normalization, no new helper
+- [Phase 09-fix-incremental-detection-timestamp-bug]: windowSec renamed from windowMs in wash-trader.ts — explicit unit name prevents recurrence of bug
+- [Phase 09-fix-incremental-detection-timestamp-bug]: engine-incremental.test.ts uses pure arithmetic tests — avoids import.meta.url ts-jest incompatibility when importing db/index.ts transitively
 
 ### Pending Todos
 
@@ -251,6 +255,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T05:47:46.761Z
-Stopped at: Completed 12-signal-accuracy-logging plan 04 — accuracy dashboard section + /accuracy Telegram command, Phase 12 complete, 237 tests green
+Last session: 2026-03-30T05:21:46.046Z
+Stopped at: Completed 09-fix-incremental-detection-timestamp-bug plan 01 — three timestamp unit fixes, 10 new regression tests, 147 tests green
 Resume file: None
