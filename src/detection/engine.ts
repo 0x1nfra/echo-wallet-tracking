@@ -113,8 +113,9 @@ export async function runDetectionIfNeeded(walletAddress: string): Promise<void>
   if (!wallet?.history_complete) return; // Not yet eligible
 
   const lastChecked = wallet.last_checked_at ?? 0;
+  const lastCheckedSec = Math.floor(lastChecked / 1000);
   const hasNewSwaps = db.select({ id: swaps.id }).from(swaps)
-    .where(and(eq(swaps.wallet_address, walletAddress), gt(swaps.timestamp, lastChecked)))
+    .where(and(eq(swaps.wallet_address, walletAddress), gt(swaps.timestamp, lastCheckedSec)))
     .get();
   if (!hasNewSwaps) return; // No new data — skip
 

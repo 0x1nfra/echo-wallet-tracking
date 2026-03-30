@@ -155,7 +155,7 @@ export function scoreWalletIfNeeded(walletAddress: string): void {
   const hasNewSwaps = db.select({ id: swaps.id }).from(swaps)
     .where(and(
       eq(swaps.wallet_address, walletAddress),
-      gt(swaps.timestamp, existing.calculated_at),
+      gt(swaps.timestamp, Math.floor(existing.calculated_at / 1000)),
     ))
     .get();
 
