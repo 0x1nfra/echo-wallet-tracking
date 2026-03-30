@@ -1,0 +1,24 @@
+* { box-sizing: border-box; }
+body { font-family: system-ui, sans-serif; margin: 0; padding: 0; background: #0f1117; color: #e5e7eb; }
+header { padding: 1rem 2rem; border-bottom: 1px solid #1f2937; }
+header h1 { margin: 0; font-size: 1.25rem; color: #f9fafb; }
+main { padding: 1.5rem 2rem; }
+h2 { font-size: 1rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; }
+table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+th { text-align: left; padding: 0.5rem 0.75rem; color: #6b7280; border-bottom: 1px solid #1f2937; }
+td { padding: 0.5rem 0.75rem; border-bottom: 1px solid #1f2937; }
+tr:hover td { background: #1f2937; }
+.chip-bar { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
+.chip { padding: 0.25rem 0.75rem; border-radius: 9999px; border: 1px solid #374151; background: transparent; color: #9ca3af; cursor: pointer; font-size: 0.8rem; }
+.chip.active { background: #1d4ed8; border-color: #1d4ed8; color: #fff; }
+.tier-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+.tier-strong { background: #14532d; color: #4ade80; }
+.tier-moderate { background: #713f12; color: #fbbf24; }
+.tier-weak { background: #1f2937; color: #6b7280; }
+.tier-inactive { background: #111827; color: #374151; }
+@keyframes row-highlight { 0% { background-color: #422006; } 100% { background-color: transparent; } }
+.row-updated { animation: row-highlight 1.5s ease-out; }
+section { margin-bottom: 2rem; }
+code, small { color: #6b7280; }
+a { color: #60a5fa; text-decoration: none; }
+a:hover { text-decoration: underline; }

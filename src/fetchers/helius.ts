@@ -3,18 +3,141 @@
  */
 
 import axios, { AxiosInstance } from 'axios';
+import PQueue from 'p-queue';
+import pRetry from 'p-retry';
 import type { HeliusTransaction } from '../types/index.js';
+
+// Monitoring loop: max 5 concurrent Helius requests
+const heliusQueue = new PQueue({ concurrency: 5 });
 
 export class HeliusFetcher {
   private client: AxiosInstance;
   private apiKey: string;
 
-  constructor(apiKey: string, endpoint: string = 'https://api.helius.xyz/v0') {
+  constructor(apiKey: string, endpoint: string = 'https://api-mainnet.helius-rpc.com/v0') {
     this.apiKey = apiKey;
     this.client = axios.create({
       baseURL: endpoint,
       timeout: 30000, // 30 second timeout
     });
+  }
+
+  /**
+   * Fetch all swap transactions for a wallet address with pagination, rate limiting, and retry.
+   * @param address - Solana wallet address
+   * @param afterTimestamp - Unix seconds lower bound; 0 = no lower bound (--full-history)
+   * @returns Array of Helius transactions
+   */
+  async fetchSwapHistory(
+    address: string,
+    afterTimestamp: number  // Unix seconds; 0 = no lower bound (--full-history)
+  ): Promise<HeliusTransaction[]> {
+    const allTxs: HeliusTransaction[] = [];
+    let beforeSignature: string | undefined;
+    let hasMore = true;
+
+    while (hasMore) {
+      const params: Record<string, string | number> = {
+        'api-key': this.apiKey,
+        limit: 100,
+        type: 'SWAP',
+      };
+      if (afterTimestamp > 0) params['gte-time'] = afterTimestamp;
+      if (beforeSignature) params['before-signature'] = beforeSignature;
+
+      const txs = await pRetry(
+        () => heliusQueue.add(async () => {
+          const res = await this.client.get(
+            `/addresses/${address}/transactions`,
+            { params }
+          );
+          return res.data as HeliusTransaction[];
+        }),
+        {
+          retries: 5,
+          onFailedAttempt: async (error) => {
+            const status = (error as any).response?.status;
+            // Never retry auth errors
+            if (status === 401) throw error;
+            // Exponential backoff on rate limit: 2s, 4s, 8s, 16s, 32s
+            if (status === 429) {
+              const delayMs = Math.pow(2, error.attemptNumber) * 1000;
+              await new Promise(resolve => setTimeout(resolve, delayMs));
+            }
+          },
+        }
+      );
+
+      if (!txs || txs.length === 0) { hasMore = false; break; }
+
+      allTxs.push(...txs);
+
+      const oldest = txs[txs.length - 1];
+      // Stop when we've gone past the time window or got a partial page
+      if ((afterTimestamp > 0 && oldest.timestamp < afterTimestamp) || txs.length < 100) {
+        hasMore = false;
+      } else {
+        beforeSignature = oldest.signature;
+      }
+    }
+
+    return allTxs;
+  }
+
+  /**
+   * Fetch the first N SWAP transactions for a mint address, sorted by order.
+   * Used for early buyer discovery — no pagination, returns raw response for caller filtering.
+   * Rate-limited via heliusQueue + pRetry (same pattern as fetchSwapHistory).
+   * @param mint - Solana mint address
+   * @param limit - Max transactions to return (default: 100, max: 100)
+   * @param sortOrder - Sort direction: 'asc' for oldest-first (default)
+   * @returns Array of HeliusTransactions (no filtering applied)
+   */
+  async fetchEarlySwapsForMint(
+    mint: string,
+    limit: number = 100,
+    sortOrder: 'asc' | 'desc' = 'asc'
+  ): Promise<HeliusTransaction[]> {
+    const params: Record<string, string | number> = {
+      'api-key': this.apiKey,
+      limit: Math.min(limit, 100),
+      type: 'SWAP',
+      'sort-order': sortOrder,
+    };
+
+    return pRetry(
+      () => heliusQueue.add(async () => {
+        const res = await this.client.get(
+          `/addresses/${mint}/transactions`,
+          { params }
+        );
+        return (res.data ?? []) as HeliusTransaction[];
+      }),
+      {
+        retries: 5,
+        onFailedAttempt: async (error) => {
+          const status = (error as any).response?.status;
+          if (status === 401) throw error;
+          if (status === 429) {
+            const delayMs = Math.pow(2, error.attemptNumber) * 1000;
+            await new Promise(resolve => setTimeout(resolve, delayMs));
+          }
+        },
+      }
+    ) as Promise<HeliusTransaction[]>;
+  }
+
+  /**
+   * Fetch a single page of transactions for any Solana address (wallet or mint).
+   * Rate-limited via heliusQueue. No pagination — returns at most `limit` results.
+   */
+  async fetchOnePage(address: string, limit: number = 20): Promise<HeliusTransaction[]> {
+    return heliusQueue.add(async () => {
+      const res = await this.client.get(`/addresses/${address}/transactions`, {
+        params: { 'api-key': this.apiKey, limit },
+      });
+      return (res.data ?? []) as HeliusTransaction[];
+    }) as Promise<HeliusTransaction[]>;
   }
 
   /**

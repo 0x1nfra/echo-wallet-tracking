@@ -15,12 +15,24 @@ dist/
 data/cache/
 *.cache
 
+# Runtime data
+data/echo.db
+data/echo.db-shm
+data/echo.db-wal
+
+# Build artifacts
+echo@*
+tsx
+
 # Exports
 exports/
 *.json
 !package.json
 !tsconfig.json
 !.eslintrc.json
+!.planning/*.json
+!.planning/**/*.json
+!src/db/migrations/**/*.json
 
 # Logs
 logs/
