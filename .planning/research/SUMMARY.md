@@ -1,189 +1,183 @@
 # Project Research Summary
 
-**Project:** Echo Wallet Tracker
-**Domain:** Solana memecoin smart-money wallet tracking and signal generation
-**Researched:** 2026-03-11
+**Project:** Echo Wallet Tracker v1.1 — Forward Testing and Deployment
+**Domain:** Solana memecoin signal tool — outcome tracking, automated coin sourcing, Railway deployment
+**Researched:** 2026-03-31
 **Confidence:** HIGH
 
 ## Executive Summary
 
-Echo is a personal Solana wallet tracking tool designed to monitor smart money wallets trading memecoins, detect scam/bundler activity, and generate actionable buy signals. The right way to build this is a pipeline: raw transactions flow through parsing, then bundle/scam detection gates which wallets qualify as "clean," then metrics and scoring produce wallet quality scores, and finally a signal engine aggregates wallet scores into per-token signals. The entire system runs on a ~30s polling loop. This is a well-understood domain with established patterns — the complexity is not in infrastructure choices but in getting detection heuristics right without generating false positives that hollow out the wallet list.
+Echo v1.0 shipped the full monitoring pipeline: wallet tracking, bundle detection, signal scoring, Telegram alerts, and a 1h/4h/24h outcome resolver. The research for v1.1 reveals that the existing forward-testing dataset is structurally incomplete in two ways: (1) the 1h window is too coarse for the Solana memecoin lifecycle — competitor tools like gmgn.ai and Photon default to a 30m primary window because most tokens peak within 15-45 minutes of a smart wallet signal; (2) the current outcome resolver cannot distinguish a rugged token from a DexScreener infrastructure failure, creating survivorship bias in accuracy stats. These are the two fixes that must ship before forward-testing data is meaningful. Everything else in v1.1 adds to an already-functional foundation.
 
-The recommended stack extends the existing TypeScript/Node.js + Helius + DexScreener foundation with SQLite (better-sqlite3 + drizzle-orm) for persistence, node-cron for scheduling, Fastify for API/SSE, HTMX + Alpine.js for the dashboard, and grammy for the Telegram bot. This stack is deliberately minimal: no Redis, no React, no queues, no WebSockets. p-queue and p-retry handle rate limit management against Helius's 300 req/min free-tier cap, which is the tightest operational constraint in the system.
+The recommended v1.1 approach works in three distinct phases: first, harden the deployment to Railway with persistent volume and WAL integrity guarantees so data is not silently wiped on redeploy; second, extend signal outcome tracking with peak price, 30m window, rug/failure distinction, and the AutoSourcer module for automated coin sourcing; third, extend the ProviderRouter to cover `getTransaction` so bundler and wash-trader detection do not silently degrade when Helius is rate-limited. The stack is already locked — better-sqlite3, drizzle-orm, Fastify, grammy, HTMX, p-queue — nothing new is needed for v1.1 beyond a DexScreener boost endpoint method on the existing fetcher.
 
-The primary risk is false-positive bundle detection removing legitimate smart wallets. The mitigation is a tiered confidence model (suspected → review → confirmed) before any removal fires, and using risk-adjusted return (not win rate alone) as the primary scoring dimension. A secondary risk is Helius rate limit exhaustion when tracking 100+ wallets — this must be addressed from day one with p-queue concurrency limiting and incremental fetching (only new transactions since last_checked_at).
+The principal risks are data integrity risks, not implementation risks. Losing the forward-testing dataset to a Railway volume misconfiguration would require restarting accumulation from zero. Rugged tokens counted as `failed` rather than worst-case outcomes inflates reported accuracy in ways that compound over time. Both risks are preventable with startup assertions and a one-column schema change, and both must be addressed before any forward-testing data is collected under Railway deployment.
+
+---
 
 ## Key Findings
 
 ### Recommended Stack
 
-The existing stack (TypeScript, Node.js, Helius, DexScreener) is the right foundation. The recommended additions are lean and purposeful: SQLite via better-sqlite3 + drizzle-orm covers all persistence needs without infrastructure overhead. node-cron handles the monitoring loop cleanly. Fastify serves the API and SSE endpoint. For the dashboard, HTMX + Alpine.js + Chart.js is the right call for a personal tool — no build pipeline, no framework overhead. grammy is the modern TypeScript-first Telegram bot library.
+The v1.0 stack is complete and carries forward unchanged. No new dependencies are needed for v1.1. All additions are within the existing package surface: a new fetch method on `DexScreenerFetcher` for the boost endpoints, an extension to the `RpcProvider` interface and `ShyftProvider` for `getTransactionDetails`, and new drizzle-orm migrations for the schema changes.
 
-**Core technologies:**
-- `better-sqlite3 ^9.4.x` + `drizzle-orm ^0.30.x`: persistence — zero-infra, queryable, type-safe migrations
-- `node-cron ^3.0.x`: monitoring loop scheduling — declarative, prevents overlapping runs
-- `Fastify ^4.x` + SSE: API and live dashboard push — fastest Node.js HTTP framework, built-in schema validation
-- `HTMX ^1.9.x` + `Alpine.js ^3.x` + `Chart.js ^4.x`: dashboard — no build pipeline needed for a personal tool
-- `grammy ^1.21.x`: Telegram bot — TypeScript-first, actively maintained
-- `p-queue ^8.x` + `p-retry ^6.x`: rate limit and resilience — wraps all Helius/DexScreener calls
+**Core technologies (all already installed):**
+- `better-sqlite3` + `drizzle-orm`: persistence — single-file SQLite is the correct model for Railway single-replica scale; type-safe migrations handle v1.1 schema additions
+- `node-cron`: MonitorLoop scheduling — the 30s cycle is where peak price polling, outcome resolution, and the new AutoSourcer hook all run
+- `grammy`: Telegram bot — existing `/status`, `/accuracy`, `/top` commands extended with cycle health metrics and stall detection
+- `p-queue` + `p-retry`: rate limiting — AutoSourcer must use the same queue; critical for staying within DexScreener 60 req/min and Helius 300 req/min limits
+- `Fastify` + HTMX: API and dashboard — accuracy UI extended with return distribution; no new pages needed
 
-**Do not use:** Redis, React/Next.js, WebSockets, GraphQL, BullMQ — all add complexity without benefit at this scale.
+Do not add: Redis, WebSockets, React, or any additional infrastructure. Full stack rationale: `.planning/research/STACK.md`
 
 ### Expected Features
 
-The feature dependency chain is strictly ordered: transaction parsing must exist before metrics, detection must gate scoring, scoring must exist before signals, signals gate alerts and dashboard. Build in this order or downstream features produce garbage.
+**Must have for v1.1 launch (forward-testing dataset is incomplete without these):**
+- Peak price capture — rolling `Math.max(currentPrice, storedPeak)` per active signal event, tracked every 30s cycle for 24h after signal fires; new `peak_price` and `peak_price_at` columns on `signal_events`
+- 30-minute outcome window — most actionable window for Solana memecoins; new `outcome_30m_price`, `outcome_30m_pct`, `outcome_30m_status` columns; new resolution pass in `outcome-resolver.ts`
+- Time-to-peak storage — derived from `peak_price_at - fired_at` at resolution; stored as `time_to_peak_min`; enables hold duration analysis once sample sizes are sufficient
+- Automated coin sourcing via DexScreener boost list — new `AutoSourcer` module calling `/token-boosts/latest/v1` on 5-minute cadence; gates on `liquidity.usd >= $10k`; max 3 discovery runs/hour; `coin_sources` dedup table
 
-**Must have (table stakes):**
-- Wallet registry — add/remove/label wallets, persistent across restarts
-- Transaction parsing — normalize Helius enhanced txs to Swap objects per DEX (Pump.fun, Raydium, Jupiter, Orca, Meteora)
-- Position tracking — FIFO cost basis, match buys to sells for realized PnL
-- Bundle/scam detection — bundler clustering, dev wallet linkage, sniper pattern, wash trading
-- Wallet scoring — risk-adjusted return (40%), win rate (20%), consistency/recency (20%), activity health (20%)
-- Token signal engine — smart wallet accumulation count, buy velocity, exit pressure, composite 0-100 score
-- Telegram alerts — threshold-based push, dedup within 1h per token
-- Dashboard — signal feed, wallet table, wallet drill-down with live SSE updates
+**Should have (add after P1 features are stable):**
+- Per-tier return distribution in accuracy stats — extend `getAccuracyStats()` with p50/p75 per window; `avg_return` columns already exist
+- Monitor cycle health metrics in `/status` — cycle counter, last cycle duration, stall detection via `MAX(token_signals.updated_at)` age check; in-memory only, no DB changes
+- Sell signal data collection — new `signal_event_holders` table capturing smart wallet holder addresses at signal fire; exit tracking populated by existing swap monitoring; enables future sell signal engine in v1.2
 
-**Should have (differentiators):**
-- Auto-discovery — extract wallet candidates from token CA's early buyers, score and add qualifying ones
-- Auto-removal — score decay, scam flag, inactivity triggers with audit log
-- Signal accuracy tracking — log what happened to tokens after signal fired
+**Defer to v1.2+:**
+- Per-tier hold duration distribution reporting (needs 100+ resolved events per tier for statistical validity)
+- Sell signal rules engine (requires the v1.1 holder dataset — do not build before data exists)
+- DexScreener trending search endpoint as additional source (evaluate after boost sourcing is live)
 
-**Defer to v2+:**
-- Copy-trade execution, backtesting UI, social graph visualization, MEV detection, multi-user/SaaS, real-time WebSocket streaming
+Full feature analysis with dependency graph: `.planning/research/FEATURES.md`
 
 ### Architecture Approach
 
-The system is a pipeline: a node-cron loop fires every 30s, loads all tracked wallets, and pushes each through Fetch → Parse → Detect → Score via a p-queue (max 5 concurrent Helius calls). Results persist to SQLite. After each cycle, the Signal Engine aggregates wallet scores into token signals, SSE pushes updates to the dashboard, and the Telegram bot checks alert conditions. SQLite uses WAL mode to support concurrent reads during writes.
+v1.0 architecture is a single-process Node.js service: node-cron MonitorLoop driving a Fetch → Parse → Detect → Score pipeline, writing to SQLite, with Fastify serving the dashboard API and grammy handling Telegram. v1.1 adds hooks into the existing MonitorLoop rather than new services. AutoSourcer runs on a 5-minute cadence inside the MonitorLoop. Peak price polling and 30m outcome resolution run as additional passes in the existing `resolveOutcomes()` call. The ProviderRouter extension adds one new method to an existing interface — no new modules, just extending what is there.
 
-**Major components:**
-1. Monitoring Loop (`src/monitor/loop.ts`) — cron trigger, orchestrates the per-wallet pipeline, manages rate limiting
-2. Data Pipeline — Parser (`src/parsers/helius.ts`), Detector (`src/detection/`), Metrics Calculator (`src/calculators/`), Scorer (`src/scoring/`)
-3. SQLite DB — tables: `wallets`, `swaps`, `wallet_metrics`, `token_signals`, `removal_log`
-4. Token Signal Engine (`src/signals/`) — aggregates wallet scores into per-token buy signal scores
-5. Fastify API + SSE (`src/api/`) — REST endpoints + `/api/events` SSE for dashboard live updates
-6. Dashboard (`src/dashboard/`) — HTMX + Alpine.js static pages served by Fastify
-7. Telegram Bot (`src/telegram/`) — grammy, long-polling, threshold alerts with dedup
-8. Wallet Discovery (`src/discovery/`) — token-CA-based and graph-traversal candidate sourcing
+**Major components with v1.1 changes:**
+1. MonitorLoop (`src/monitor/loop.ts`) — add AutoSourcer hook on 5-min cadence; add cycle counter and duration tracking to in-memory state
+2. Outcome Resolver (`src/signals/outcome-resolver.ts`) — add 30m resolution pass; add peak price update per active event each cycle; add `rug` vs `failed` status discrimination
+3. DexScreenerFetcher (`src/fetchers/dexscreener.ts`) — add `getLatestBoostedTokens()` method targeting `https://api.dexscreener.com/token-boosts/latest/v1` (different base URL from existing `/latest` price endpoints)
+4. ProviderRouter (`src/fetchers/providers/router.ts`) — extend `RpcProvider` interface with `getTransactionDetails(signature)`; implement in both HeliusProvider and ShyftProvider; ShyftProvider requires native transfer action type audit before shipping
+5. Signal Accuracy (`src/signals/accuracy.ts`) — extend `getAccuracyStats()` with p50/p75 return percentiles; include `rug` count in accuracy denominators to prevent survivorship bias
+6. Telegram Bot (`src/api/bot/commands.ts`) — extend `/status` with cycle health metrics and stall-age warning
+
+Full architecture: `.planning/research/ARCHITECTURE.md`
 
 ### Critical Pitfalls
 
-1. **False-positive bundle detection** — Use tiered confidence (suspected → review → confirmed), require correlated signals (same block + shared funding source), never trigger removal on "suspected" alone. Build in this gating from day one in the detection phase.
-2. **Win rate gaming by bundlers/devs** — Make risk-adjusted return the primary scoring component (40%+ weight), not win rate. Penalize wallets with >80% trades in first 5 blocks of launch.
-3. **Helius rate limit exhaustion** — p-queue with max 4-5 concurrent calls from day one. Incremental fetching (last_checked_at). Exponential backoff via p-retry. Do not build the monitoring loop without this.
-4. **Stale position tracking / PnL miscalculation** — On first wallet import, fetch and paginate full history before calculating any metrics. Track `history_complete` flag per wallet. Only run scoring on complete-history wallets.
-5. **Auto-removal too aggressive during market downturns** — Use rolling 30-day window for score evaluation, require N consecutive low-score cycles before removal, pause auto-removal if >50% of tracked wallets drop simultaneously.
+1. **Volume not mounted — forward-testing data wiped silently on every Railway deploy** — Add a startup check for a `.volume-marker` file at the Railway volume path. If `DATABASE_URL` resolves outside the volume mount, log error and exit. Deployment runbook: Railway volume → `/data`, `DATABASE_URL=/data/echo.db`. Verify by deploying twice and checking wallet count. Phase: Railway Deployment.
+
+2. **WAL mode + Railway volume — corruption if service ever scales to >1 replica** — Keep WAL mode enabled (Railway volumes are locally attached per service instance for single-replica deployments). Add startup assertion: if `RAILWAY_REPLICA_ID` is present and replicas > 1, refuse to start. Document that this service must never be scaled horizontally. Phase: Railway Deployment.
+
+3. **Outcome resolver classifies rugged coins as `failed` — inflates hit rate via survivorship bias** — Add `rug` status to the outcome enum. Distinguish rug by retrying the price fetch 3+ times over several minutes; if consistently null after the window has elapsed, mark `rug`. Count `rug` rows in hit-rate denominators as 0-return outcomes. Phase: Signal Outcome Tracking.
+
+4. **DexScreener 429 permanently seals outcome windows as unretriable** — The IS NULL idempotency guard correctly prevents double-writes but also prevents retry after a transient 429. Add `outcome_Xh_error` column. Only write a final outcome when price is confirmed non-null. If price is null due to 429, leave IS NULL open so the next cycle retries. Phase: Signal Outcome Tracking.
+
+5. **Bundler/wash-trader detection silently produces empty results during Helius rate limiting** — The ProviderRouter explicitly excludes `getTransaction` (confirmed by `types.ts` comment). Detection calls Helius directly with no fallback. When extending the router: implement `getTransactionDetails` on ShyftProvider via Shyft `/sol/v1/transaction`; audit all Shyft action type names for SOL transfers before plugging into bundler detection. Phase: ProviderRouter Extension.
+
+6. **Automated coin sourcing triggers compounding discovery loops** — Disable graph traversal for auto-sourced CAs (direct buyers only). Cap `MAX_DAILY_ADDS` at 20 new wallets/day. Enforce total wallet ceiling (200 max). Apply 24h cooldown per CA. Phase: Coin Sourcing Automation.
+
+7. **Helius credit exhaustion looks identical to rate limiting** — Credit exhaustion 429 has body `max_usage_reached`; rate-limit 429 does not. Parse the error body. On credit exhaustion: pause MonitorLoop and send Telegram alert. Do not silently fall back to Shyft indefinitely. Phase: Railway Deployment + ProviderRouter Extension.
+
+Full pitfall analysis with recovery strategies: `.planning/research/PITFALLS.md`
+
+---
 
 ## Implications for Roadmap
 
-Based on research, the build order is dictated by hard dependencies in the data pipeline. Nothing works correctly until the layer below it is solid.
+Based on the dependency graph revealed by research, v1.1 decomposes into four phases with a clear blocking order. The order is driven by data integrity requirements, not arbitrary preference.
 
-### Phase 1: Data Foundation
-**Rationale:** SQLite schema and migration setup is the prerequisite for all other phases. Nothing can be built without a stable data layer.
-**Delivers:** Database schema (wallets, swaps, wallet_metrics, token_signals, removal_log), drizzle-orm migrations, WAL mode enabled
-**Addresses:** Wallet registry (table stakes), persistence requirement
-**Avoids:** SQLite write contention (WAL mode from the start)
+### Phase 1: Railway Deployment
+**Rationale:** Data integrity is a prerequisite for everything else. Forward-testing data collected before the volume persistence guard is in place may be wiped silently on the first redeployment, requiring a restart from zero. This phase has no dependencies on new features — it is purely hardening the deployment substrate.
+**Delivers:** Persistent Railway deployment with volume-presence startup check, WAL single-replica assertion, Helius credit exhaustion alert, Railway secret variable configuration, deployment runbook.
+**Addresses:** API key security (Railway secret variables, not plain env vars), `DATABASE_URL` validation, DexScreener boost endpoint base URL difference (`api.dexscreener.com` vs existing `/latest` prefix).
+**Avoids:** Volume not mounted — ephemeral data loss (Pitfall 2), WAL corruption from concurrent access (Pitfall 1), credit exhaustion silent Shyft fallback (Pitfall 6 — alert portion).
+**Research flag:** No deeper research needed. Railway volume attachment and SQLite WAL are well-documented with official sources.
 
-### Phase 2: Transaction Parsing
-**Rationale:** Every downstream component — detection, scoring, signals — depends on normalized Swap objects. This is the most complex parsing work and must be solid before building on top of it.
-**Delivers:** Helius enhanced transaction normalization, DEX-specific parsers (Pump.fun, Raydium, Jupiter, Orca, Meteora), full history import with pagination, `history_complete` flag
-**Addresses:** Transaction parsing, position tracking (FIFO), DEX identification
-**Avoids:** Stale position tracking pitfall (full history before metrics), DEX parsing fragility (separate parsers per DEX, log unrecognized types)
-**Research flag:** Needs deeper research — each DEX has distinct instruction layouts, Helius API pagination behavior needs validation
+### Phase 2: Signal Outcome Tracking
+**Rationale:** This is the primary v1.1 deliverable. The 30m window and peak price capture make the forward-testing dataset meaningful. Must run after Phase 1 so new schema migrations are written to persistent storage from day one. The rug/failure distinction must also ship in this phase — collecting 30 days of data with the survivorship bias baked in produces a corrupted accuracy baseline that cannot be corrected retroactively.
+**Delivers:** New `signal_events` columns (`peak_price`, `peak_price_at`, `time_to_peak_min`, `outcome_30m_price/pct/status`), updated `outcome-resolver.ts` with 30m pass and rug/failure discrimination, `outcome_Xh_error` column for retry-safe 429 handling, extended `getAccuracyStats()` with p50/p75 return percentiles and rug-inclusive denominators.
+**Addresses:** Peak price capture (P1), 30m outcome window (P1), time-to-peak storage (P1), per-tier return distribution (P2), rug vs failed status (critical data integrity fix).
+**Avoids:** Outcome resolver rug/failure conflation (Pitfall 3), DexScreener 429 permanently sealing windows (Pitfall 4), survivorship bias compounding over the forward-testing period.
+**Research flag:** No deeper research needed. All changes are within known codebase boundaries. DexScreener `getTokenPrice()` behavior for rugged tokens (empty `pairs[]` vs HTTP 429) is verified in official docs.
 
-### Phase 3: Bundle/Scam Detection
-**Rationale:** Detection gates scoring. Without it, scam wallets contaminate scores and corrupt signals. Must be built before any scoring layer.
-**Delivers:** Slot-clustering detector, deployer linkage checker, sniper pattern detector, wash trade detector, tiered confidence output (suspected/review/confirmed)
-**Addresses:** Bundle/scam detection (table stakes gate)
-**Avoids:** False-positive bundle detection pitfall (tiered confidence model, never remove on "suspected" alone)
-**Research flag:** Needs deeper research — false-positive risk is high, heuristics need careful tuning, Helius instruction data format for each check needs validation
+### Phase 3: Coin Sourcing Automation
+**Rationale:** Automated token sourcing removes the manual CA bottleneck but must follow the outcome tracking schema (AutoSourcer generates new signal events that need the Phase 2 columns from their first insertion). This phase also adds the Telegram observability improvements that become necessary once auto-sourcing increases operator monitoring load.
+**Delivers:** `AutoSourcer` module calling `/token-boosts/latest/v1` on 5-minute cadence, `coin_sources` dedup table with `source: 'dexscreener_boost'` auditability, liquidity gate (`>= $10k`), `MAX_DAILY_ADDS=20` cap, total wallet ceiling (200), 24h per-CA cooldown, graph traversal disabled for auto-sourced CAs, extended `/status` command with cycle counter/duration/stall detection. Also: `signal_event_holders` table creation as passive data capture for future sell signal engine (add the table now so it has 30+ days of data by v1.2 — deferred to Phase 3 rather than Phase 2 to keep Phase 2 focused on outcome tracking).
+**Addresses:** Automated coin sourcing (P1 feature), monitor cycle health in `/status` (P2 feature), sell signal data collection infrastructure (P2 — table creation only, not exit tracking queries).
+**Avoids:** Infinite discovery loops (Pitfall 6), Helius credit spike from unthrottled history imports (performance trap), stall detection gap in Telegram observability.
+**Research flag:** Needs a brief targeted research pass on the DexScreener boost endpoint live response shape. The rate limit (60 req/min) and endpoint path are documented, but the exact JSON field names (`chainId`, `tokenAddress`, `boostAmount`) should be verified against a live API call before building the AutoSourcer filter logic. If field names differ from docs, the Solana filter silently passes all tokens or none.
 
-### Phase 4: Metrics and Scoring
-**Rationale:** Metrics and scoring depend on parsed swaps and detection results. Only clean wallets (passed detection) get scored. This is the core intelligence of the system.
-**Delivers:** WalletMetrics calculation (PnL, win rate, Sharpe-like ratio, drawdown, recency), WalletScore 0-100 with weighted components
-**Addresses:** Win rate, realized PnL, risk-adjusted return, recency weighting (all table stakes)
-**Avoids:** Win rate gaming pitfall (risk-adjusted return at 40%+ weight), ensures bundler-style wallets score low
-
-### Phase 5: Monitoring Loop and Auto-Removal
-**Rationale:** The monitoring loop is the operational heart of the system. It orchestrates phases 2-4 on a schedule. Auto-removal is included here because it depends directly on scoring being stable.
-**Delivers:** node-cron 30s loop, p-queue rate limiting (max 5 concurrent Helius calls), incremental fetching (last_checked_at), auto-removal (score decay, detection flag, inactivity) with audit log
-**Addresses:** Persistent monitoring, auto-removal (differentiator)
-**Avoids:** Helius rate limit exhaustion (p-queue from day one), auto-removal too aggressive (rolling window + market context check)
-
-### Phase 6: Token Signal Engine
-**Rationale:** Signal engine depends on stable wallet scores from phase 4/5. This is the primary output of the system — what translates wallet intelligence into actionable buy signals.
-**Delivers:** Per-token signal score (smart wallet count, buy velocity 1h, exit pressure, weighted composite), token_signals table updated each cycle, wallet independence check to discount coordinated signals
-**Addresses:** Smart wallet accumulation count, buy velocity, exit pressure, composite score (all table stakes)
-**Avoids:** Token signal false positives from coordinated manipulation (wallet independence check)
-
-### Phase 7: API, Dashboard, and Telegram Alerts
-**Rationale:** Frontend and alerts depend on signal engine output. These are the delivery layer — the user-facing surfaces built on top of the data pipeline.
-**Delivers:** Fastify REST API (wallets, signals, events SSE), HTMX + Alpine.js dashboard (signal feed, wallet list, wallet drill-down), grammy Telegram bot (threshold alerts with dedup, /status /top /wallet commands)
-**Addresses:** Dashboard (table stakes), Telegram push alerts (table stakes)
-**Avoids:** Alert fatigue (rate limit per token, 1h dedup window)
-**Research flag:** Standard patterns — Fastify SSE, grammy long-polling, HTMX SSE integration are all well-documented
-
-### Phase 8: Wallet Discovery
-**Rationale:** Discovery is the key differentiator but depends on transaction parsing and scoring being fully operational to evaluate candidates. Adding low-quality wallets before detection/scoring works would corrupt the signal list.
-**Delivers:** Token-CA-based candidate extraction (early buyers who profited), scoring gate (>70 to add), probation period (7 days, excluded from signals), graph traversal discovery
-**Addresses:** Auto-discovery (differentiator)
-**Avoids:** Discovery pollution pitfall (probation period + scoring gate before admission)
-**Research flag:** Needs deeper research — graph traversal at scale, Helius API limits for bulk buyer extraction, probation logic implementation
+### Phase 4: ProviderRouter Extension
+**Rationale:** This phase completes production hardening by ensuring detection engines do not silently degrade during Helius rate limiting. It comes last because it requires the most surgical change (new method on the `RpcProvider` interface), carries the highest regression risk in the detection pipeline, and is the least user-visible phase. Having auto-sourcing live from Phase 3 provides a higher-throughput test scenario to validate that detection continues working correctly under the new router paths.
+**Delivers:** `getTransactionDetails(signature)` on `RpcProvider` interface, HeliusProvider and ShyftProvider implementations, Shyft action type audit for native transfer normalization (covers `SOL_TRANSFER`, `TRANSFER`, `SYSTEM_PROGRAM:TRANSFER`), test fixture with Shyft-normalized bundled transaction, Helius credit exhaustion error body discrimination completing Pitfall 6.
+**Addresses:** Bundler/wash-trader detection fallback (production safety), credit exhaustion Telegram alert (operational safety).
+**Avoids:** Bundler detection silently starving during Helius 429 (Pitfall 5), ShyftProvider nativeTransfers missing funder data producing false-clean detection results (Pitfall 8), credit exhaustion permanently falling back to Shyft without alerting (Pitfall 6 — error discrimination portion).
+**Research flag:** Needs a targeted research pass on Shyft `/sol/v1/transaction` response shape for a known bundled transaction. The native transfer normalization gap (Pitfall 8) is the highest regression risk in v1.1 and cannot be resolved by inference — it requires a real Shyft response fixture.
 
 ### Phase Ordering Rationale
 
-- Phases 1-4 are strictly dependency-ordered: no phase can start before its predecessor is stable. This is non-negotiable.
-- Phase 5 (monitoring loop) wraps phases 2-4 in a scheduling harness. It cannot be built until parsing, detection, and scoring work in isolation.
-- Phase 6 (signals) depends on phase 5 producing reliable scores per cycle.
-- Phase 7 (API/dashboard/Telegram) is the delivery layer and can be partially scaffolded during phase 5-6 but cannot show real data until signals exist.
-- Phase 8 (discovery) is isolated enough to develop last without blocking any other phase.
+- Phase 1 before Phase 2: Railway volume persistence must be confirmed before any new schema migrations are deployed. Writing 30m window and peak price data to ephemeral storage that disappears on redeployment means restarting the forward-testing dataset from zero.
+- Phase 2 before Phase 3: AutoSourcer generates new signal events. Those events need the Phase 2 schema columns (`peak_price`, `outcome_30m_*`) present from their first insertion — retrofitting existing rows is error-prone and breaks IS NULL idempotency guards.
+- Phase 3 before Phase 4: ProviderRouter extension changes the `RpcProvider` interface used by all detection. Having auto-sourcing live first creates a realistic throughput scenario to confirm detection continues working under the new router paths before shipping.
+- `signal_event_holders` table (sell signal infrastructure) belongs in Phase 3, not deferred to v1.2. The table costs one extra insert per signal fire. It needs 30+ days of data before the v1.2 exit-tracking analysis is meaningful. Create the schema now; build the exit-tracking queries when sample size justifies it.
 
 ### Research Flags
 
-Phases likely needing deeper research during planning:
-- **Phase 2 (Transaction Parsing):** Each DEX has distinct instruction layouts. Helius enhanced transaction format for each DEX needs hands-on validation. Pagination behavior under rate limits needs testing.
-- **Phase 3 (Bundle Detection):** Heuristics are high false-positive risk. Real transaction data needed to tune clustering thresholds. Helius instruction-level data availability for funding source tracing needs validation.
-- **Phase 8 (Wallet Discovery):** Graph traversal at scale is non-trivial. Helius API limits for fetching all buyers of a token within a time window need validation.
+Phases needing deeper research during planning:
+- **Phase 3 (Coin Sourcing Automation):** DexScreener boost endpoint live response shape should be verified against a real API call before building the AutoSourcer filter logic. 30-minute effort, prevents a silent filter failure.
+- **Phase 4 (ProviderRouter Extension):** Shyft `/sol/v1/transaction` response for a known bundled transaction must be verified before implementing `extractNativeTransfers` coverage. This is not optional — building against inferred field names risks silent bundler detection failures in production.
 
 Phases with standard patterns (skip research-phase):
-- **Phase 1 (Data Foundation):** SQLite + drizzle-orm setup is well-documented. WAL mode is standard config.
-- **Phase 7 (API/Dashboard/Telegram):** Fastify SSE, grammy long-polling, HTMX SSE are all standard patterns with good documentation.
+- **Phase 1 (Railway Deployment):** Railway volume attachment, SQLite WAL, and Railway environment variable secrets are all well-documented with official sources. No research uncertainty.
+- **Phase 2 (Signal Outcome Tracking):** All changes are within the existing `outcome-resolver.ts` and `accuracy.ts` codebase. No new external integrations. No research needed.
+
+---
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | All choices are well-documented libraries with clear rationale. No experimental dependencies. |
-| Features | HIGH | Well-defined domain. Reference tools (Cielo, gmgn.ai, Photon, Birdeye) provide clear feature benchmarks. Dependency chain is explicit. |
-| Architecture | HIGH | Pipeline architecture is standard for this domain. Component boundaries are clean. Build order is driven by hard data dependencies, not preference. |
-| Pitfalls | HIGH | Pitfalls are specific and actionable with concrete prevention strategies. Rate limit math is validated against known Helius free-tier limits. |
+| Stack | HIGH | v1.0 stack is live and running. No new dependencies for v1.1. All additions are within existing package surface. |
+| Features | HIGH | Based on direct codebase inspection of `schema.ts`, `outcome-resolver.ts`, `accuracy.ts`, `dexscreener.ts`, `loop.ts`, and `commands.ts`. What exists and what is missing is verified, not inferred. |
+| Architecture | HIGH | v1.0 architecture is running in production. v1.1 changes are additive hooks into existing components. ARCHITECTURE.md is dated 2026-03-11 (v1.0 research) — valid as foundation; v1.1 additions are documented in FEATURES.md and PITFALLS.md. |
+| Pitfalls | HIGH | Verified against live codebase. ProviderRouter `getTransaction` exclusion confirmed by `types.ts` comment. WAL + Railway volume behavior confirmed by official SQLite and Railway docs. DexScreener null price vs 429 distinction confirmed by API reference. Helius credit exhaustion 429 body confirmed by Helius billing docs. |
 
 **Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **DEX instruction layout specifics:** Each DEX (Pump.fun, Raydium, Jupiter, Orca, Meteora) has different Helius enhanced transaction structure. Exact field paths need to be validated against live Helius API responses during Phase 2 implementation.
-- **Bundle detection thresholds:** The clustering thresholds (same block + shared funding = bundle) need tuning against real transaction data. Initial values will likely need adjustment after seeing real false-positive rates.
-- **Helius free-tier behavior under sustained load:** The 300 req/min limit is documented but behavior at the limit (429 response format, retry-after headers) needs to be tested during Phase 5 implementation.
-- **Signal score weights:** The formula (`holders × 0.35 + velocity × 0.30 + pnl_weight × 0.25 + exit_penalty × -0.10`) is a starting hypothesis. Weights will need calibration once real signals can be back-checked against token outcomes.
+- **DexScreener boost endpoint response field names (Phase 3):** The endpoint rate limit and availability are confirmed (60 req/min, docs verified). The exact JSON payload structure has not been verified against a live call. Before building the AutoSourcer filter, make a live API call and confirm `chainId`, `tokenAddress`, and `boostAmount` field names and nullability. A mismatch silently breaks the Solana filter.
+
+- **Shyft `/sol/v1/transaction` native transfer action type names (Phase 4):** The gap between what `extractNativeTransfers()` handles (`SOL_TRANSFER`) and what Shyft actually returns for funding transactions cannot be resolved by inference. Requires a real Shyft response for a known bundled transaction signature before the Phase 4 ProviderRouter implementation ships.
+
+- **Helius credit burn rate under automated sourcing (Phase 3 operational planning):** v1.0 credit estimates were based on manual operation. Automated sourcing is non-linear: each new wallet added doubles `fetchSwapHistory` call volume per cycle. Before enabling AutoSourcer at full cadence, compute the daily credit budget: `N wallets × cycles/day × transactions/cycle × credits/transaction`. Validate against the current Helius plan limit.
+
+---
 
 ## Sources
 
-### Primary (HIGH confidence)
-- Helius enhanced transactions API (existing integration in codebase) — transaction parsing, rate limits
-- grammy documentation — Telegram bot setup, long-polling mode
-- Fastify documentation — SSE support, schema validation
-- drizzle-orm documentation — SQLite adapter, migrations
-- HTMX documentation — SSE integration pattern
+### Primary (HIGH confidence — direct codebase inspection)
+- `src/db/schema.ts` — confirmed `signal_events` schema, existing columns, confirmed missing peak_price/30m/time_to_peak columns
+- `src/signals/outcome-resolver.ts` — confirmed 1h/4h/24h resolution, `classifyOutcome()`, IS NULL idempotency guard, 90-day retention
+- `src/signals/accuracy.ts` — confirmed `getAccuracyStats()` structure, MIN_SAMPLE=20 gate, avg_return fields present
+- `src/fetchers/dexscreener.ts` — confirmed available methods, base URL pattern (`/latest` prefix), rate limit handling
+- `src/monitor/loop.ts` — confirmed 30s cycle structure, SIGTERM handler, crash-restart behavior, post-cycle hooks
+- `src/api/bot/commands.ts` — confirmed `/status` command current output (what is and is not shown)
+- `src/fetchers/providers/types.ts` — confirmed `getTransaction(signature)` explicitly excluded from `RpcProvider` interface (comment in source)
+- `src/fetchers/providers/router.ts` — confirmed ProviderRouter scope covers only `fetchSwapHistory`, `fetchEarlySwapsForMint`, `fetchOnePage`
 
-### Secondary (MEDIUM confidence)
-- Reference tool analysis (Cielo Finance, gmgn.ai, Photon, Bullx, Birdeye) — feature benchmarking, UX patterns
-- Solana on-chain data patterns — bundle detection heuristics, slot-level transaction clustering
-- p-queue / p-retry npm documentation — rate limiting patterns
+### Secondary (MEDIUM confidence — official documentation)
+- [DexScreener API Reference](https://docs.dexscreener.com/api/reference) — `/token-boosts/latest/v1`, `/token-boosts/top/v1`, 60 req/min rate limit; empty `pairs[]` confirmed for rugged/unlisted tokens
+- [Helius Billing FAQ](https://www.helius.dev/docs/faqs/billing) — confirmed 429 with `max_usage_reached` body (not HTTP 402)
+- [SQLite WAL Official Docs](https://www.sqlite.org/wal.html) — shared-memory locking requirements for WAL mode
+- [Railway Help Station — SQLite volume](https://station.railway.com/questions/how-do-i-use-volumes-to-make-a-sqlite-da-34ea0372) — volume attachment behavior, ephemeral layer behavior on redeploy
+- [Shyft Parsed Transaction Structure](https://docs.shyft.to/solana-apis/transactions/parsed-transaction-structure) — action type names (basis for Pitfall 8 analysis)
 
-### Tertiary (LOW confidence)
-- Signal score formula weights — initial hypothesis, needs calibration against real outcomes
-- Bundle detection thresholds — informed estimates, needs empirical tuning
+### Tertiary (MEDIUM confidence — market observation)
+- gmgn.ai and Photon competitor UI observation — 30m as default outcome window for Solana memecoins; confirmed by UI inspection, not documented standard
 
 ---
-*Research completed: 2026-03-11*
+*Research completed: 2026-03-31*
 *Ready for roadmap: yes*
