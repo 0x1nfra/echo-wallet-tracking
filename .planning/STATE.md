@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Forward Testing & Deployment
-status: executing
-last_updated: "2026-04-01T03:59:36Z"
+status: completed
+last_updated: "2026-04-01T04:03:28.397Z"
 last_activity: "2026-04-01 — Plan 03 complete: HeliusCreditExhaustedError + monitorLoop pause/resume with exponential-backoff probe"
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
   completed_plans: 3
 ---
@@ -66,6 +66,13 @@ v1.1 Progress: [██████████] 98% (3/3 plans in Phase 13 compl
 - monitorLoop imported lazily via dynamic import() in providers/index.ts to avoid circular dependency at module load time
 - HeliusCreditExhaustedError re-thrown after monitorLoop.pause() so ProviderRouter can still fall back to Shyft for the current request cycle
 - ESM test pattern: simulate onFailedAttempt logic directly without jest.mock (jest.mock incompatible with NODE_OPTIONS=--experimental-vm-modules)
+
+### Phase 13 Plan 02 Decisions (2026-04-01)
+
+- Used dependency injection (VolumeCheckOptions) for fs/setTimeout testability — @jest/globals not installed, project avoids module mocking
+- validateVolumeMount uses dynamic import in serve action to ensure volume check runs before db static-import side-effects (db/index.ts creates dir + opens db on import)
+- Replica warning is advisory (console.warn), not a hard fail — Railway blocks volumes+replicas at infra level; warning helps operators diagnose config issues
+- Telegram bot hard-fail only when TELEGRAM_BOT_TOKEN is configured — no token means bot is intentionally absent
 
 ### Phase 13 Plan 01 Decisions (2026-04-01)
 
