@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Forward Testing & Deployment
 status: executing
-last_updated: "2026-04-01T04:01:14.892Z"
-last_activity: "2026-04-01 — Plan 01 complete: Dockerfile, railway.toml, /health endpoint, docs/railway-deployment.md"
+last_updated: "2026-04-01T03:59:36Z"
+last_activity: "2026-04-01 — Plan 03 complete: HeliusCreditExhaustedError + monitorLoop pause/resume with exponential-backoff probe"
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 3
-  completed_plans: 2
+  completed_plans: 3
 ---
 
 # Project State
@@ -19,17 +19,17 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-31 after v1.1 milestone started)
 
 **Core value:** Know what smart money is doing before the crowd does — and trust the signals because the noise (bots, bundlers, dev wallets) has already been filtered out.
-**Current focus:** Phase 13 in progress — Plan 01 complete, executing Plan 02 (host binding + serve-command rewrite)
+**Current focus:** Phase 13 complete — all 3 plans executed
 
 ## Current Position
 
-Phase: 13 — Railway Deployment (In progress — 1/3 plans complete)
-Plan: 01 complete, next: 02
-Status: In progress
-Last activity: 2026-04-01 — Plan 01 complete: Dockerfile, railway.toml, /health endpoint, docs/railway-deployment.md
+Phase: 13 — Railway Deployment (Complete — 3/3 plans complete)
+Plan: 03 complete (all plans done)
+Status: Phase 13 complete
+Last activity: 2026-04-01 — Plan 03 complete: HeliusCreditExhaustedError + monitorLoop pause/resume with exponential-backoff probe
 
 ```
-v1.1 Progress: [=                   ] 8% (1/3 plans in Phase 13)
+v1.1 Progress: [██████████] 98% (3/3 plans in Phase 13 complete)
 ```
 
 ## Milestone History
@@ -40,7 +40,7 @@ v1.1 Progress: [=                   ] 8% (1/3 plans in Phase 13)
 
 | Phase | Goal | Requirements | Status |
 |-------|------|--------------|--------|
-| 13 - Railway Deployment | Persistent Railway deployment with data integrity safeguards | DEPLOY-01–04 | Not started |
+| 13 - Railway Deployment | Persistent Railway deployment with data integrity safeguards | DEPLOY-01–04 | Complete |
 | 14 - Signal Outcome Tracking | Accurate forward-testing dataset: 30m window, peak price, rug classification | OUTCOME-01–06 | Not started |
 | 15 - Coin Sourcing + Observability | Automated discovery via DexScreener with caps and dashboard health | SEED-01–06, OBS-01–02 | Not started |
 | 16 - ProviderRouter Extension | Bundler/wash-trader detection with full Shyft fallback | API-01–03 | Not started |
@@ -60,6 +60,13 @@ v1.1 Progress: [=                   ] 8% (1/3 plans in Phase 13)
 - Telegram admin error/crash alerting is explicitly out of scope for v1.1 (signal channel reserved for signals only; operational info goes to dashboard and /status command)
 - signal_event_holders table (sell signal infrastructure) to be created in Phase 15 as passive data capture for v1.2 — costs one extra insert per signal fire, needs 30+ days of data before v1.2 exit-tracking analysis is meaningful
 
+### Phase 13 Plan 03 Decisions (2026-04-01)
+
+- Substring match on 'max_usage_reached' used for credit exhaustion detection (resilient to Helius body format variations vs exact JSON parse)
+- monitorLoop imported lazily via dynamic import() in providers/index.ts to avoid circular dependency at module load time
+- HeliusCreditExhaustedError re-thrown after monitorLoop.pause() so ProviderRouter can still fall back to Shyft for the current request cycle
+- ESM test pattern: simulate onFailedAttempt logic directly without jest.mock (jest.mock incompatible with NODE_OPTIONS=--experimental-vm-modules)
+
 ### Phase 13 Plan 01 Decisions (2026-04-01)
 
 - Used node:20-slim (Debian/glibc) not Alpine — better-sqlite3 native module requires glibc; Alpine's MUSL libc causes build failures
@@ -78,4 +85,4 @@ None.
 
 ## Next Action
 
-Execute Plan 02: `/gsd:execute-phase 13 02` — host binding fix (`cli.ts serve` command, `0.0.0.0:$PORT`), startup validation guards (volume path check, replica count check), startup summary log.
+Phase 13 complete. Execute Phase 14: `/gsd:execute-phase 14` — Signal Outcome Tracking (30m window, peak price, rug classification).
