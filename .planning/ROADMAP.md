@@ -99,7 +99,7 @@ See full details: `.planning/milestones/v1.0-ROADMAP.md`
 | 10. Tech Debt Cleanup              | v1.0      | 1/1            | Complete    | 2026-03-26 |
 | 11. Helius RPC Provider Rotation   | v1.0      | 4/4            | Complete    | 2026-03-27 |
 | 12. Signal Accuracy Logging        | v1.0      | 4/4            | Complete    | 2026-03-27 |
-| 13. Railway Deployment             | v1.1      | 0/TBD          | Not started | -          |
+| 13. Railway Deployment             | 2/3 | In Progress|  | -          |
 | 14. Signal Outcome Tracking        | v1.1      | 0/TBD          | Not started | -          |
 | 15. Coin Sourcing + Observability  | v1.1      | 0/TBD          | Not started | -          |
 | 16. ProviderRouter Extension       | v1.1      | 0/TBD          | Not started | -          |

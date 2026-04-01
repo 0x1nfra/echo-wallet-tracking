@@ -2,16 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Forward Testing & Deployment
-status: roadmap_complete
-stopped_at: Roadmap created — ready to plan Phase 13
-last_updated: "2026-03-31T00:00:00.000Z"
-last_activity: 2026-03-31 — Roadmap written for v1.1 (Phases 13-16)
+status: executing
+last_updated: "2026-04-01T04:01:14.892Z"
+last_activity: "2026-04-01 — Plan 01 complete: Dockerfile, railway.toml, /health endpoint, docs/railway-deployment.md"
 progress:
   total_phases: 4
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_plans: 3
+  completed_plans: 2
 ---
 
 # Project State
@@ -21,17 +19,17 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-31 after v1.1 milestone started)
 
 **Core value:** Know what smart money is doing before the crowd does — and trust the signals because the noise (bots, bundlers, dev wallets) has already been filtered out.
-**Current focus:** Ready to plan Phase 13: Railway Deployment
+**Current focus:** Phase 13 in progress — Plan 01 complete, executing Plan 02 (host binding + serve-command rewrite)
 
 ## Current Position
 
-Phase: 13 — Railway Deployment (Not started)
-Plan: —
-Status: Roadmap complete, awaiting phase planning
-Last activity: 2026-03-31 — Roadmap written (Phases 13-16), 21/21 requirements mapped
+Phase: 13 — Railway Deployment (In progress — 1/3 plans complete)
+Plan: 01 complete, next: 02
+Status: In progress
+Last activity: 2026-04-01 — Plan 01 complete: Dockerfile, railway.toml, /health endpoint, docs/railway-deployment.md
 
 ```
-v1.1 Progress: [                    ] 0% (0/4 phases)
+v1.1 Progress: [=                   ] 8% (1/3 plans in Phase 13)
 ```
 
 ## Milestone History
@@ -62,6 +60,13 @@ v1.1 Progress: [                    ] 0% (0/4 phases)
 - Telegram admin error/crash alerting is explicitly out of scope for v1.1 (signal channel reserved for signals only; operational info goes to dashboard and /status command)
 - signal_event_holders table (sell signal infrastructure) to be created in Phase 15 as passive data capture for v1.2 — costs one extra insert per signal fire, needs 30+ days of data before v1.2 exit-tracking analysis is meaningful
 
+### Phase 13 Plan 01 Decisions (2026-04-01)
+
+- Used node:20-slim (Debian/glibc) not Alpine — better-sqlite3 native module requires glibc; Alpine's MUSL libc causes build failures
+- No USER switch in Dockerfile — Railway volumes mount as root; non-root user breaks volume read/write permissions
+- healthcheckTimeout = 300s — allows 5 minutes for volume validation retry loop plus app startup
+- Checked in railway.toml — deployment configuration reproducible from git without manual Railway dashboard steps
+
 ### Research Flags for Planning
 
 - **Phase 15**: Before building AutoSourcer filter logic, verify DexScreener boost endpoint (`/token-boosts/latest/v1`) live JSON response field names (`chainId`, `tokenAddress`, `boostAmount`). A mismatch silently breaks the Solana token filter.
@@ -73,4 +78,4 @@ None.
 
 ## Next Action
 
-Run `/gsd:plan-phase 13` to decompose Phase 13: Railway Deployment into executable plans.
+Execute Plan 02: `/gsd:execute-phase 13 02` — host binding fix (`cli.ts serve` command, `0.0.0.0:$PORT`), startup validation guards (volume path check, replica count check), startup summary log.

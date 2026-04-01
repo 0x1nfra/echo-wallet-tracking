@@ -8,7 +8,7 @@
 
 ### Deployment
 
-- [ ] **DEPLOY-01**: User can deploy Echo to Railway with a single command (Dockerfile + railway.toml, unified process: monitoring loop + API + Telegram bot)
+- [x] **DEPLOY-01**: User can deploy Echo to Railway with a single command (Dockerfile + railway.toml, unified process: monitoring loop + API + Telegram bot)
 - [ ] **DEPLOY-02**: System verifies at startup that SQLite DB is on a persistent volume, exits with clear error if not mounted
 - [ ] **DEPLOY-03**: System refuses to start with WAL mode if Railway replica count > 1
 - [ ] **DEPLOY-04**: System distinguishes Helius credit exhaustion from rate-limit 429 and pauses monitoring loop on credit exhaustion
@@ -74,7 +74,7 @@ All 21 v1.1 requirements mapped to phases. Updated during roadmap creation (2026
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DEPLOY-01 | Phase 13 | Pending |
+| DEPLOY-01 | Phase 13 | Complete |
 | DEPLOY-02 | Phase 13 | Pending |
 | DEPLOY-03 | Phase 13 | Pending |
 | DEPLOY-04 | Phase 13 | Pending |
