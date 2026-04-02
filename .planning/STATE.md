@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Forward Testing & Deployment
 status: completed
-last_updated: "2026-04-01T04:03:28.397Z"
-last_activity: "2026-04-01 — Plan 03 complete: HeliusCreditExhaustedError + monitorLoop pause/resume with exponential-backoff probe"
+last_updated: "2026-04-02T11:35:18.649Z"
+last_activity: "2026-04-02 — Plan 04 complete: DEPLOY-03 documentation gap closure — warning-only replica detection aligned across REQUIREMENTS.md, ROADMAP.md, and docs/railway-deployment.md"
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
+  total_plans: 4
+  completed_plans: 4
 ---
 
 # Project State
@@ -19,17 +19,17 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-31 after v1.1 milestone started)
 
 **Core value:** Know what smart money is doing before the crowd does — and trust the signals because the noise (bots, bundlers, dev wallets) has already been filtered out.
-**Current focus:** Phase 13 complete — all 3 plans executed
+**Current focus:** Phase 13 complete — all 4 plans executed (including gap closure plan 04)
 
 ## Current Position
 
-Phase: 13 — Railway Deployment (Complete — 3/3 plans complete)
-Plan: 03 complete (all plans done)
+Phase: 13 — Railway Deployment (Complete — 4/4 plans complete)
+Plan: 04 complete (all plans done)
 Status: Phase 13 complete
-Last activity: 2026-04-01 — Plan 03 complete: HeliusCreditExhaustedError + monitorLoop pause/resume with exponential-backoff probe
+Last activity: 2026-04-02 — Plan 04 complete: DEPLOY-03 documentation gap closure — warning-only replica detection aligned across REQUIREMENTS.md, ROADMAP.md, and docs/railway-deployment.md
 
 ```
-v1.1 Progress: [██████████] 98% (3/3 plans in Phase 13 complete)
+v1.1 Progress: [██████████] 100% (4/4 plans in Phase 13 complete)
 ```
 
 ## Milestone History
@@ -59,6 +59,12 @@ v1.1 Progress: [██████████] 98% (3/3 plans in Phase 13 compl
 - Phase ordering is data-integrity driven: 13 (deployment substrate) → 14 (schema migrations) → 15 (auto-sourcing needs Phase 14 columns) → 16 (router extension, highest regression risk, benefits from Phase 15 throughput as test load)
 - Telegram admin error/crash alerting is explicitly out of scope for v1.1 (signal channel reserved for signals only; operational info goes to dashboard and /status command)
 - signal_event_holders table (sell signal infrastructure) to be created in Phase 15 as passive data capture for v1.2 — costs one extra insert per signal fire, needs 30+ days of data before v1.2 exit-tracking analysis is meaningful
+
+### Phase 13 Plan 04 Decisions (2026-04-02)
+
+- DEPLOY-03 requirement text updated to warning-only: RAILWAY_REPLICA_ID is present on all Railway deployments (including single-replica); hard-fail on its presence is not feasible and was never the correct behaviour
+- Phase 13 progress table row corrected: v1.1 milestone column added, plan count updated to 4/4
+- docs/railway-deployment.md now includes operator-facing explanation of advisory warning and why it fires on all Railway deployments
 
 ### Phase 13 Plan 03 Decisions (2026-04-01)
 
