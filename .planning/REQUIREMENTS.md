@@ -10,7 +10,7 @@
 
 - [x] **DEPLOY-01**: User can deploy Echo to Railway with a single command (Dockerfile + railway.toml, unified process: monitoring loop + API + Telegram bot)
 - [x] **DEPLOY-02**: System verifies at startup that SQLite DB is on a persistent volume, exits with clear error if not mounted
-- [x] **DEPLOY-03**: System refuses to start with WAL mode if Railway replica count > 1
+- [x] **DEPLOY-03**: System logs a WAL integrity warning if a Railway replica environment is detected (RAILWAY_REPLICA_ID set); does not hard-fail because RAILWAY_REPLICA_ID is present on all Railway deployments including single-replica
 - [x] **DEPLOY-04**: System distinguishes Helius credit exhaustion from rate-limit 429 and pauses monitoring loop on credit exhaustion
 
 ### Signal Outcomes
@@ -103,4 +103,4 @@ All 21 v1.1 requirements mapped to phases. Updated during roadmap creation (2026
 
 ---
 *Requirements defined: 2026-03-31*
-*Last updated: 2026-03-31 — roadmap created, traceability confirmed*
+*Last updated: 2026-04-01 — DEPLOY-03 requirement text updated to reflect warning-only replica detection (hard-fail not feasible: RAILWAY_REPLICA_ID present on all Railway deployments)*
