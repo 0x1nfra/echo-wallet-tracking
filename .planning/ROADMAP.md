@@ -43,7 +43,7 @@ See full details: `.planning/milestones/v1.0-ROADMAP.md`
 **Success Criteria** (what must be TRUE):
   1. User can deploy Echo to Railway with a single command and the service starts with monitoring loop, API, and Telegram bot all running
   2. If the SQLite database file is not on the mounted volume, the service exits immediately with a clear error message identifying the path mismatch
-  3. If Railway replica count exceeds 1, the service refuses to start and logs a WAL integrity warning
+  3. If a Railway replica environment is detected (RAILWAY_REPLICA_ID set), the service logs a WAL integrity warning; the service does not hard-fail because RAILWAY_REPLICA_ID is present on all Railway deployments including single-replica
   4. When Helius credits are exhausted (429 with `max_usage_reached` body), the monitoring loop pauses rather than silently continuing on Shyft fallback indefinitely
 **Plans**: TBD
 
@@ -99,7 +99,7 @@ See full details: `.planning/milestones/v1.0-ROADMAP.md`
 | 10. Tech Debt Cleanup              | v1.0      | 1/1            | Complete    | 2026-03-26 |
 | 11. Helius RPC Provider Rotation   | v1.0      | 4/4            | Complete    | 2026-03-27 |
 | 12. Signal Accuracy Logging        | v1.0      | 4/4            | Complete    | 2026-03-27 |
-| 13. Railway Deployment             | 3/3 | Complete   | 2026-04-01 | -          |
+| 13. Railway Deployment             | v1.1      | 4/4            | Complete    | 2026-04-01 |
 | 14. Signal Outcome Tracking        | v1.1      | 0/TBD          | Not started | -          |
 | 15. Coin Sourcing + Observability  | v1.1      | 0/TBD          | Not started | -          |
 | 16. ProviderRouter Extension       | v1.1      | 0/TBD          | Not started | -          |
