@@ -72,3 +72,13 @@ Host binding issue. The server must listen on `0.0.0.0`, not `127.0.0.1`. Railwa
 ### Service exits immediately on startup
 
 Volume not mounted. The startup sequence runs a 30-second retry loop waiting for the volume path (`/data` by default). If the path never appears, the service hard-fails with an error message that includes the expected path and actual directory contents. To fix: attach the volume in Railway dashboard and redeploy.
+
+### WAL integrity warning on startup
+
+On every Railway deployment (including single-replica), Railway injects `RAILWAY_REPLICA_ID` into the container environment. The `serve` command detects this variable and emits a console warning:
+
+```
+[warn] RAILWAY_REPLICA_ID detected — WAL mode is not safe with multiple replicas sharing one SQLite file. Railway blocks volumes+replicas at the infrastructure level, but if you have manually enabled replicas, disable them before deploying.
+```
+
+This is advisory only — the service continues to start. Railway itself prevents you from attaching a volume to a multi-replica service at the platform level, so the warning is a belt-and-suspenders notice to the operator. If you see this warning and have NOT intentionally configured multiple replicas, you can safely ignore it.
