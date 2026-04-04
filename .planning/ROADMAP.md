@@ -58,7 +58,13 @@ See full details: `.planning/milestones/v1.0-ROADMAP.md`
   4. When a tracked signal token crosses a fixed % milestone (50%, 100%, 300%), the result is stored per outcome record
   5. When a tracked signal token hits a user-configured % threshold, a Telegram alert fires for that token
   6. The dashboard accuracy section shows per-tier hit rates and return distribution for all four time windows (30m/1h/4h/24h)
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 14-01-PLAN.md — Schema migration: all Phase 14 columns + outcome_alert_log table
+- [ ] 14-02-PLAN.md — Outcome resolver extension: 30m window, peak tracking, rug detection, milestones
+- [ ] 14-03-PLAN.md — Accuracy stats + dashboard: 4-window TierAccuracy, rug exclusion, accuracy_stats.ejs
+- [ ] 14-04-PLAN.md — Outcome alerts: runOutcomeAlertCycle, market cap capture, bot wiring
 
 ### Phase 15: Coin Sourcing + Observability
 **Goal**: Discovery pipeline runs continuously without manual CA seeding, within Helius credit and wallet count limits, with operational health visible from Telegram
@@ -100,6 +106,6 @@ See full details: `.planning/milestones/v1.0-ROADMAP.md`
 | 11. Helius RPC Provider Rotation   | v1.0      | 4/4            | Complete    | 2026-03-27 |
 | 12. Signal Accuracy Logging        | v1.0      | 4/4            | Complete    | 2026-03-27 |
 | 13. Railway Deployment             | v1.1      | Complete    | 2026-04-02 | 2026-04-01 |
-| 14. Signal Outcome Tracking        | v1.1      | 0/TBD          | Not started | -          |
+| 14. Signal Outcome Tracking        | v1.1      | 0/4            | Not started | -          |
 | 15. Coin Sourcing + Observability  | v1.1      | 0/TBD          | Not started | -          |
 | 16. ProviderRouter Extension       | v1.1      | 0/TBD          | Not started | -          |
