@@ -31,6 +31,21 @@ Know what smart money is doing before the crowd does — and trust the signals b
 
 ### Active
 
+<!-- v1.1 Forward Testing & Deployment -->
+- [ ] Railway deployment: Dockerfile, railway.toml, persistent SQLite volume, process management (DEPLOY-01–04)
+- [ ] Auto-source trending coins from DexScreener for discovery seeding (SEED-01)
+- [ ] Manual CA seeding via CLI for discovery (SEED-02)
+- [ ] Signal outcome tracking: price at 1h/4h/24h post-signal (OUTCOME-01)
+- [ ] Peak price + peak timing + dump timing captured per signal (OUTCOME-02)
+- [ ] Fixed % tiers (50%/100%/300%) stored in DB per outcome (OUTCOME-03)
+- [ ] Configurable Telegram alert when signal hits % threshold (OUTCOME-04)
+- [ ] Multi-timeframe accuracy display on dashboard (OUTCOME-05)
+- [ ] Telegram health pings: periodic status summary (OBS-01)
+- [ ] Telegram error/crash alerting (OBS-02)
+- [ ] Extend ProviderRouter to bundler.ts + wash-trader.ts (API-01)
+- [ ] API backoff + credit usage monitoring (API-02)
+
+<!-- Deferred to v1.2 -->
 - [ ] Multi-user Telegram bot (COMM-01): support multiple subscribers with individual alert thresholds
 - [ ] User management (COMM-02): add/remove Telegram subscribers
 - [ ] Signal weight calibration UI (QUAL-03): manual calibration based on historical accuracy data
@@ -47,6 +62,17 @@ Know what smart money is doing before the crowd does — and trust the signals b
 | NFT wallet tracking | Memecoin focus only |
 | WebSocket streaming | ~30s polling is sufficient; avoids Helius WS API costs |
 | Multi-user web dashboard | Personal tool in v1; Telegram handles multi-user delivery |
+
+## Current Milestone: v1.1 Forward Testing & Deployment
+
+**Goal:** Deploy Echo to Railway and run forward-testing to validate signal accuracy against real on-chain outcomes.
+
+**Target features:**
+- Railway deployment with persistent SQLite and unified process management
+- Auto + manual coin sourcing for discovery seeding
+- Signal outcome tracking: time-window price checks (1h/4h/24h) + peak/dump timing + % tier milestones
+- Observability: Telegram health pings + error alerting
+- API resilience: full ProviderRouter coverage for bundler/wash-trader + backoff/monitoring
 
 ## Context
 
@@ -97,4 +123,4 @@ Known tech debt (medium priority):
 - **Budget**: Helius free tier (300 req/min) — ProviderRouter manages this
 
 ---
-*Last updated: 2026-03-30 after v1.0 milestone*
+*Last updated: 2026-03-31 after v1.1 milestone started*

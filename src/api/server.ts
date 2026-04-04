@@ -26,6 +26,11 @@ export async function buildServer() {
   await app.register(import('./routes/status.js'));
   await app.register(import('./routes/accuracy.js'));
 
+  // Health endpoint — used by Railway for deployment success detection
+  app.get('/health', async (_req, reply) => {
+    return reply.status(200).send({ status: 'ok', uptime: process.uptime() });
+  });
+
   // Dashboard root — query and pass data for initial server-side render
   app.get('/', async (_req, reply) => {
     const { db } = await import('../db/index.js');

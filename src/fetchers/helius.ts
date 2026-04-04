@@ -7,6 +7,18 @@ import PQueue from 'p-queue';
 import pRetry from 'p-retry';
 import type { HeliusTransaction } from '../types/index.js';
 
+/**
+ * Thrown when Helius returns a 429 with 'max_usage_reached' in the response body.
+ * This signals credit exhaustion (plan limit hit), not a transient rate limit.
+ * The monitor loop should be paused and a probe-retry loop started.
+ */
+export class HeliusCreditExhaustedError extends Error {
+  constructor() {
+    super('[helius] Credit exhaustion detected (max_usage_reached). Monitor loop paused. Auto-resume when credits reload.');
+    this.name = 'HeliusCreditExhaustedError';
+  }
+}
+
 // Monitoring loop: max 5 concurrent Helius requests
 const heliusQueue = new PQueue({ concurrency: 5 });
 
@@ -61,6 +73,11 @@ export class HeliusFetcher {
             if (status === 401) throw error;
             // Exponential backoff on rate limit: 2s, 4s, 8s, 16s, 32s
             if (status === 429) {
+              // Distinguish credit exhaustion from transient rate limit
+              const body = JSON.stringify((error as any).response?.data ?? '');
+              if (body.includes('max_usage_reached')) {
+                throw new HeliusCreditExhaustedError();
+              }
               const delayMs = Math.pow(2, error.attemptNumber) * 1000;
               await new Promise(resolve => setTimeout(resolve, delayMs));
             }
@@ -119,6 +136,11 @@ export class HeliusFetcher {
           const status = (error as any).response?.status;
           if (status === 401) throw error;
           if (status === 429) {
+            // Distinguish credit exhaustion from transient rate limit
+            const body = JSON.stringify((error as any).response?.data ?? '');
+            if (body.includes('max_usage_reached')) {
+              throw new HeliusCreditExhaustedError();
+            }
             const delayMs = Math.pow(2, error.attemptNumber) * 1000;
             await new Promise(resolve => setTimeout(resolve, delayMs));
           }
