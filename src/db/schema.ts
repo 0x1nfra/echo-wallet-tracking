@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { integer, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { integer, real, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 export const wallets = sqliteTable('wallets', {
   id: integer('id').primaryKey({ autoIncrement: true }),
@@ -177,15 +177,44 @@ export const signal_events = sqliteTable('signal_events', {
   entry_price: real('entry_price'),
   outcome_1h_price: real('outcome_1h_price'),
   outcome_1h_pct: real('outcome_1h_pct'),
-  outcome_1h_status: text('outcome_1h_status', { enum: ['hit', 'miss', 'failed'] }),
+  outcome_1h_status: text('outcome_1h_status', { enum: ['hit', 'miss', 'failed', 'rug'] }),
   outcome_4h_price: real('outcome_4h_price'),
   outcome_4h_pct: real('outcome_4h_pct'),
-  outcome_4h_status: text('outcome_4h_status', { enum: ['hit', 'miss', 'failed'] }),
+  outcome_4h_status: text('outcome_4h_status', { enum: ['hit', 'miss', 'failed', 'rug'] }),
   outcome_24h_price: real('outcome_24h_price'),
   outcome_24h_pct: real('outcome_24h_pct'),
-  outcome_24h_status: text('outcome_24h_status', { enum: ['hit', 'miss', 'failed'] }),
+  outcome_24h_status: text('outcome_24h_status', { enum: ['hit', 'miss', 'failed', 'rug'] }),
   is_fully_resolved: integer('is_fully_resolved', { mode: 'boolean' }).notNull().default(false),
+  // OUTCOME-01: 30m window
+  outcome_30m_price: real('outcome_30m_price'),
+  outcome_30m_pct: real('outcome_30m_pct'),
+  outcome_30m_status: text('outcome_30m_status', { enum: ['hit', 'miss', 'failed', 'rug'] }),
+  // OUTCOME-02: peak price tracking (time_to_peak_minutes is derived at query time as (peak_price_at - fired_at) / 60000)
+  peak_price: real('peak_price'),
+  peak_price_at: integer('peak_price_at', { mode: 'number' }),
+  // OUTCOME-03: rug classification
+  is_rug: integer('is_rug', { mode: 'boolean' }).notNull().default(false),
+  // OUTCOME-04: milestone flags + timestamps
+  hit_50: integer('hit_50', { mode: 'boolean' }),
+  hit_50_at: integer('hit_50_at', { mode: 'number' }),
+  hit_100: integer('hit_100', { mode: 'boolean' }),
+  hit_100_at: integer('hit_100_at', { mode: 'number' }),
+  hit_300: integer('hit_300', { mode: 'boolean' }),
+  hit_300_at: integer('hit_300_at', { mode: 'number' }),
+  // OUTCOME-05: market cap at signal creation time
+  signal_market_cap: real('signal_market_cap'),
   created_at: integer('created_at', { mode: 'number' })
     .notNull()
     .default(sql`(unixepoch('now') * 1000)`),
 });
+
+// Dedup table for outcome alerts — prevents double-firing alerts for the same signal/event type
+export const outcome_alert_log = sqliteTable('outcome_alert_log', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  signal_event_id: integer('signal_event_id').notNull(),
+  event_type: text('event_type').notNull(), // 'threshold' | 'milestone_50' | 'milestone_100' | 'milestone_300'
+  fired_at: integer('fired_at', { mode: 'number' }).notNull()
+    .default(sql`(unixepoch('now') * 1000)`),
+}, (table) => ({
+  uniqueAlert: uniqueIndex('outcome_alert_log_unique').on(table.signal_event_id, table.event_type),
+}));
