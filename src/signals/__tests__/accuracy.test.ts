@@ -34,10 +34,13 @@ function insertResolvedEvent(
     token_mint: string;
     tier: 'strong' | 'moderate' | 'weak';
     outcome_24h_status: 'hit' | 'miss' | 'failed';
+    outcome_30m_status?: 'hit' | 'miss' | 'failed';
+    outcome_30m_pct?: number;
     entry_price?: number | null;
     outcome_1h_pct?: number;
     outcome_4h_pct?: number;
     outcome_24h_pct?: number;
+    is_rug?: boolean;
   },
 ): void {
   const entryPrice = opts.entry_price !== undefined ? opts.entry_price : 1.0;
@@ -51,6 +54,10 @@ function insertResolvedEvent(
     holder_score: 0.8,
     coordinated_wallet_count: 0,
     entry_price: entryPrice,
+    // 30m window
+    outcome_30m_price: 1.05,
+    outcome_30m_pct: opts.outcome_30m_pct ?? 0.05,
+    outcome_30m_status: opts.outcome_30m_status ?? 'hit',
     // Fully resolved: all three windows complete
     outcome_1h_price: 1.1,
     outcome_1h_pct: opts.outcome_1h_pct ?? 0.1,
@@ -61,6 +68,7 @@ function insertResolvedEvent(
     outcome_24h_price: opts.outcome_24h_status === 'failed' ? null : 1.5,
     outcome_24h_pct: opts.outcome_24h_pct ?? (opts.outcome_24h_status === 'failed' ? null : 0.5),
     outcome_24h_status: opts.outcome_24h_status,
+    is_rug: opts.is_rug ?? false,
     is_fully_resolved: true,
   }).run();
 }
@@ -250,5 +258,193 @@ describe('getAccuracyStats', () => {
     expect(stats.length).toBe(1);
     const strong = stats[0];
     expect(strong.avg_return_24h).toBeCloseTo(0.5, 5);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Rug exclusion tests
+// ---------------------------------------------------------------------------
+
+describe('getAccuracyStats — rug exclusion', () => {
+  it('excludes is_rug=true rows from total_resolved denominator', () => {
+    const { db } = createTestDb();
+
+    // 20 normal non-rug rows
+    for (let i = 0; i < 20; i++) {
+      insertResolvedEvent(db, {
+        token_mint: `NON_RUG_${i}`,
+        tier: 'strong',
+        outcome_24h_status: 'hit',
+        is_rug: false,
+      });
+    }
+    // 5 rug rows — these must NOT count in denominator
+    for (let i = 0; i < 5; i++) {
+      insertResolvedEvent(db, {
+        token_mint: `IS_RUG_${i}`,
+        tier: 'strong',
+        outcome_24h_status: 'failed',
+        is_rug: true,
+      });
+    }
+
+    const stats = getAccuracyStats(db);
+    expect(stats.length).toBe(1);
+    const strong = stats[0];
+    // Only 20 non-rug rows counted
+    expect(strong.total_resolved).toBe(20);
+  });
+
+  it('includes is_rug=false rows in total_resolved', () => {
+    const { db } = createTestDb();
+
+    for (let i = 0; i < 20; i++) {
+      insertResolvedEvent(db, {
+        token_mint: `NON_RUG_INCL_${i}`,
+        tier: 'strong',
+        outcome_24h_status: 'hit',
+        is_rug: false,
+      });
+    }
+
+    const stats = getAccuracyStats(db);
+    expect(stats.length).toBe(1);
+    expect(stats[0].total_resolved).toBe(20);
+  });
+
+  it('returns empty array when all resolved rows are is_rug=true', () => {
+    const { db } = createTestDb();
+
+    for (let i = 0; i < 5; i++) {
+      insertResolvedEvent(db, {
+        token_mint: `ALL_RUG_${i}`,
+        tier: 'strong',
+        outcome_24h_status: 'failed',
+        is_rug: true,
+      });
+    }
+
+    const stats = getAccuracyStats(db);
+    expect(stats).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 30m window tests
+// ---------------------------------------------------------------------------
+
+describe('getAccuracyStats — 30m window', () => {
+  it('returns hits_30m matching signals where outcome_30m_status=hit (excluding rugs)', () => {
+    const { db } = createTestDb();
+
+    // 20 rows: 12 with outcome_30m_status=hit, 8 with miss
+    for (let i = 0; i < 12; i++) {
+      insertResolvedEvent(db, {
+        token_mint: `HIT_30M_${i}`,
+        tier: 'strong',
+        outcome_24h_status: 'hit',
+        outcome_30m_status: 'hit',
+        is_rug: false,
+      });
+    }
+    for (let i = 0; i < 8; i++) {
+      insertResolvedEvent(db, {
+        token_mint: `MISS_30M_${i}`,
+        tier: 'strong',
+        outcome_24h_status: 'miss',
+        outcome_30m_status: 'miss',
+        is_rug: false,
+      });
+    }
+
+    const stats = getAccuracyStats(db);
+    expect(stats.length).toBe(1);
+    const strong = stats[0];
+    expect(strong.hits_30m).toBe(12);
+  });
+
+  it('returns hit_rate_30m=null when total_resolved < MIN_SAMPLE (20)', () => {
+    const { db } = createTestDb();
+
+    // MIN_SAMPLE - 1 = 19 rows (below threshold)
+    for (let i = 0; i < MIN_SAMPLE - 1; i++) {
+      insertResolvedEvent(db, {
+        token_mint: `UNDER_SAMPLE_30M_${i}`,
+        tier: 'strong',
+        outcome_24h_status: 'hit',
+        outcome_30m_status: 'hit',
+        is_rug: false,
+      });
+    }
+
+    const stats = getAccuracyStats(db);
+    expect(stats.length).toBe(1);
+    const strong = stats[0];
+    expect(strong.total_resolved).toBe(MIN_SAMPLE - 1);
+    expect(strong.hit_rate_30m).toBeNull();
+  });
+
+  it('returns hit_rate_30m as number between 0 and 1 when total_resolved >= MIN_SAMPLE', () => {
+    const { db } = createTestDb();
+
+    // Exactly MIN_SAMPLE rows
+    for (let i = 0; i < MIN_SAMPLE; i++) {
+      insertResolvedEvent(db, {
+        token_mint: `AT_SAMPLE_30M_${i}`,
+        tier: 'strong',
+        outcome_24h_status: 'hit',
+        outcome_30m_status: i < 10 ? 'hit' : 'miss',
+        is_rug: false,
+      });
+    }
+
+    const stats = getAccuracyStats(db);
+    expect(stats.length).toBe(1);
+    const strong = stats[0];
+    expect(strong.hit_rate_30m).not.toBeNull();
+    expect(strong.hit_rate_30m!).toBeGreaterThanOrEqual(0);
+    expect(strong.hit_rate_30m!).toBeLessThanOrEqual(1);
+    expect(strong.hit_rate_30m).toBeCloseTo(0.5, 5);
+  });
+
+  it('avg_return_30m reflects average of outcome_30m_pct for non-rug resolved signals', () => {
+    const { db } = createTestDb();
+
+    for (let i = 0; i < 20; i++) {
+      insertResolvedEvent(db, {
+        token_mint: `AVG_30M_${i}`,
+        tier: 'strong',
+        outcome_24h_status: 'hit',
+        outcome_30m_status: 'hit',
+        outcome_30m_pct: 0.08,
+        is_rug: false,
+      });
+    }
+
+    const stats = getAccuracyStats(db);
+    expect(stats.length).toBe(1);
+    const strong = stats[0];
+    expect(strong.avg_return_30m).toBeCloseTo(0.08, 5);
+  });
+
+  it('TierAccuracy includes hits_30m, hit_rate_30m, avg_return_30m fields', () => {
+    const { db } = createTestDb();
+
+    for (let i = 0; i < 20; i++) {
+      insertResolvedEvent(db, {
+        token_mint: `SHAPE_30M_${i}`,
+        tier: 'strong',
+        outcome_24h_status: 'hit',
+        outcome_30m_status: 'hit',
+        is_rug: false,
+      });
+    }
+
+    const stats = getAccuracyStats(db);
+    expect(stats.length).toBe(1);
+    const strong = stats[0];
+    expect('hits_30m' in strong).toBe(true);
+    expect('hit_rate_30m' in strong).toBe(true);
+    expect('avg_return_30m' in strong).toBe(true);
   });
 });
