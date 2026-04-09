@@ -19,7 +19,7 @@
 - [x] **OUTCOME-02**: Peak price and time-to-peak (minutes) tracked per signal over 24h post-signal window
 - [x] **OUTCOME-03**: Rugged tokens classified as `rug` status (not `failed`) — fixes survivorship bias in accuracy stats
 - [x] **OUTCOME-04**: Fixed % tier milestones (50%/100%/300%) stored per resolved outcome
-- [ ] **OUTCOME-05**: Configurable % threshold Telegram alert when a tracked signal token hits the milestone (e.g. 2x)
+- [x] **OUTCOME-05**: Configurable % threshold Telegram alert when a tracked signal token hits the milestone (e.g. 2x)
 - [x] **OUTCOME-06**: Multi-timeframe accuracy display on dashboard (30m/1h/4h/24h per tier with return distribution)
 
 ### Coin Sourcing
@@ -82,7 +82,7 @@ All 21 v1.1 requirements mapped to phases. Updated during roadmap creation (2026
 | OUTCOME-02 | Phase 14 | Complete |
 | OUTCOME-03 | Phase 14 | Complete |
 | OUTCOME-04 | Phase 14 | Complete |
-| OUTCOME-05 | Phase 14 | Pending |
+| OUTCOME-05 | Phase 14 | Complete |
 | OUTCOME-06 | Phase 14 | Complete |
 | SEED-01 | Phase 15 | Pending |
 | SEED-02 | Phase 15 | Pending |

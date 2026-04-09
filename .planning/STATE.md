@@ -3,11 +3,11 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Forward Testing & Deployment
 status: executing
-last_updated: "2026-04-09T10:14:16Z"
-last_activity: "2026-04-09 — Plan 03 complete: Phase 14 accuracy stats extended with 4-window rug-excluded data and dashboard partial updated — 283 tests passing"
+last_updated: "2026-04-09T11:28:00Z"
+last_activity: "2026-04-09 — Plan 04 complete: outcome alert module with threshold+milestone dedup alerts, signal_market_cap capture at signal creation, 283 tests passing"
 progress:
   total_phases: 4
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 8
   completed_plans: 8
 ---
@@ -23,13 +23,13 @@ See: .planning/PROJECT.md (updated 2026-03-31 after v1.1 milestone started)
 
 ## Current Position
 
-Phase: 14 — Signal Outcome Tracking (In progress — 3/4 plans complete)
-Plan: 03 complete — accuracy stats 4-window rug-excluded
-Status: Phase 14 in progress
-Last activity: 2026-04-09 — Plan 03 complete: TierAccuracy extended with 4-window stats, rug exclusion WHERE filter, accuracy_stats.ejs 4-column table with time-to-peak display
+Phase: 14 — Signal Outcome Tracking (Complete — 4/4 plans complete)
+Plan: 04 complete — outcome alert module with threshold+milestone dedup alerts and signal_market_cap capture
+Status: Phase 14 complete. Next: Phase 15 — Coin Sourcing + Observability
+Last activity: 2026-04-09 — Plan 04 complete: outcome alert module wired to cycleEmitter, signal_market_cap captured at tier transitions, 283 tests passing
 
 ```
-v1.1 Progress: [██████████] 98% (8/8 plans in Phases 13-14 complete — awaiting Phase 14 Plan 04)
+v1.1 Progress: [██████████] 100% (8/8 plans in Phases 13-14 complete)
 ```
 
 ## Milestone History
@@ -41,7 +41,7 @@ v1.1 Progress: [██████████] 98% (8/8 plans in Phases 13-14 c
 | Phase | Goal | Requirements | Status |
 |-------|------|--------------|--------|
 | 13 - Railway Deployment | Persistent Railway deployment with data integrity safeguards | DEPLOY-01–04 | Complete |
-| 14 - Signal Outcome Tracking | Accurate forward-testing dataset: 30m window, peak price, rug classification | OUTCOME-01–06 | In progress (2/4 plans) |
+| 14 - Signal Outcome Tracking | Accurate forward-testing dataset: 30m window, peak price, rug classification | OUTCOME-01–06 | Complete (4/4 plans) |
 | 15 - Coin Sourcing + Observability | Automated discovery via DexScreener with caps and dashboard health | SEED-01–06, OBS-01–02 | Not started |
 | 16 - ProviderRouter Extension | Bundler/wash-trader detection with full Shyft fallback | API-01–03 | Not started |
 
@@ -87,6 +87,13 @@ v1.1 Progress: [██████████] 98% (8/8 plans in Phases 13-14 c
 - healthcheckTimeout = 300s — allows 5 minutes for volume validation retry loop plus app startup
 - Checked in railway.toml — deployment configuration reproducible from git without manual Railway dashboard steps
 
+### Phase 14 Plan 04 Decisions (2026-04-09)
+
+- maxPct stored as decimal fraction (1.0 = 100%) — ALERT_THRESHOLD_PCT default 100 means +100% return threshold
+- Ticker fallback uses first+last 4 chars of token_mint — signal_events has no ticker column
+- outcome_alert_log onConflictDoNothing() dedup before each alert fire — prevents re-fires across restarts
+- Two independent cycleEmitter listeners for runAlertCycle and runOutcomeAlertCycle — each handles errors independently
+
 ### Phase 14 Plan 03 Decisions (2026-04-09)
 
 - Rug exclusion uses or(is_rug=false, is_rug IS NULL) to handle rows predating the is_rug column (which default to NULL)
@@ -113,4 +120,4 @@ None.
 
 ## Next Action
 
-Phase 14 in progress. Execute Plan 04: final plan (dashboard wiring or integration verification).
+Phase 14 complete. Begin Phase 15 — Coin Sourcing + Observability (SEED-01–06, OBS-01–02). Note: verify DexScreener boost endpoint field names before building AutoSourcer filter logic (see Research Flags above).

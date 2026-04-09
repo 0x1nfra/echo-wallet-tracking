@@ -30,7 +30,7 @@ See full details: `.planning/milestones/v1.0-ROADMAP.md`
 ### v1.1 Forward Testing & Deployment
 
 - [x] **Phase 13: Railway Deployment** - Deploy Echo to Railway with persistent SQLite, WAL safeguards, and credit exhaustion handling (completed 2026-04-01)
-- [ ] **Phase 14: Signal Outcome Tracking** - Extend outcome resolver with 30m window, peak price capture, rug classification, and % tier milestones
+- [x] **Phase 14: Signal Outcome Tracking** - Extend outcome resolver with 30m window, peak price capture, rug classification, and % tier milestones (completed 2026-04-09)
 - [ ] **Phase 15: Coin Sourcing + Observability** - Automate token discovery via DexScreener boost API with rate limits, caps, and dashboard health visibility
 - [ ] **Phase 16: ProviderRouter Extension** - Extend ProviderRouter to cover bundler and wash-trader detection with full Shyft fallback
 
@@ -106,6 +106,6 @@ Plans:
 | 11. Helius RPC Provider Rotation   | v1.0      | 4/4            | Complete    | 2026-03-27 |
 | 12. Signal Accuracy Logging        | v1.0      | 4/4            | Complete    | 2026-03-27 |
 | 13. Railway Deployment             | v1.1      | Complete    | 2026-04-02 | 2026-04-01 |
-| 14. Signal Outcome Tracking        | 3/4 | In Progress|  | -          |
+| 14. Signal Outcome Tracking        | 4/4 | Complete   | 2026-04-09 | -          |
 | 15. Coin Sourcing + Observability  | v1.1      | 0/TBD          | Not started | -          |
 | 16. ProviderRouter Extension       | v1.1      | 0/TBD          | Not started | -          |
