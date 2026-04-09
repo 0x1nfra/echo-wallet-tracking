@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Forward Testing & Deployment
 status: completed
-last_updated: "2026-04-02T11:35:18.649Z"
-last_activity: "2026-04-02 — Plan 04 complete: DEPLOY-03 documentation gap closure — warning-only replica detection aligned across REQUIREMENTS.md, ROADMAP.md, and docs/railway-deployment.md"
+last_updated: "2026-04-09T09:58:30Z"
+last_activity: "2026-04-09 — Plan 02 complete: Phase 14 outcome resolver extended with 30m window, peak tracking, rug detection, milestone flags — 275 tests passing"
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 4
-  completed_plans: 4
+  total_plans: 8
+  completed_plans: 7
 ---
 
 # Project State
@@ -23,13 +23,13 @@ See: .planning/PROJECT.md (updated 2026-03-31 after v1.1 milestone started)
 
 ## Current Position
 
-Phase: 13 — Railway Deployment (Complete — 4/4 plans complete)
-Plan: 04 complete (all plans done)
-Status: Phase 13 complete
-Last activity: 2026-04-02 — Plan 04 complete: DEPLOY-03 documentation gap closure — warning-only replica detection aligned across REQUIREMENTS.md, ROADMAP.md, and docs/railway-deployment.md
+Phase: 14 — Signal Outcome Tracking (In progress — 2/4 plans complete)
+Plan: 02 complete — resolveOutcomes() extended
+Status: Phase 14 in progress
+Last activity: 2026-04-09 — Plan 02 complete: resolveOutcomes() extended with 30m window, peak tracking, rug detection at 4h, milestone flags, is_fully_resolved requiring 4 windows
 
 ```
-v1.1 Progress: [██████████] 100% (4/4 plans in Phase 13 complete)
+v1.1 Progress: [██████████] 96% (7/8 plans in Phases 13-14 complete)
 ```
 
 ## Milestone History
@@ -41,7 +41,7 @@ v1.1 Progress: [██████████] 100% (4/4 plans in Phase 13 comp
 | Phase | Goal | Requirements | Status |
 |-------|------|--------------|--------|
 | 13 - Railway Deployment | Persistent Railway deployment with data integrity safeguards | DEPLOY-01–04 | Complete |
-| 14 - Signal Outcome Tracking | Accurate forward-testing dataset: 30m window, peak price, rug classification | OUTCOME-01–06 | Not started |
+| 14 - Signal Outcome Tracking | Accurate forward-testing dataset: 30m window, peak price, rug classification | OUTCOME-01–06 | In progress (2/4 plans) |
 | 15 - Coin Sourcing + Observability | Automated discovery via DexScreener with caps and dashboard health | SEED-01–06, OBS-01–02 | Not started |
 | 16 - ProviderRouter Extension | Bundler/wash-trader detection with full Shyft fallback | API-01–03 | Not started |
 
@@ -87,6 +87,14 @@ v1.1 Progress: [██████████] 100% (4/4 plans in Phase 13 comp
 - healthcheckTimeout = 300s — allows 5 minutes for volume validation retry loop plus app startup
 - Checked in railway.toml — deployment configuration reproducible from git without manual Railway dashboard steps
 
+### Phase 14 Plan 02 Decisions (2026-04-09)
+
+- MILESTONE_COLUMNS map keyed by integer threshold (50/100/300) for clean extensibility if OUTCOME_MILESTONES adds new thresholds
+- updatePeakPrice reads current peak_price first (one SELECT) then conditionally writes — avoids unconditional UPDATE on every resolution cycle
+- Rug detection uses continue statement after rug write to skip normal 4h write path — keeps rug/non-rug paths clearly separated
+- 24h loop uses WHERE eq(signal_events.is_rug, false) to prevent re-fetching price for already-rugged tokens
+- MAX_PER_CYCLE cap test updated from resolved=20 to resolved=40 (30m and 1h windows each process 20 of 25 due rows); timeout extended to 15s for 40 * 200ms mock delays
+
 ### Research Flags for Planning
 
 - **Phase 15**: Before building AutoSourcer filter logic, verify DexScreener boost endpoint (`/token-boosts/latest/v1`) live JSON response field names (`chainId`, `tokenAddress`, `boostAmount`). A mismatch silently breaks the Solana token filter.
@@ -98,4 +106,4 @@ None.
 
 ## Next Action
 
-Phase 13 complete. Execute Phase 14: `/gsd:execute-phase 14` — Signal Outcome Tracking (30m window, peak price, rug classification).
+Phase 14 in progress. Execute Plan 03: accuracy stats (reads outcome statuses written by Plan 02).

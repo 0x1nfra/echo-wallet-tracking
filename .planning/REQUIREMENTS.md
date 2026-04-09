@@ -15,10 +15,10 @@
 
 ### Signal Outcomes
 
-- [ ] **OUTCOME-01**: Signal events tracked at 30m window (in addition to existing 1h/4h/24h — memecoins often peak before 1h)
-- [ ] **OUTCOME-02**: Peak price and time-to-peak (minutes) tracked per signal over 24h post-signal window
-- [ ] **OUTCOME-03**: Rugged tokens classified as `rug` status (not `failed`) — fixes survivorship bias in accuracy stats
-- [ ] **OUTCOME-04**: Fixed % tier milestones (50%/100%/300%) stored per resolved outcome
+- [x] **OUTCOME-01**: Signal events tracked at 30m window (in addition to existing 1h/4h/24h — memecoins often peak before 1h)
+- [x] **OUTCOME-02**: Peak price and time-to-peak (minutes) tracked per signal over 24h post-signal window
+- [x] **OUTCOME-03**: Rugged tokens classified as `rug` status (not `failed`) — fixes survivorship bias in accuracy stats
+- [x] **OUTCOME-04**: Fixed % tier milestones (50%/100%/300%) stored per resolved outcome
 - [ ] **OUTCOME-05**: Configurable % threshold Telegram alert when a tracked signal token hits the milestone (e.g. 2x)
 - [ ] **OUTCOME-06**: Multi-timeframe accuracy display on dashboard (30m/1h/4h/24h per tier with return distribution)
 
@@ -78,10 +78,10 @@ All 21 v1.1 requirements mapped to phases. Updated during roadmap creation (2026
 | DEPLOY-02 | Phase 13 | Complete |
 | DEPLOY-03 | Phase 13 | Complete |
 | DEPLOY-04 | Phase 13 | Complete |
-| OUTCOME-01 | Phase 14 | Pending |
-| OUTCOME-02 | Phase 14 | Pending |
-| OUTCOME-03 | Phase 14 | Pending |
-| OUTCOME-04 | Phase 14 | Pending |
+| OUTCOME-01 | Phase 14 | Complete |
+| OUTCOME-02 | Phase 14 | Complete |
+| OUTCOME-03 | Phase 14 | Complete |
+| OUTCOME-04 | Phase 14 | Complete |
 | OUTCOME-05 | Phase 14 | Pending |
 | OUTCOME-06 | Phase 14 | Pending |
 | SEED-01 | Phase 15 | Pending |
