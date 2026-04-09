@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Forward Testing & Deployment
-status: completed
-last_updated: "2026-04-09T09:58:30Z"
-last_activity: "2026-04-09 — Plan 02 complete: Phase 14 outcome resolver extended with 30m window, peak tracking, rug detection, milestone flags — 275 tests passing"
+status: executing
+last_updated: "2026-04-09T10:14:16Z"
+last_activity: "2026-04-09 — Plan 03 complete: Phase 14 accuracy stats extended with 4-window rug-excluded data and dashboard partial updated — 283 tests passing"
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 8
-  completed_plans: 7
+  completed_plans: 8
 ---
 
 # Project State
@@ -23,13 +23,13 @@ See: .planning/PROJECT.md (updated 2026-03-31 after v1.1 milestone started)
 
 ## Current Position
 
-Phase: 14 — Signal Outcome Tracking (In progress — 2/4 plans complete)
-Plan: 02 complete — resolveOutcomes() extended
+Phase: 14 — Signal Outcome Tracking (In progress — 3/4 plans complete)
+Plan: 03 complete — accuracy stats 4-window rug-excluded
 Status: Phase 14 in progress
-Last activity: 2026-04-09 — Plan 02 complete: resolveOutcomes() extended with 30m window, peak tracking, rug detection at 4h, milestone flags, is_fully_resolved requiring 4 windows
+Last activity: 2026-04-09 — Plan 03 complete: TierAccuracy extended with 4-window stats, rug exclusion WHERE filter, accuracy_stats.ejs 4-column table with time-to-peak display
 
 ```
-v1.1 Progress: [██████████] 96% (7/8 plans in Phases 13-14 complete)
+v1.1 Progress: [██████████] 98% (8/8 plans in Phases 13-14 complete — awaiting Phase 14 Plan 04)
 ```
 
 ## Milestone History
@@ -87,6 +87,13 @@ v1.1 Progress: [██████████] 96% (7/8 plans in Phases 13-14 c
 - healthcheckTimeout = 300s — allows 5 minutes for volume validation retry loop plus app startup
 - Checked in railway.toml — deployment configuration reproducible from git without manual Railway dashboard steps
 
+### Phase 14 Plan 03 Decisions (2026-04-09)
+
+- Rug exclusion uses or(is_rug=false, is_rug IS NULL) to handle rows predating the is_rug column (which default to NULL)
+- hits_1h and hits_4h intentionally omitted — only 30m and 24h define hits; 1h/4h expose avg returns which are more useful for those windows
+- Time-to-peak derived inline in EJS from recentEvents rather than adding route-level aggregation, keeping accuracy route unchanged
+- Sparse data consistently shows "Insufficient data (N/20)" for both 30m and 24h hit rate columns
+
 ### Phase 14 Plan 02 Decisions (2026-04-09)
 
 - MILESTONE_COLUMNS map keyed by integer threshold (50/100/300) for clean extensibility if OUTCOME_MILESTONES adds new thresholds
@@ -106,4 +113,4 @@ None.
 
 ## Next Action
 
-Phase 14 in progress. Execute Plan 03: accuracy stats (reads outcome statuses written by Plan 02).
+Phase 14 in progress. Execute Plan 04: final plan (dashboard wiring or integration verification).
