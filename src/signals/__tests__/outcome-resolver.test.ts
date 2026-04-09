@@ -198,7 +198,7 @@ describe('resolveOutcomes', () => {
     expect(resolved).toBeGreaterThan(0);
   });
 
-  it('sets is_fully_resolved=true when all three windows are resolved', async () => {
+  it('sets is_fully_resolved=true when all four windows are resolved', async () => {
     const { db } = createTestDb();
     const thirtyHoursAgo = Date.now() - 30 * 3600_000;
     const rowId = insertSignalEvent(db, {
@@ -209,17 +209,18 @@ describe('resolveOutcomes', () => {
     });
 
     const fetcher = new MockDexScreenerFetcher({ TOKEN_B: 1.6 });
-    // Run once — should resolve all three windows (1h, 4h, 24h all due)
+    // Run once — should resolve all four windows (30m, 1h, 4h, 24h all due at 30h)
     await resolveOutcomes(db, fetcher);
 
     const row = db.select().from(signal_events).where(eq(signal_events.id, rowId)).get();
+    expect(row!.outcome_30m_status).not.toBeNull();
     expect(row!.outcome_1h_status).not.toBeNull();
     expect(row!.outcome_4h_status).not.toBeNull();
     expect(row!.outcome_24h_status).not.toBeNull();
     expect(row!.is_fully_resolved).toBe(true);
   });
 
-  it('marks outcome as failed and sets is_fully_resolved when DexScreener returns null (rug)', async () => {
+  it('marks outcome as failed and sets is_fully_resolved when DexScreener returns null (no liquidity)', async () => {
     const { db } = createTestDb();
     const thirtyHoursAgo = Date.now() - 30 * 3600_000;
     const rowId = insertSignalEvent(db, {
@@ -229,18 +230,19 @@ describe('resolveOutcomes', () => {
       entry_price: 1.0,
     });
 
-    // DexScreener returns null = rug
+    // DexScreener returns null = no liquidity / failed fetch
     const fetcher = new MockDexScreenerFetcher({ TOKEN_RUG: null });
     await resolveOutcomes(db, fetcher);
 
     const row = db.select().from(signal_events).where(eq(signal_events.id, rowId)).get();
+    expect(row!.outcome_30m_status).toBe('failed');
     expect(row!.outcome_1h_status).toBe('failed');
     expect(row!.outcome_4h_status).toBe('failed');
     expect(row!.outcome_24h_status).toBe('failed');
     expect(row!.is_fully_resolved).toBe(true);
   });
 
-  it('caps at MAX_PER_CYCLE=20 per window — only 20 of 25 due rows are processed', async () => {
+  it('caps at MAX_PER_CYCLE=20 per window — only 20 of 25 due rows processed per window', async () => {
     const { db } = createTestDb();
     const twoHoursAgo = Date.now() - 2 * 3600_000;
 
@@ -254,17 +256,19 @@ describe('resolveOutcomes', () => {
     const fetcher = new MockDexScreenerFetcher(mints);
     const resolved = await resolveOutcomes(db, fetcher);
 
-    // Only 20 processed per window per cycle (1h window has 25 due)
-    // resolved counts total across all windows — 20 for 1h window
-    expect(resolved).toBe(20);
+    // With 25 rows due for both 30m and 1h windows (2h old):
+    // 30m window: 20 processed (cap hit), 5 remain
+    // 1h window: 20 processed (cap hit), 5 remain
+    // resolved counts total across all windows = 40
+    expect(resolved).toBe(40);
 
-    // Verify 5 rows still have null outcome_1h_price (not yet processed)
+    // Verify 5 rows still have null outcome_1h_price (not yet processed by 1h window)
     const allRows = db.select().from(signal_events).all();
     const withNull1h = allRows.filter((r) => r.outcome_1h_price === null);
     const withResolved1h = allRows.filter((r) => r.outcome_1h_price !== null);
     expect(withResolved1h.length).toBe(20);
     expect(withNull1h.length).toBe(5);
-  });
+  }, 15000); // extended timeout: 40 DexScreener calls * 200ms = 8s minimum
 
   it('is idempotent — calling resolveOutcomes twice does not overwrite already-resolved outcome_1h_price', async () => {
     const { db } = createTestDb();
