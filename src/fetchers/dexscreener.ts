@@ -73,6 +73,37 @@ export class DexScreenerFetcher {
   }
 
   /**
+   * Get token price and market cap on Solana
+   * @param tokenAddress - Token mint address
+   * @returns Price in USD and market cap, or nulls if not found
+   */
+  async getTokenPriceAndMarketCap(tokenAddress: string): Promise<{ price: number | null; marketCap: number | null }> {
+    try {
+      const response = await this.client.get<DexScreenerResponse>(`/dex/tokens/${tokenAddress}`);
+      const pairs = response.data.pairs;
+      if (!pairs || pairs.length === 0) return { price: null, marketCap: null };
+
+      const solanaPairs = pairs.filter((pair) => pair.chainId === 'solana');
+      if (solanaPairs.length === 0) return { price: null, marketCap: null };
+
+      const bestPair = solanaPairs.sort((a, b) =>
+        (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0)
+      )[0];
+
+      const priceUsd = bestPair.priceUsd?.trim();
+      const price = priceUsd && priceUsd !== '' ? parseFloat(priceUsd) : null;
+      const marketCap = bestPair.marketCap ?? null;
+
+      return {
+        price: price !== null && isFinite(price) ? price : null,
+        marketCap: marketCap !== null && isFinite(marketCap) ? marketCap : null,
+      };
+    } catch {
+      return { price: null, marketCap: null };
+    }
+  }
+
+  /**
    * Get prices for multiple tokens in a single batch
    * @param tokenAddresses - Array of token mint addresses
    * @returns Map of token address to price in USD

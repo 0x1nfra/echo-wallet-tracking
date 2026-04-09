@@ -212,8 +212,8 @@ export async function computeAllTokenSignals(
       newTier !== 'inactive';  // transitions TO inactive are NOT signal fire events
 
     if (isTransition) {
-      // Fetch entry price immediately at transition moment
-      const entryPrice = await dexFetcher.getTokenPrice(tokenMint);
+      // Fetch entry price and market cap immediately at transition moment
+      const { price: entryPrice, marketCap: signalMarketCap } = await dexFetcher.getTokenPriceAndMarketCap(tokenMint);
       db.insert(signal_events).values({
         token_mint: tokenMint,
         fired_at: nowMs,
@@ -224,6 +224,7 @@ export async function computeAllTokenSignals(
         holder_score: result.pnlWeightedHolderScore,
         coordinated_wallet_count: result.coordinatedWalletCount,
         entry_price: entryPrice,
+        signal_market_cap: signalMarketCap,
       }).run();
     }
 
