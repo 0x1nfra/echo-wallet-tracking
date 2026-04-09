@@ -61,7 +61,7 @@ See full details: `.planning/milestones/v1.0-ROADMAP.md`
 **Plans**: 4 plans
 
 Plans:
-- [ ] 14-01-PLAN.md — Schema migration: all Phase 14 columns + outcome_alert_log table
+- [x] 14-01-PLAN.md — Schema migration: all Phase 14 columns + outcome_alert_log table (completed 2026-04-09)
 - [ ] 14-02-PLAN.md — Outcome resolver extension: 30m window, peak tracking, rug detection, milestones
 - [ ] 14-03-PLAN.md — Accuracy stats + dashboard: 4-window TierAccuracy, rug exclusion, accuracy_stats.ejs
 - [ ] 14-04-PLAN.md — Outcome alerts: runOutcomeAlertCycle, market cap capture, bot wiring
@@ -106,6 +106,6 @@ Plans:
 | 11. Helius RPC Provider Rotation   | v1.0      | 4/4            | Complete    | 2026-03-27 |
 | 12. Signal Accuracy Logging        | v1.0      | 4/4            | Complete    | 2026-03-27 |
 | 13. Railway Deployment             | v1.1      | Complete    | 2026-04-02 | 2026-04-01 |
-| 14. Signal Outcome Tracking        | 4/4 | Complete   | 2026-04-09 | -          |
+| 14. Signal Outcome Tracking        | 4/4 | Complete    | 2026-04-09 | -          |
 | 15. Coin Sourcing + Observability  | v1.1      | 0/TBD          | Not started | -          |
 | 16. ProviderRouter Extension       | v1.1      | 0/TBD          | Not started | -          |
