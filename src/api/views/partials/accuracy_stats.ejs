@@ -12,10 +12,10 @@ const statsMap = {};
       <tr>
         <th>Tier</th>
         <th>Signals</th>
-        <th>Hit Rate (24h)</th>
-        <th>Avg 1h</th>
-        <th>Avg 4h</th>
-        <th>Avg 24h</th>
+        <th>30m Hit%</th>
+        <th>1h Return</th>
+        <th>4h Return</th>
+        <th>24h Hit%</th>
       </tr>
     </thead>
     <tbody>
@@ -23,24 +23,36 @@ const statsMap = {};
       <%
         const s = statsMap[tier];
         const totalResolved = s ? s.total_resolved : 0;
-        const hitRateStr = !s ? '—'
-          : s.hit_rate_24h === null ? 'Insufficient data (' + totalResolved + '/20)'
-          : (s.hit_rate_24h * 100).toFixed(1) + '%';
+        const hit30m = !s ? '—'
+          : s.hit_rate_30m !== null ? (s.hit_rate_30m * 100).toFixed(1) + '%'
+          : 'Insufficient data (' + totalResolved + '/' + MIN_SAMPLE + ')';
         const avg1h = s && s.avg_return_1h != null ? (s.avg_return_1h * 100).toFixed(1) + '%' : '—';
         const avg4h = s && s.avg_return_4h != null ? (s.avg_return_4h * 100).toFixed(1) + '%' : '—';
-        const avg24h = s && s.avg_return_24h != null ? (s.avg_return_24h * 100).toFixed(1) + '%' : '—';
+        const hit24h = !s ? '—'
+          : s.hit_rate_24h !== null ? (s.hit_rate_24h * 100).toFixed(1) + '%'
+          : 'Insufficient data (' + totalResolved + '/' + MIN_SAMPLE + ')';
       %>
       <tr>
-        <td><%= tier %></td>
+        <td><%= tier.charAt(0).toUpperCase() + tier.slice(1) %></td>
         <td><%= totalResolved %></td>
-        <td><%= hitRateStr %></td>
+        <td><%= hit30m %></td>
         <td><%= avg1h %></td>
         <td><%= avg4h %></td>
-        <td><%= avg24h %></td>
+        <td><%= hit24h %></td>
       </tr>
       <% }); %>
     </tbody>
   </table>
+  <p class="text-xs text-gray-500 mt-1">Rug outcomes excluded from all stats.</p>
+  <%
+    const resolvedWithPeak = (recentEvents || []).filter(function(e) { return e.peak_price_at && e.fired_at; });
+    const avgPeakMinutes = resolvedWithPeak.length > 0
+      ? Math.round(resolvedWithPeak.reduce(function(sum, e) { return sum + (e.peak_price_at - e.fired_at) / 60000; }, 0) / resolvedWithPeak.length)
+      : null;
+  %>
+  <% if (avgPeakMinutes !== null) { %>
+  <p class="text-xs text-gray-400 mt-2">Avg time to peak: <span class="text-white font-medium"><%= avgPeakMinutes %> min</span> (across <%= resolvedWithPeak.length %> resolved signals)</p>
+  <% } %>
 </div>
 
 <!-- Recent signal events (all tiers including weak) -->
