@@ -5,6 +5,7 @@ export const wallets = sqliteTable('wallets', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   address: text('address').notNull().unique(),
   label: text('label'),
+  source: text('source'), // 'gmgn' | null — how the wallet entered the pipeline
   status: text('status', { enum: ['tracked', 'removed', 'importing'] }).notNull().default('tracked'),
   score: real('score'),
   detection_status: text('detection_status', {
@@ -218,3 +219,18 @@ export const outcome_alert_log = sqliteTable('outcome_alert_log', {
 }, (table) => ({
   uniqueAlert: uniqueIndex('outcome_alert_log_unique').on(table.signal_event_id, table.event_type),
 }));
+
+// One row per GMGN poll cycle — aggregate counts for observability and dashboard
+export const sourcing_log = sqliteTable('sourcing_log', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  source: text('source').notNull(),           // 'gmgn'
+  polled_at: integer('polled_at', { mode: 'number' }).notNull()
+    .default(sql`(unixepoch('now') * 1000)`),
+  tokens_fetched: integer('tokens_fetched').notNull().default(0),
+  tokens_seeded: integer('tokens_seeded').notNull().default(0),
+  tokens_skipped: integer('tokens_skipped').notNull().default(0),  // already tracked
+  tokens_filtered: integer('tokens_filtered').notNull().default(0), // failed pre-filters
+  wallets_added: integer('wallets_added').notNull().default(0),
+  status: text('status', { enum: ['ok', 'error', 'cap_hit', 'ceiling_hit'] }).notNull().default('ok'),
+  error_message: text('error_message'),
+});
