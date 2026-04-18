@@ -27,14 +27,14 @@
 - [ ] **SEED-01**: System periodically fetches trending/boosted Solana tokens from DexScreener boost API
 - [ ] **SEED-02**: Auto-sourced tokens filtered by minimum liquidity ($10k) before running discovery
 - [ ] **SEED-03**: Auto-sourced discovery runs direct-buyers-only mode (graph traversal disabled for automated runs)
-- [ ] **SEED-04**: Configurable daily wallet add cap (default 20/day) prevents discovery loops
-- [ ] **SEED-05**: Configurable total wallet ceiling (default 200) with circuit breaker stops auto-adds at limit
+- [x] **SEED-04**: Configurable daily wallet add cap (default 20/day) prevents discovery loops
+- [x] **SEED-05**: Configurable total wallet ceiling (default 200) with circuit breaker stops auto-adds at limit
 - [ ] **SEED-06**: Manual CA seeding via CLI confirmed working in Railway deployed environment
 
 ### Observability
 
-- [ ] **OBS-01**: Dashboard admin section shows cycle health, provider status (Helius/Shyft), error log, and credit exhaustion state
-- [ ] **OBS-02**: `/status` Telegram command returns on-demand system health summary (not scheduled pings)
+- [x] **OBS-01**: Dashboard admin section shows cycle health, provider status (Helius/Shyft), error log, and credit exhaustion state
+- [x] **OBS-02**: `/status` Telegram command returns on-demand system health summary (not scheduled pings)
 
 ### API Resilience
 
@@ -87,11 +87,11 @@ All 21 v1.1 requirements mapped to phases. Updated during roadmap creation (2026
 | SEED-01 | Phase 15 | Pending |
 | SEED-02 | Phase 15 | Pending |
 | SEED-03 | Phase 15 | Pending |
-| SEED-04 | Phase 15 | Pending |
-| SEED-05 | Phase 15 | Pending |
+| SEED-04 | Phase 15 | Complete |
+| SEED-05 | Phase 15 | Complete |
 | SEED-06 | Phase 15 | Pending |
-| OBS-01 | Phase 15 | Pending |
-| OBS-02 | Phase 15 | Pending |
+| OBS-01 | Phase 15 | Complete |
+| OBS-02 | Phase 15 | Complete |
 | API-01 | Phase 16 | Pending |
 | API-02 | Phase 16 | Pending |
 | API-03 | Phase 16 | Pending |

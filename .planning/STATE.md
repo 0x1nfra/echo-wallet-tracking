@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Forward Testing & Deployment
-status: executing
-last_updated: "2026-04-09T11:28:00Z"
-last_activity: "2026-04-09 — Plan 04 complete: outcome alert module with threshold+milestone dedup alerts, signal_market_cap capture at signal creation, 283 tests passing"
+status: completed
+last_updated: "2026-04-18T00:15:00Z"
+last_activity: "2026-04-18 — Phase 15 Plan 01 complete: sourcing_log table + wallets.source column, MonitorLoop cycle metrics getters, ProviderRouter.getStatus() with shared status store"
 progress:
   total_phases: 4
   completed_phases: 2
-  total_plans: 8
-  completed_plans: 8
+  total_plans: 13
+  completed_plans: 10
 ---
 
 # Project State
@@ -23,13 +23,13 @@ See: .planning/PROJECT.md (updated 2026-03-31 after v1.1 milestone started)
 
 ## Current Position
 
-Phase: 14 — Signal Outcome Tracking (Complete — 4/4 plans complete)
-Plan: 04 complete — outcome alert module with threshold+milestone dedup alerts and signal_market_cap capture
-Status: Phase 14 complete. Next: Phase 15 — Coin Sourcing + Observability
-Last activity: 2026-04-09 — Plan 04 complete: outcome alert module wired to cycleEmitter, signal_market_cap captured at tier transitions, 283 tests passing
+Phase: 15 — Coin Sourcing + Observability (In Progress — 1/5 plans complete)
+Plan: 01 complete — sourcing_log table + wallets.source column, MonitorLoop cycle metrics getters, ProviderRouter.getStatus() with shared status store
+Status: Phase 15 in progress. Next: Plan 02 — AutoSourcer GMGN integration
+Last activity: 2026-04-18 — Plan 01 complete: sourcing_log table + wallets.source column via migration 0011, MonitorLoop cycle metrics getters, ProviderRouter.getStatus() with shared status store
 
 ```
-v1.1 Progress: [██████████] 100% (8/8 plans in Phases 13-14 complete)
+v1.1 Progress: [█████████░] 92% (10/13 plans complete)
 ```
 
 ## Milestone History
@@ -42,7 +42,7 @@ v1.1 Progress: [██████████] 100% (8/8 plans in Phases 13-14 
 |-------|------|--------------|--------|
 | 13 - Railway Deployment | Persistent Railway deployment with data integrity safeguards | DEPLOY-01–04 | Complete |
 | 14 - Signal Outcome Tracking | Accurate forward-testing dataset: 30m window, peak price, rug classification | OUTCOME-01–06 | Complete (4/4 plans) |
-| 15 - Coin Sourcing + Observability | Automated discovery via DexScreener with caps and dashboard health | SEED-01–06, OBS-01–02 | Not started |
+| 15 - Coin Sourcing + Observability | Automated discovery via DexScreener with caps and dashboard health | SEED-01–06, OBS-01–02 | In progress (1/5 plans) |
 | 16 - ProviderRouter Extension | Bundler/wash-trader detection with full Shyft fallback | API-01–03 | Not started |
 
 ## Accumulated Context
@@ -109,6 +109,12 @@ v1.1 Progress: [██████████] 100% (8/8 plans in Phases 13-14 
 - 24h loop uses WHERE eq(signal_events.is_rug, false) to prevent re-fetching price for already-rugged tokens
 - MAX_PER_CYCLE cap test updated from resolved=20 to resolved=40 (30m and 1h windows each process 20 of 25 due rows); timeout extended to 15s for 40 * 200ms mock delays
 
+### Phase 15 Plan 01 Decisions (2026-04-18)
+
+- sourcing_log uses one row per poll cycle with aggregate counts (not per token) — simpler audit trail, sufficient for dashboard observability needs
+- updateSharedProviderStatus() called unconditionally after every cycle (not only on onAllExhausted) — ensures /admin and /status always show current provider health during normal operation
+- Shared provider status stored as module-level variable in providers/index.ts — avoids passing router references through layers or creating circular dependencies
+
 ### Research Flags for Planning
 
 - **Phase 15**: Before building AutoSourcer filter logic, verify DexScreener boost endpoint (`/token-boosts/latest/v1`) live JSON response field names (`chainId`, `tokenAddress`, `boostAmount`). A mismatch silently breaks the Solana token filter.
@@ -120,4 +126,4 @@ None.
 
 ## Next Action
 
-Phase 14 complete. Begin Phase 15 — Coin Sourcing + Observability (SEED-01–06, OBS-01–02). Note: verify DexScreener boost endpoint field names before building AutoSourcer filter logic (see Research Flags above).
+Phase 15 Plan 01 complete. Continue Phase 15 — execute Plan 02 (AutoSourcer GMGN integration). Note: verify DexScreener boost endpoint field names before building AutoSourcer filter logic (see Research Flags above).
