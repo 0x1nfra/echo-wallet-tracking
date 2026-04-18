@@ -122,5 +122,16 @@ export function createProviderRouter(): ProviderRouter {
   return new ProviderRouter(providers, onAllExhausted);
 }
 
+// Module-level store for last-known provider status (consumed by /admin and /status)
+let _lastProviderStatus: Array<{ index: number; name: string; state: string; lastError: string | null }> = [];
+
+export function getSharedProviderStatus(): Array<{ index: number; name: string; state: string; lastError: string | null }> {
+  return _lastProviderStatus;
+}
+
+export function updateSharedProviderStatus(router: ProviderRouter): void {
+  _lastProviderStatus = router.getStatus();
+}
+
 export type { RpcProvider, ProviderTransaction } from './types.js';
 export { ProviderRouter } from './router.js';
