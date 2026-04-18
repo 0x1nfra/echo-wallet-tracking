@@ -3,7 +3,7 @@ import 'dotenv/config';
 import path from 'path';
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { createWalletCommand, monitorLoop } from '@/commands/wallet.js';
+import { createWalletCommand, monitorLoop, autoSourcer } from '@/commands/wallet.js';
 import { createSignalCommand } from '@/commands/signal.js';
 import { resumeImportingWallets } from '@/importers/history.js';
 import { buildServer } from './api/server.js';
@@ -70,10 +70,10 @@ program
       // No token = expected, not an error
     }
 
-    // 5. Resume pending imports + start monitor loop
+    // 5. Resume pending imports + start monitor loop + AutoSourcer
     resumeImportingWallets()
       .catch(() => {})
-      .then(() => monitorLoop.start());
+      .then(() => { monitorLoop.start(); autoSourcer.start(); });
 
     // 6. Startup summary
     const telegramStatus = telegramConfigured ? 'configured' : 'not configured (TELEGRAM_BOT_TOKEN not set)';
