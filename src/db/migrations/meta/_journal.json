@@ -71,6 +71,13 @@
       "when": 1773510000004,
       "tag": "0009_signal_accuracy",
       "breakpoints": false
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1775320557508,
+      "tag": "0010_stiff_morg",
+      "breakpoints": true
     }
   ]
 }

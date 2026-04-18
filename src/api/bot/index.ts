@@ -1,6 +1,7 @@
 import { Bot } from 'grammy';
 import { registerCommands } from './commands.js';
 import { runAlertCycle } from './alerts.js';
+import { runOutcomeAlertCycle } from './outcome-alerts.js';
 import { cycleEmitter } from '../cycle-events.js';
 
 let botInstance: Bot | null = null;
@@ -24,6 +25,11 @@ export function startBot(): Bot | null {
     cycleEmitter.on('cycle', () => {
       runAlertCycle(bot, chatId).catch(err => {
         console.error('[bot] alert cycle error:', err instanceof Error ? err.message : err);
+      });
+    });
+    cycleEmitter.on('cycle', () => {
+      runOutcomeAlertCycle(bot, chatId).catch(err => {
+        console.error('[outcome-alerts] cycle error:', err instanceof Error ? err.message : err);
       });
     });
   } else {

@@ -23,7 +23,10 @@ import { DexScreenerFetcher } from '../../fetchers/dexscreener.js';
 
 // Minimal no-op mock fetcher — avoids real HTTP calls in tests
 // entry_price = null is valid (excluded from accuracy calc denominator)
-const mockFetcher = { getTokenPrice: async (_mint: string) => null } as unknown as DexScreenerFetcher;
+const mockFetcher = {
+  getTokenPrice: async (_mint: string) => null,
+  getTokenPriceAndMarketCap: async (_mint: string) => ({ price: null, marketCap: null }),
+} as unknown as DexScreenerFetcher;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const MIGRATIONS_FOLDER = path.resolve(__dirname, '../../db/migrations');
