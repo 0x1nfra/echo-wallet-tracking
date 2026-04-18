@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Forward Testing & Deployment
-status: executing
-last_updated: "2026-04-09T11:28:00Z"
-last_activity: "2026-04-09 — Plan 04 complete: outcome alert module with threshold+milestone dedup alerts, signal_market_cap capture at signal creation, 283 tests passing"
+status: completed
+last_updated: "2026-04-18T15:28:51.679Z"
+last_activity: "2026-04-18 — Plan 05 complete: /status Telegram command with multi-section health summary, OBS-02 satisfied"
 progress:
   total_phases: 4
-  completed_phases: 2
-  total_plans: 8
-  completed_plans: 8
+  completed_phases: 3
+  total_plans: 13
+  completed_plans: 13
 ---
 
 # Project State
@@ -23,13 +23,13 @@ See: .planning/PROJECT.md (updated 2026-03-31 after v1.1 milestone started)
 
 ## Current Position
 
-Phase: 14 — Signal Outcome Tracking (Complete — 4/4 plans complete)
-Plan: 04 complete — outcome alert module with threshold+milestone dedup alerts and signal_market_cap capture
-Status: Phase 14 complete. Next: Phase 15 — Coin Sourcing + Observability
-Last activity: 2026-04-09 — Plan 04 complete: outcome alert module wired to cycleEmitter, signal_market_cap captured at tier transitions, 283 tests passing
+Phase: 15 — Coin Sourcing + Observability (Complete — 5/5 plans complete)
+Plan: 05 complete — /status Telegram command expanded to 3-section health summary (Monitor, AutoSourcer, Providers), OBS-02 satisfied
+Status: Phase 15 complete. All 8 requirements (SEED-01–06, OBS-01–02) satisfied. Next: Phase 16 — ProviderRouter Extension.
+Last activity: 2026-04-18 — Plan 05 complete: /status Telegram command with multi-section health summary, OBS-02 satisfied
 
 ```
-v1.1 Progress: [██████████] 100% (8/8 plans in Phases 13-14 complete)
+v1.1 Progress: [██████████] 100% (13/13 plans complete)
 ```
 
 ## Milestone History
@@ -42,7 +42,7 @@ v1.1 Progress: [██████████] 100% (8/8 plans in Phases 13-14 
 |-------|------|--------------|--------|
 | 13 - Railway Deployment | Persistent Railway deployment with data integrity safeguards | DEPLOY-01–04 | Complete |
 | 14 - Signal Outcome Tracking | Accurate forward-testing dataset: 30m window, peak price, rug classification | OUTCOME-01–06 | Complete (4/4 plans) |
-| 15 - Coin Sourcing + Observability | Automated discovery via DexScreener with caps and dashboard health | SEED-01–06, OBS-01–02 | Not started |
+| 15 - Coin Sourcing + Observability | Automated discovery via DexScreener with caps and dashboard health | SEED-01–06, OBS-01–02 | Complete (5/5 plans) |
 | 16 - ProviderRouter Extension | Bundler/wash-trader detection with full Shyft fallback | API-01–03 | Not started |
 
 ## Accumulated Context
@@ -109,6 +109,37 @@ v1.1 Progress: [██████████] 100% (8/8 plans in Phases 13-14 
 - 24h loop uses WHERE eq(signal_events.is_rug, false) to prevent re-fetching price for already-rugged tokens
 - MAX_PER_CYCLE cap test updated from resolved=20 to resolved=40 (30m and 1h windows each process 20 of 25 due rows); timeout extended to 15s for 40 * 200ms mock delays
 
+### Phase 15 Plan 01 Decisions (2026-04-18)
+
+- sourcing_log uses one row per poll cycle with aggregate counts (not per token) — simpler audit trail, sufficient for dashboard observability needs
+- updateSharedProviderStatus() called unconditionally after every cycle (not only on onAllExhausted) — ensures /admin and /status always show current provider health during normal operation
+- Shared provider status stored as module-level variable in providers/index.ts — avoids passing router references through layers or creating circular dependencies
+
+### Phase 15 Plan 02 Decisions (2026-04-18)
+
+- Source tagging (wallets.source='gmgn') deferred to Plan 03 — runDiscovery() will accept source in DiscoveryOptions for clean propagation vs unsound type cast approximation
+- ceilingAlertFired resets when wallet count drops below ceiling — enables re-alert on future ceiling re-hit after wallet removal
+- Null bluechip_owner_percentage fails pre-filter (conservative skip-to-be-safe) — avoids auto-seeding tokens with unknown bluechip ownership
+
+### Phase 15 Plan 03 Decisions (2026-04-18)
+
+- walletSource passed as explicit parameter to evaluateCandidate rather than closing over it — keeps function signature self-documenting
+- autoSourcer singleton created in monitor/index.ts (not commands/wallet.ts) — mirrors monitorLoop export pattern, single source of truth for the instance
+- SIGINT handler also calls autoSourcer.stop() — ensures clean shutdown on Ctrl+C in addition to SIGTERM
+
+### Phase 15 Plan 04 Decisions (2026-04-18)
+
+- Dynamic import used for monitorLoop and autoSourcer in /admin route handler — avoids circular dependency at module load time (same lazy-import pattern as other async routes)
+- getSharedProviderStatus() called via dynamic import in /admin route — singleton is populated by loop.ts's updateSharedProviderStatus() on each monitor cycle; shows empty array before first cycle completes
+- providerStatus objects retain the `index` field from router.getStatus() — EJS only renders name/state/lastError so no stripping needed
+
+### Phase 15 Plan 05 Decisions (2026-04-18)
+
+- Dynamic import used for monitorLoop, autoSourcer, getSharedProviderStatus in /status handler — avoids circular dependency at module load time (same lazy-import pattern as /admin route from Plan 04)
+- Stall threshold is 5 minutes (STALL_THRESHOLD_MS) — null lastCycleCompletedAt treated as "Not started" separately from timed-out state for clear operator UX
+- Provider section uses try/catch with graceful fallback — empty array returns "No provider data yet", import failure returns "Provider status unavailable"
+- /status is on-demand only — not scheduled, not triggered by cycles; pure Telegram command handler
+
 ### Research Flags for Planning
 
 - **Phase 15**: Before building AutoSourcer filter logic, verify DexScreener boost endpoint (`/token-boosts/latest/v1`) live JSON response field names (`chainId`, `tokenAddress`, `boostAmount`). A mismatch silently breaks the Solana token filter.
@@ -120,4 +151,4 @@ None.
 
 ## Next Action
 
-Phase 14 complete. Begin Phase 15 — Coin Sourcing + Observability (SEED-01–06, OBS-01–02). Note: verify DexScreener boost endpoint field names before building AutoSourcer filter logic (see Research Flags above).
+Phase 16 — ProviderRouter Extension (bundler/wash-trader detection with full Shyft fallback, API-01–03). Phase 15 fully complete: all 5 plans executed, all 8 requirements satisfied (SEED-01–06, OBS-01–02), human-verify checkpoint approved 2026-04-18 (/admin, /status, and AutoSourcer polling confirmed). SEED-06 Railway CLI verification deferred to Railway deployment.

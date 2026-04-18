@@ -1,7 +1,7 @@
 import { eq, inArray } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { wallets, swaps } from '../db/schema.js';
-import { createProviderRouter } from '../fetchers/providers/index.js';
+import { createProviderRouter, updateSharedProviderStatus } from '../fetchers/providers/index.js';
 import { parseSwaps, applyFifo } from '../parsers/swap.js';
 import { runDetectionIfNeeded } from '../detection/engine.js';
 import { scoreWalletIfNeeded } from '../scoring/engine.js';
@@ -20,6 +20,9 @@ export class MonitorLoop {
   private timer: ReturnType<typeof setTimeout> | null = null;
   private cycleRunning: boolean = false;
   private running: boolean = false;
+  private _cycleCount: number = 0;
+  private _lastCycleDurationMs: number | null = null;
+  private _lastCycleCompletedAt: number | null = null;
 
   start(): void {
     if (this.running) {
@@ -191,5 +194,15 @@ export class MonitorLoop {
         err instanceof Error ? err.message : err,
       );
     }
+
+    // Observability: update cycle metrics and shared provider status
+    this._cycleCount++;
+    this._lastCycleDurationMs = Date.now() - startMs;
+    this._lastCycleCompletedAt = Date.now();
+    updateSharedProviderStatus(fetcher);
   }
+
+  get cycleCount(): number { return this._cycleCount; }
+  get lastCycleDurationMs(): number | null { return this._lastCycleDurationMs; }
+  get lastCycleCompletedAt(): number | null { return this._lastCycleCompletedAt; }
 }

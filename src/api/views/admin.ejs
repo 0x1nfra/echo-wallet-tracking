@@ -1,0 +1,75 @@
+<p><a href="/">← Dashboard</a></p>
+
+<h1>Admin — System Health</h1>
+
+<section>
+  <h2>Monitor Cycle Health</h2>
+  <table>
+    <tr><td>Cycle count</td><td><%= monitorStats.cycleCount %></td></tr>
+    <tr><td>Last cycle duration</td><td><%= monitorStats.lastCycleDurationMs != null ? (monitorStats.lastCycleDurationMs / 1000).toFixed(1) + 's' : '—' %></td></tr>
+    <tr><td>Last cycle completed</td><td><%= monitorStats.lastCycleCompletedAt != null ? new Date(monitorStats.lastCycleCompletedAt).toLocaleString() : 'Never' %></td></tr>
+    <tr><td>Status</td><td><%= monitorStats.stalled ? '⚠ STALLED' : monitorStats.cycleCount > 0 ? '✓ Running' : 'Not started' %></td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>AutoSourcer</h2>
+  <table>
+    <tr><td>Status</td><td><%= sourcerStats.running ? (sourcerStats.ceilingHit ? 'Ceiling hit' : sourcerStats.lastPollStatus === 'cap_hit' ? 'Daily cap hit' : 'Active') : 'Stopped' %></td></tr>
+    <tr><td>Daily adds</td><td><%= sourcerStats.dailyAdded %>/<%= sourcerStats.dailyCap %></td></tr>
+    <tr><td>Total wallets</td><td><%= sourcerStats.totalWallets %>/<%= sourcerStats.totalCap %></td></tr>
+    <tr><td>Poll count</td><td><%= sourcerStats.pollCount %></td></tr>
+    <tr><td>Last poll</td><td><%= sourcerStats.lastPollAt != null ? new Date(sourcerStats.lastPollAt).toLocaleString() : 'Never' %></td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Provider Status</h2>
+  <% if (providerStatus.length === 0) { %>
+    <p>No provider data available yet.</p>
+  <% } else { %>
+    <table>
+      <thead><tr><th>Provider</th><th>State</th><th>Last Error</th></tr></thead>
+      <tbody>
+        <% providerStatus.forEach(p => { %>
+          <tr>
+            <td><%= p.name %></td>
+            <td><%= p.state %></td>
+            <td><%= p.lastError ?? '—' %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
+
+<section>
+  <h2>Recent Sourcing Runs (last 10)</h2>
+  <% if (recentSourcingLog.length === 0) { %>
+    <p>No sourcing runs yet.</p>
+  <% } else { %>
+    <table>
+      <thead>
+        <tr>
+          <th>Polled At</th><th>Fetched</th><th>Filtered</th>
+          <th>Seeded</th><th>Skipped</th><th>Wallets Added</th>
+          <th>Status</th><th>Error</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% recentSourcingLog.forEach(row => { %>
+          <tr>
+            <td><%= new Date(row.polled_at).toLocaleString() %></td>
+            <td><%= row.tokens_fetched %></td>
+            <td><%= row.tokens_filtered %></td>
+            <td><%= row.tokens_seeded %></td>
+            <td><%= row.tokens_skipped %></td>
+            <td><%= row.wallets_added %></td>
+            <td><%= row.status %></td>
+            <td><%= row.error_message ?? '—' %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
