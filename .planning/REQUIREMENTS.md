@@ -24,9 +24,9 @@
 
 ### Coin Sourcing
 
-- [ ] **SEED-01**: System periodically fetches trending/boosted Solana tokens from DexScreener boost API
-- [ ] **SEED-02**: Auto-sourced tokens filtered by minimum liquidity ($10k) before running discovery
-- [ ] **SEED-03**: Auto-sourced discovery runs direct-buyers-only mode (graph traversal disabled for automated runs)
+- [x] **SEED-01**: System periodically fetches trending/boosted Solana tokens from DexScreener boost API
+- [x] **SEED-02**: Auto-sourced tokens filtered by minimum liquidity ($10k) before running discovery
+- [x] **SEED-03**: Auto-sourced discovery runs direct-buyers-only mode (graph traversal disabled for automated runs)
 - [x] **SEED-04**: Configurable daily wallet add cap (default 20/day) prevents discovery loops
 - [x] **SEED-05**: Configurable total wallet ceiling (default 200) with circuit breaker stops auto-adds at limit
 - [ ] **SEED-06**: Manual CA seeding via CLI confirmed working in Railway deployed environment
@@ -84,9 +84,9 @@ All 21 v1.1 requirements mapped to phases. Updated during roadmap creation (2026
 | OUTCOME-04 | Phase 14 | Complete |
 | OUTCOME-05 | Phase 14 | Complete |
 | OUTCOME-06 | Phase 14 | Complete |
-| SEED-01 | Phase 15 | Pending |
-| SEED-02 | Phase 15 | Pending |
-| SEED-03 | Phase 15 | Pending |
+| SEED-01 | Phase 15 | Complete |
+| SEED-02 | Phase 15 | Complete |
+| SEED-03 | Phase 15 | Complete |
 | SEED-04 | Phase 15 | Complete |
 | SEED-05 | Phase 15 | Complete |
 | SEED-06 | Phase 15 | Pending |

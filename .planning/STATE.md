@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Forward Testing & Deployment
-status: completed
-last_updated: "2026-04-18T00:15:00Z"
-last_activity: "2026-04-18 — Phase 15 Plan 01 complete: sourcing_log table + wallets.source column, MonitorLoop cycle metrics getters, ProviderRouter.getStatus() with shared status store"
+status: executing
+last_updated: "2026-04-18T12:00:00Z"
+last_activity: "2026-04-18 — Plan 02 complete: GmgnFetcher with browser headers + 5-rule pre-filter, AutoSourcer with daily/total caps, direct-buyers-only discovery, sourcing_log writes"
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 13
-  completed_plans: 10
+  completed_plans: 11
 ---
 
 # Project State
@@ -23,13 +23,13 @@ See: .planning/PROJECT.md (updated 2026-03-31 after v1.1 milestone started)
 
 ## Current Position
 
-Phase: 15 — Coin Sourcing + Observability (In Progress — 1/5 plans complete)
-Plan: 01 complete — sourcing_log table + wallets.source column, MonitorLoop cycle metrics getters, ProviderRouter.getStatus() with shared status store
-Status: Phase 15 in progress. Next: Plan 02 — AutoSourcer GMGN integration
-Last activity: 2026-04-18 — Plan 01 complete: sourcing_log table + wallets.source column via migration 0011, MonitorLoop cycle metrics getters, ProviderRouter.getStatus() with shared status store
+Phase: 15 — Coin Sourcing + Observability (In Progress — 2/5 plans complete)
+Plan: 02 complete — GmgnFetcher with browser headers + 5-rule pre-filter, AutoSourcer with daily/total caps, direct-buyers-only discovery, sourcing_log writes
+Status: Phase 15 in progress. Next: Plan 03 — wire AutoSourcer into startup, extend runDiscovery with source param
+Last activity: 2026-04-18 — Plan 02 complete: GmgnFetcher + AutoSourcer core engine in src/sourcing/, TypeScript clean
 
 ```
-v1.1 Progress: [█████████░] 92% (10/13 plans complete)
+v1.1 Progress: [█████████░] 94% (11/13 plans complete)
 ```
 
 ## Milestone History
@@ -42,7 +42,7 @@ v1.1 Progress: [█████████░] 92% (10/13 plans complete)
 |-------|------|--------------|--------|
 | 13 - Railway Deployment | Persistent Railway deployment with data integrity safeguards | DEPLOY-01–04 | Complete |
 | 14 - Signal Outcome Tracking | Accurate forward-testing dataset: 30m window, peak price, rug classification | OUTCOME-01–06 | Complete (4/4 plans) |
-| 15 - Coin Sourcing + Observability | Automated discovery via DexScreener with caps and dashboard health | SEED-01–06, OBS-01–02 | In progress (1/5 plans) |
+| 15 - Coin Sourcing + Observability | Automated discovery via DexScreener with caps and dashboard health | SEED-01–06, OBS-01–02 | In progress (2/5 plans) |
 | 16 - ProviderRouter Extension | Bundler/wash-trader detection with full Shyft fallback | API-01–03 | Not started |
 
 ## Accumulated Context
@@ -115,6 +115,12 @@ v1.1 Progress: [█████████░] 92% (10/13 plans complete)
 - updateSharedProviderStatus() called unconditionally after every cycle (not only on onAllExhausted) — ensures /admin and /status always show current provider health during normal operation
 - Shared provider status stored as module-level variable in providers/index.ts — avoids passing router references through layers or creating circular dependencies
 
+### Phase 15 Plan 02 Decisions (2026-04-18)
+
+- Source tagging (wallets.source='gmgn') deferred to Plan 03 — runDiscovery() will accept source in DiscoveryOptions for clean propagation vs unsound type cast approximation
+- ceilingAlertFired resets when wallet count drops below ceiling — enables re-alert on future ceiling re-hit after wallet removal
+- Null bluechip_owner_percentage fails pre-filter (conservative skip-to-be-safe) — avoids auto-seeding tokens with unknown bluechip ownership
+
 ### Research Flags for Planning
 
 - **Phase 15**: Before building AutoSourcer filter logic, verify DexScreener boost endpoint (`/token-boosts/latest/v1`) live JSON response field names (`chainId`, `tokenAddress`, `boostAmount`). A mismatch silently breaks the Solana token filter.
@@ -126,4 +132,4 @@ None.
 
 ## Next Action
 
-Phase 15 Plan 01 complete. Continue Phase 15 — execute Plan 02 (AutoSourcer GMGN integration). Note: verify DexScreener boost endpoint field names before building AutoSourcer filter logic (see Research Flags above).
+Phase 15 Plan 02 complete. Continue Phase 15 — execute Plan 03 (wire AutoSourcer into startup, extend runDiscovery with source param, /status Telegram command).
