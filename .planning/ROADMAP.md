@@ -107,5 +107,5 @@ Plans:
 | 12. Signal Accuracy Logging        | v1.0      | 4/4            | Complete    | 2026-03-27 |
 | 13. Railway Deployment             | v1.1      | Complete    | 2026-04-02 | 2026-04-01 |
 | 14. Signal Outcome Tracking        | 4/4 | Complete    | 2026-04-09 | -          |
-| 15. Coin Sourcing + Observability  | 5/5 | Complete   | 2026-04-18 | -          |
+| 15. Coin Sourcing + Observability  | 5/5 | Complete    | 2026-04-18 | -          |
 | 16. ProviderRouter Extension       | v1.1      | 0/TBD          | Not started | -          |
