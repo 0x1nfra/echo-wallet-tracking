@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Forward Testing & Deployment
 status: executing
-last_updated: "2026-04-18T12:00:00Z"
-last_activity: "2026-04-18 — Plan 02 complete: GmgnFetcher with browser headers + 5-rule pre-filter, AutoSourcer with daily/total caps, direct-buyers-only discovery, sourcing_log writes"
+last_updated: "2026-04-18T12:25:00Z"
+last_activity: "2026-04-18 — Plan 03 complete: AutoSourcer startup wiring, DiscoveryOptions.source param, wallet attribution at insert time"
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 13
-  completed_plans: 11
+  completed_plans: 12
 ---
 
 # Project State
@@ -23,13 +23,13 @@ See: .planning/PROJECT.md (updated 2026-03-31 after v1.1 milestone started)
 
 ## Current Position
 
-Phase: 15 — Coin Sourcing + Observability (In Progress — 2/5 plans complete)
-Plan: 02 complete — GmgnFetcher with browser headers + 5-rule pre-filter, AutoSourcer with daily/total caps, direct-buyers-only discovery, sourcing_log writes
-Status: Phase 15 in progress. Next: Plan 03 — wire AutoSourcer into startup, extend runDiscovery with source param
-Last activity: 2026-04-18 — Plan 02 complete: GmgnFetcher + AutoSourcer core engine in src/sourcing/, TypeScript clean
+Phase: 15 — Coin Sourcing + Observability (In Progress — 3/5 plans complete)
+Plan: 03 complete — AutoSourcer startup wiring, DiscoveryOptions.source param, wallet attribution at insert time
+Status: Phase 15 in progress. Next: Plan 04 — observability dashboard
+Last activity: 2026-04-18 — Plan 03 complete: AutoSourcer wired into wallet monitor start/stop, wallets.source='gmgn' set at insert time, SEED-06 verified
 
 ```
-v1.1 Progress: [█████████░] 94% (11/13 plans complete)
+v1.1 Progress: [██████████] 96% (12/13 plans complete)
 ```
 
 ## Milestone History
@@ -121,6 +121,12 @@ v1.1 Progress: [█████████░] 94% (11/13 plans complete)
 - ceilingAlertFired resets when wallet count drops below ceiling — enables re-alert on future ceiling re-hit after wallet removal
 - Null bluechip_owner_percentage fails pre-filter (conservative skip-to-be-safe) — avoids auto-seeding tokens with unknown bluechip ownership
 
+### Phase 15 Plan 03 Decisions (2026-04-18)
+
+- walletSource passed as explicit parameter to evaluateCandidate rather than closing over it — keeps function signature self-documenting
+- autoSourcer singleton created in monitor/index.ts (not commands/wallet.ts) — mirrors monitorLoop export pattern, single source of truth for the instance
+- SIGINT handler also calls autoSourcer.stop() — ensures clean shutdown on Ctrl+C in addition to SIGTERM
+
 ### Research Flags for Planning
 
 - **Phase 15**: Before building AutoSourcer filter logic, verify DexScreener boost endpoint (`/token-boosts/latest/v1`) live JSON response field names (`chainId`, `tokenAddress`, `boostAmount`). A mismatch silently breaks the Solana token filter.
@@ -132,4 +138,4 @@ None.
 
 ## Next Action
 
-Phase 15 Plan 02 complete. Continue Phase 15 — execute Plan 03 (wire AutoSourcer into startup, extend runDiscovery with source param, /status Telegram command).
+Phase 15 Plan 03 complete. Continue Phase 15 — execute Plan 04 (observability dashboard) and Plan 05 (Telegram /status command).
