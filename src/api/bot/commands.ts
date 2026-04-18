@@ -6,23 +6,62 @@ import { getTopHolders } from './alerts.js';
 import { getAccuracyStats, MIN_SAMPLE } from '../../signals/accuracy.js';
 
 export function registerCommands(bot: Bot): void {
-  // /status — system health
+  // /status — full multi-section system health summary (OBS-02)
   bot.command('status', async (ctx) => {
-    const walletCount = db.select({ count: count() }).from(wallets).get()!.count;
-    const signalCount = db.select({ count: count() }).from(token_signals)
-      .where(gt(token_signals.signal_score, 0)).get()!.count;
-    const latest = db.select({ ts: token_signals.updated_at }).from(token_signals)
-      .orderBy(desc(token_signals.updated_at)).limit(1).get();
-    const lastCycle = latest?.ts
-      ? new Date(latest.ts).toLocaleString()
-      : 'No cycles yet';
-    await ctx.reply(
-      `<b>Echo System Status</b>\n` +
-      `Wallets tracked: ${walletCount}\n` +
-      `Active signals: ${signalCount}\n` +
-      `Last cycle: ${lastCycle}`,
-      { parse_mode: 'HTML' }
-    );
+    // --- Monitor section ---
+    const { monitorLoop } = await import('../../commands/wallet.js');
+    const cycleCount = monitorLoop.cycleCount;
+    const lastDurationMs = monitorLoop.lastCycleDurationMs;
+    const lastCompletedAt = monitorLoop.lastCycleCompletedAt;
+    const STALL_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes
+    const stalled = lastCompletedAt !== null && (Date.now() - lastCompletedAt) > STALL_THRESHOLD_MS;
+    const neverRan = lastCompletedAt === null;
+
+    const monitorSection =
+      `<b>Monitor</b>\n` +
+      `Cycles: ${cycleCount}\n` +
+      `Last duration: ${lastDurationMs != null ? (lastDurationMs / 1000).toFixed(1) + 's' : '—'}\n` +
+      `Last completed: ${lastCompletedAt != null ? new Date(lastCompletedAt).toLocaleString() : 'Never'}\n` +
+      `Stall: ${neverRan ? 'Not started' : stalled ? '⚠ YES' : '✓ No'}`;
+
+    // --- AutoSourcer section ---
+    const { autoSourcer } = await import('../../monitor/index.js');
+    const stats = autoSourcer.getStats();
+    const sourcerStatusLabel = !stats.running
+      ? 'Stopped'
+      : stats.ceilingHit
+        ? 'Ceiling hit'
+        : stats.lastPollStatus === 'cap_hit'
+          ? 'Daily cap hit'
+          : 'Active';
+
+    const sourcerSection =
+      `<b>AutoSourcer</b>\n` +
+      `Status: ${sourcerStatusLabel}\n` +
+      `Daily adds: ${stats.dailyAdded}/${stats.dailyCap}\n` +
+      `Total wallets: ${stats.totalWallets}/${stats.totalCap}\n` +
+      `Poll count: ${stats.pollCount}\n` +
+      `Last poll: ${stats.lastPollAt != null ? new Date(stats.lastPollAt).toLocaleString() : 'Never'}`;
+
+    // --- Provider section ---
+    let providerSection = '<b>Providers</b>\n';
+    try {
+      const { getSharedProviderStatus } = await import('../../fetchers/providers/index.js');
+      const providers = getSharedProviderStatus();
+      if (providers.length === 0) {
+        providerSection += 'No provider data yet (no errors recorded)';
+      } else {
+        providerSection += providers
+          .map(p => `${p.name}: ${p.state}${p.lastError ? ` (${p.lastError.slice(0, 60)})` : ''}`)
+          .join('\n');
+      }
+    } catch {
+      providerSection += 'Provider status unavailable';
+    }
+
+    const message = [monitorSection, sourcerSection, providerSection].join('\n\n');
+
+    await ctx.reply(`<b>Echo System Status</b>\n\n` + message, { parse_mode: 'HTML' });
   });
 
   // /top — top 5 signals; each entry includes token mint, score, tier, and top holder wallet address
