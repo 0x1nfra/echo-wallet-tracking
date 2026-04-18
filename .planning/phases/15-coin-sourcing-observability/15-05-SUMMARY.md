@@ -66,7 +66,10 @@ completed: 2026-04-18
 ## Task Commits
 
 1. **Task 1: Expand /status command to full multi-section health summary** - `95d72af` (feat)
-2. **Task 2: Human verification checkpoint** — awaiting human verify
+2. **Task 2: Human verification checkpoint** — `approved` — /admin, /status, and AutoSourcer polling confirmed by user (2026-04-18)
+   - Fix commits applied during verification:
+     - `03a8aaa` fix(15-05): wire autoSourcer.start() into serve command
+     - `04b7e6d` fix(15-05): import autoSourcer from monitor/index not wallet.ts
 
 ## Files Created/Modified
 
@@ -80,7 +83,21 @@ completed: 2026-04-18
 
 ## Deviations from Plan
 
-None - plan executed exactly as written.
+### Auto-fixed Issues
+
+**1. [Rule 3 - Blocking] autoSourcer.start() not wired into serve command**
+- **Found during:** Task 2 human verification (AutoSourcer not polling on startup)
+- **Issue:** autoSourcer.start() was exported from monitor/index.ts but never called in the serve command startup path
+- **Fix:** Wired autoSourcer.start() into the serve command so AutoSourcer begins polling on app start
+- **Files modified:** src/commands/wallet.ts (or serve entry point)
+- **Commit:** `03a8aaa`
+
+**2. [Rule 3 - Blocking] autoSourcer imported from wrong module**
+- **Found during:** Task 2 human verification (import error at runtime)
+- **Issue:** autoSourcer was imported from wallet.ts instead of monitor/index.ts where the singleton is exported
+- **Fix:** Updated import path to use monitor/index.ts (consistent with singleton pattern established in Plan 03)
+- **Files modified:** src/commands/wallet.ts (or serve entry point)
+- **Commit:** `04b7e6d`
 
 ## Issues Encountered
 
