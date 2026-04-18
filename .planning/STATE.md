@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Forward Testing & Deployment
 status: executing
-last_updated: "2026-04-18T12:25:00Z"
-last_activity: "2026-04-18 — Plan 03 complete: AutoSourcer startup wiring, DiscoveryOptions.source param, wallet attribution at insert time"
+last_updated: "2026-04-18T12:40:00Z"
+last_activity: "2026-04-18 — Plan 04 complete: /admin dashboard with monitor cycle health, AutoSourcer status, provider status, sourcing log (OBS-01)"
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 13
-  completed_plans: 12
+  completed_plans: 13
 ---
 
 # Project State
@@ -23,13 +23,13 @@ See: .planning/PROJECT.md (updated 2026-03-31 after v1.1 milestone started)
 
 ## Current Position
 
-Phase: 15 — Coin Sourcing + Observability (In Progress — 3/5 plans complete)
-Plan: 03 complete — AutoSourcer startup wiring, DiscoveryOptions.source param, wallet attribution at insert time
-Status: Phase 15 in progress. Next: Plan 04 — observability dashboard
-Last activity: 2026-04-18 — Plan 03 complete: AutoSourcer wired into wallet monitor start/stop, wallets.source='gmgn' set at insert time, SEED-06 verified
+Phase: 15 — Coin Sourcing + Observability (In Progress — 4/5 plans complete)
+Plan: 04 complete — /admin dashboard with monitor cycle health, AutoSourcer status, provider status, sourcing log (OBS-01)
+Status: Phase 15 in progress. Next: Plan 05 — Telegram /status command (OBS-02)
+Last activity: 2026-04-18 — Plan 04 complete: GET /admin route and admin.ejs template with 4 health sections, OBS-01 satisfied
 
 ```
-v1.1 Progress: [██████████] 96% (12/13 plans complete)
+v1.1 Progress: [██████████] 98% (13/13 plans complete)
 ```
 
 ## Milestone History
@@ -127,6 +127,12 @@ v1.1 Progress: [██████████] 96% (12/13 plans complete)
 - autoSourcer singleton created in monitor/index.ts (not commands/wallet.ts) — mirrors monitorLoop export pattern, single source of truth for the instance
 - SIGINT handler also calls autoSourcer.stop() — ensures clean shutdown on Ctrl+C in addition to SIGTERM
 
+### Phase 15 Plan 04 Decisions (2026-04-18)
+
+- Dynamic import used for monitorLoop and autoSourcer in /admin route handler — avoids circular dependency at module load time (same lazy-import pattern as other async routes)
+- getSharedProviderStatus() called via dynamic import in /admin route — singleton is populated by loop.ts's updateSharedProviderStatus() on each monitor cycle; shows empty array before first cycle completes
+- providerStatus objects retain the `index` field from router.getStatus() — EJS only renders name/state/lastError so no stripping needed
+
 ### Research Flags for Planning
 
 - **Phase 15**: Before building AutoSourcer filter logic, verify DexScreener boost endpoint (`/token-boosts/latest/v1`) live JSON response field names (`chainId`, `tokenAddress`, `boostAmount`). A mismatch silently breaks the Solana token filter.
@@ -138,4 +144,4 @@ None.
 
 ## Next Action
 
-Phase 15 Plan 03 complete. Continue Phase 15 — execute Plan 04 (observability dashboard) and Plan 05 (Telegram /status command).
+Phase 15 Plan 04 complete. Continue Phase 15 — execute Plan 05 (Telegram /status command, OBS-02).
