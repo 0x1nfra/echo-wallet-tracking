@@ -161,6 +161,7 @@ export class AutoSourcer {
 
       try {
         const result = await runDiscovery(token.address, {
+          source: 'gmgn',
           _deps: {
             fetchEarlyBuyersFn: (m) => fetchEarlyBuyers(m),
             fetchCoTradersFn: async () => [], // SEED-03: graph traversal disabled for auto-sourced tokens
@@ -177,9 +178,6 @@ export class AutoSourcer {
           if (result.added > 0) {
             walletsAdded += result.added;
             this._dailyAdded += result.added;
-            // TODO(Plan 03): pass source: 'gmgn' via DiscoveryOptions once discovery/index.ts is updated
-            // Plan 03 Task 1 extends runDiscovery() to accept source in DiscoveryOptions and sets it
-            // cleanly during wallet insertion — avoids the rough approximation of updating recently added wallets.
           }
         }
       } catch (err) {

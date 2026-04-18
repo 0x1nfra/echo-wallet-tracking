@@ -24,6 +24,8 @@ export interface DiscoveryOptions {
   minScore?: number;
   /** Dry run mode — score candidates but do not persist new wallets. Default: false */
   dryRun?: boolean;
+  /** Attribution source — stored on wallets.source for new inserts. e.g. 'gmgn' */
+  source?: string;
   /** Optional dep injection for testing */
   _deps?: DiscoveryDeps;
 }
@@ -72,6 +74,7 @@ async function evaluateCandidate(
   dryRun: boolean,
   deps: DiscoveryDeps,
   db: typeof defaultDb,
+  walletSource: string | null,
 ): Promise<EvalResult> {
   // 1. Already-tracked check (any status)
   const existingByAddress = db.select({ id: wallets.id })
@@ -97,6 +100,7 @@ async function evaluateCandidate(
       address,
       status: 'importing',
       detection_status: 'pending',
+      ...(walletSource ? { source: walletSource } : {}),
     }).run();
   }
 
@@ -208,6 +212,7 @@ export async function runDiscovery(
 ): Promise<DiscoveryResult> {
   const minScore = options?.minScore ?? 70;
   const dryRun = options?.dryRun ?? false;
+  const walletSource = options?.source ?? null;
   const db = options?._deps?.dbOverride ?? defaultDb;
 
   const deps: DiscoveryDeps = options?._deps ?? {
@@ -237,7 +242,7 @@ export async function runDiscovery(
 
   for (const address of directCandidates) {
     const evalResult = await evaluateCandidate(
-      address, 'direct', runId, minScore, dryRun, deps, db,
+      address, 'direct', runId, minScore, dryRun, deps, db, walletSource,
     );
     if (evalResult.result === 'added') added++;
     else if (evalResult.result === 'already_tracked') alreadyTracked++;
@@ -263,7 +268,7 @@ export async function runDiscovery(
 
   for (const address of graphCandidates) {
     const evalResult = await evaluateCandidate(
-      address, 'graph', runId, minScore, dryRun, deps, db,
+      address, 'graph', runId, minScore, dryRun, deps, db, walletSource,
     );
     if (evalResult.result === 'added') added++;
     else if (evalResult.result === 'already_tracked') alreadyTracked++;
