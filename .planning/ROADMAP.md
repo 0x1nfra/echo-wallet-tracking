@@ -109,3 +109,14 @@ Plans:
 | 14. Signal Outcome Tracking        | 4/4 | Complete    | 2026-04-09 | -          |
 | 15. Coin Sourcing + Observability  | 5/5 | Complete    | 2026-04-18 | -          |
 | 16. ProviderRouter Extension       | v1.1      | 0/TBD          | Not started | -          |
+| 17. GMGN Agent API Integration     | v1.1      | 0/TBD          | Not started | -          |
+
+### Phase 17: GMGN Agent API Integration
+
+**Goal:** Replace the public GMGN trending endpoint scrape with the official GMGN Agent API — authenticated, rate-limit-friendly, and more reliable token data ingestion
+**Requirements**: TBD
+**Depends on:** Phase 16
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 17 to break down)

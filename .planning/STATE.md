@@ -44,6 +44,7 @@ v1.1 Progress: [██████████] 100% (13/13 plans complete)
 | 14 - Signal Outcome Tracking | Accurate forward-testing dataset: 30m window, peak price, rug classification | OUTCOME-01–06 | Complete (4/4 plans) |
 | 15 - Coin Sourcing + Observability | Automated discovery via DexScreener with caps and dashboard health | SEED-01–06, OBS-01–02 | Complete (5/5 plans) |
 | 16 - ProviderRouter Extension | Bundler/wash-trader detection with full Shyft fallback | API-01–03 | Not started |
+| 17 - GMGN Agent API Integration | Replace public endpoint scrape with official GMGN Agent API for robust token data ingestion | TBD | Not started |
 
 ## Accumulated Context
 
@@ -139,6 +140,10 @@ v1.1 Progress: [██████████] 100% (13/13 plans complete)
 - Stall threshold is 5 minutes (STALL_THRESHOLD_MS) — null lastCycleCompletedAt treated as "Not started" separately from timed-out state for clear operator UX
 - Provider section uses try/catch with graceful fallback — empty array returns "No provider data yet", import failure returns "Provider status unavailable"
 - /status is on-demand only — not scheduled, not triggered by cycles; pure Telegram command handler
+
+### Roadmap Evolution
+
+- Phase 17 added: GMGN Agent API Integration — replace public trending endpoint scrape with official GMGN Agent API (https://docs.gmgn.ai/index/gmgn-agent-api) for authenticated, rate-limit-friendly token data ingestion
 
 ### Research Flags for Planning
 
