@@ -87,7 +87,12 @@ Plans:
   1. `getTransactionDetails` is available on the `RpcProvider` interface, with both HeliusProvider and ShyftProvider implementations, so bundler.ts and wash-trader.ts can be routed through the ProviderRouter
   2. ShyftProvider correctly normalizes all SOL native transfer action types (`SOL_TRANSFER`, `TRANSFER`, `SYSTEM_PROGRAM:TRANSFER`) so bundler detection does not silently miss funder transactions when running under Shyft fallback
   3. When all providers are exhausted, detection engines throw an explicit error rather than returning null or empty results
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 16-00-PLAN.md — Wave 0 gate: D-03 Shyft action-type live verification script + test helper extensions
+- [ ] 16-01-PLAN.md — Provider layer: RpcProvider.getTransactionDetails on all 3 implementations + router throw-on-exhaustion + sharedProviderRouter singleton
+- [ ] 16-02-PLAN.md — Detection engine wiring: bundler.ts + wash-trader.ts getDefaultFetcher rerouted to sharedProviderRouter
 
 ## Progress
 
@@ -108,7 +113,7 @@ Plans:
 | 13. Railway Deployment             | v1.1      | Complete    | 2026-04-02 | 2026-04-01 |
 | 14. Signal Outcome Tracking        | 4/4 | Complete    | 2026-04-09 | -          |
 | 15. Coin Sourcing + Observability  | 5/5 | Complete    | 2026-04-18 | -          |
-| 16. ProviderRouter Extension       | v1.1      | 0/TBD          | Not started | -          |
+| 16. ProviderRouter Extension       | v1.1      | 0/3            | Not started | -          |
 | 17. GMGN Agent API Integration     | v1.1      | 0/TBD          | Not started | -          |
 
 ### Phase 17: GMGN Agent API Integration
