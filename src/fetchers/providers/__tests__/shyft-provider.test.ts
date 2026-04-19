@@ -53,6 +53,39 @@ function makeSwapTx(sig: string, timestamp = 1_700_000_000): ShyftRawTx {
 }
 
 /**
+ * Creates a ShyftRawTx with a single native-transfer action of the specified type.
+ * Used by Wave 1 to test extractNativeTransfers across observed D-03 variants.
+ */
+function makeNativeTransferTx(
+  sig: string,
+  actionType: string,
+  sender: string,
+  receiver: string,
+  amount: number,
+  timestamp = 1_700_000_000
+): ShyftRawTx {
+  return {
+    signatures: [sig],
+    slot: 9999,
+    timestamp,
+    fee: 5000,
+    fee_payer: sender,
+    status: 'Success',
+    type: 'TRANSFER',
+    actions: [
+      {
+        type: actionType,
+        info: {
+          sender,
+          receiver,
+          amount,
+        },
+      },
+    ],
+  };
+}
+
+/**
  * Creates a minimal fake AxiosInstance for testing.
  * `responses` is a queue — each call pops the next response.
  */
@@ -310,5 +343,18 @@ describe('ShyftProvider', () => {
       expect(result[0].events).toBeUndefined();
       expect(result[0].source).toBe('SHYFT_NORMALIZED');
     });
+  });
+
+  it('makeNativeTransferTx helper builds correct raw tx shape (wave-0 scaffolding)', () => {
+    const raw = makeNativeTransferTx('sig-native-1', 'SOL_TRANSFER', 'fromWallet', 'toWallet', 1_000_000);
+    expect(raw.signatures).toEqual(['sig-native-1']);
+    expect(raw.actions).toHaveLength(1);
+    expect(raw.actions[0].type).toBe('SOL_TRANSFER');
+    expect(raw.actions[0].info).toMatchObject({
+      sender: 'fromWallet',
+      receiver: 'toWallet',
+      amount: 1_000_000,
+    });
+    expect(raw.status).toBe('Success');
   });
 });
