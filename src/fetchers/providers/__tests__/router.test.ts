@@ -27,7 +27,8 @@ function makeProvider(results: {
   fetchSwapHistory?: HeliusTransaction[] | Error;
   fetchEarlySwapsForMint?: HeliusTransaction[] | Error;
   fetchOnePage?: HeliusTransaction[] | Error;
-}): RpcProvider {
+  getTransactionDetails?: HeliusTransaction | Error;
+}): RpcProvider & { getTransactionDetails: (sig: string) => Promise<HeliusTransaction> } {
   return {
     fetchSwapHistory: async (_address: string, _afterTimestamp: number) => {
       const r = results.fetchSwapHistory ?? [];
@@ -41,6 +42,11 @@ function makeProvider(results: {
     },
     fetchOnePage: async (_address: string, _limit: number) => {
       const r = results.fetchOnePage ?? [];
+      if (r instanceof Error) throw r;
+      return r;
+    },
+    getTransactionDetails: async (_signature: string) => {
+      const r = results.getTransactionDetails ?? makeTx('default-sig');
       if (r instanceof Error) throw r;
       return r;
     },
@@ -242,5 +248,13 @@ describe('ProviderRouter', () => {
       expect(result).toEqual([]);
       expect(exhaustedCallCount).toBe(1);
     });
+  });
+
+  it('makeProvider helper accepts optional getTransactionDetails (wave-0 scaffolding)', async () => {
+    const tx = makeTx('wave0-sig');
+    const p = makeProvider({ getTransactionDetails: tx });
+    await expect(p.getTransactionDetails('wave0-sig')).resolves.toBe(tx);
+    const fail = makeProvider({ getTransactionDetails: new Error('boom') });
+    await expect(fail.getTransactionDetails('x')).rejects.toThrow('boom');
   });
 });
