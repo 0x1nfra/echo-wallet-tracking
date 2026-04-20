@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import PQueue from 'p-queue';
-import pRetry from 'p-retry';
+import pRetry, { AbortError } from 'p-retry';
 import type { RpcProvider, ProviderTransaction } from './types.js';
 import type { HeliusTokenTransfer, HeliusNativeTransfer } from '../../types/index.js';
 
@@ -25,6 +25,18 @@ interface ShyftRawTx {
   type?: string;
   actions: ShyftAction[];
 }
+
+/**
+ * SOL native-transfer action types observed from live Shyft `/sol/v1/transaction/parsed`
+ * responses during Phase 16 D-03 verification (see 16-00-SUMMARY.md).
+ *
+ * Extending this list requires re-running scripts/verify-shyft-action-types.ts
+ * against a transaction that exhibits the new type.
+ */
+const SHYFT_NATIVE_TRANSFER_ACTION_TYPES: ReadonlySet<string> = new Set([
+  // EXACT LIST FROM 16-00-SUMMARY.md — do not add speculatively
+  'SOL_TRANSFER',
+]);
 
 export class ShyftProvider implements RpcProvider {
   private client: AxiosInstance;
@@ -60,6 +72,39 @@ export class ShyftProvider implements RpcProvider {
         },
       }
     ) as Promise<ShyftRawTx[]>;
+  }
+
+  private async fetchSingleTx(signature: string): Promise<ShyftRawTx> {
+    return pRetry(
+      () => shyftQueue.add(async () => {
+        const res = await this.client.get('/sol/v1/transaction/parsed', {
+          params: { network: 'mainnet-beta', txn_signature: signature },
+          headers: { 'x-api-key': this.apiKey },
+        });
+        const result = res?.data?.result;
+        if (!result) throw new Error(`Shyft: no result for signature ${signature}`);
+        return result as ShyftRawTx;
+      }),
+      {
+        retries: 3,
+        onFailedAttempt: async (context) => {
+          const err = context.error;
+          const status = (err as unknown as { response?: { status?: number } }).response?.status;
+          if (status === 401) throw new AbortError(err);
+          // Non-retriable: missing result (no point retrying a missing tx)
+          if (err.message?.startsWith('Shyft: no result for signature')) throw new AbortError(err);
+          if (status === 429) {
+            const delayMs = Math.pow(2, context.attemptNumber) * 1000;
+            await new Promise(resolve => setTimeout(resolve, delayMs));
+          }
+        },
+      }
+    ) as Promise<ShyftRawTx>;
+  }
+
+  async getTransactionDetails(signature: string): Promise<ProviderTransaction> {
+    const raw = await this.fetchSingleTx(signature);
+    return this.normalize(raw);
   }
 
   async fetchSwapHistory(address: string, afterTimestamp: number): Promise<ProviderTransaction[]> {
@@ -140,7 +185,7 @@ export class ShyftProvider implements RpcProvider {
   private extractNativeTransfers(actions: ShyftAction[]): HeliusNativeTransfer[] {
     const transfers: HeliusNativeTransfer[] = [];
     for (const action of actions) {
-      if (action.type === 'SOL_TRANSFER') {
+      if (SHYFT_NATIVE_TRANSFER_ACTION_TYPES.has(action.type)) {
         const info = action.info;
         if (info.sender && info.receiver) {
           transfers.push({

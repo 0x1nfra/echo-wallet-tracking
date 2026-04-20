@@ -357,4 +357,48 @@ describe('ShyftProvider', () => {
     });
     expect(raw.status).toBe('Success');
   });
+
+  describe('getTransactionDetails', () => {
+    it('calls /sol/v1/transaction/parsed with txn_signature param and x-api-key header', async () => {
+      const raw = makeSwapTx('sig-details-1');
+      const axios = makeAxiosInstance([{ data: { result: raw } }]);
+      const provider = new ShyftProvider('test-key', axios);
+      const result = await provider.getTransactionDetails('sig-details-1');
+      expect(axios.capturedCalls).toHaveLength(1);
+      expect(axios.capturedCalls[0].url).toBe('/sol/v1/transaction/parsed');
+      expect(axios.capturedCalls[0].params).toMatchObject({
+        network: 'mainnet-beta',
+        txn_signature: 'sig-details-1',
+      });
+      expect(axios.capturedCalls[0].headers).toMatchObject({ 'x-api-key': 'test-key' });
+      expect(result.signature).toBe('sig-details-1');
+      expect(result.source).toBe('SHYFT_NORMALIZED');
+    });
+
+    it('throws when result is missing', async () => {
+      const axios = makeAxiosInstance([{ data: { result: null } }]);
+      const provider = new ShyftProvider('test-key', axios);
+      await expect(provider.getTransactionDetails('sig-missing')).rejects.toThrow(/no result for signature/);
+    });
+  });
+
+  describe('extractNativeTransfers (via normalize)', () => {
+    it('normalizes SOL_TRANSFER action into nativeTransfers', async () => {
+      const raw = makeNativeTransferTx('sig-nt-sol', 'SOL_TRANSFER', 'fromW', 'toW', 1_000_000);
+      const axios = makeAxiosInstance([{ data: { result: raw } }]);
+      const provider = new ShyftProvider('test-key', axios);
+      const result = await provider.getTransactionDetails('sig-nt-sol');
+      expect(result.nativeTransfers).toEqual([
+        { fromUserAccount: 'fromW', toUserAccount: 'toW', amount: 1_000_000 },
+      ]);
+    });
+
+    it('skips action types NOT in observed-types set', async () => {
+      const raw = makeNativeTransferTx('sig-nt-unknown', 'UNKNOWN_ACTION_TYPE_NOT_OBSERVED', 'fromW', 'toW', 1_000_000);
+      const axios = makeAxiosInstance([{ data: { result: raw } }]);
+      const provider = new ShyftProvider('test-key', axios);
+      const result = await provider.getTransactionDetails('sig-nt-unknown');
+      expect(result.nativeTransfers).toEqual([]);
+    });
+  });
 });
