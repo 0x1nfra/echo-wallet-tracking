@@ -81,6 +81,23 @@ export class ProviderRouter implements RpcProvider {
     return null;
   }
 
+  private async tryCallGetTransactionDetails(
+    signature: string
+  ): Promise<ProviderTransaction> {
+    for (let i = 0; i < this.providers.length; i++) {
+      if (this.isOnCooldown(i)) continue;
+      try {
+        return await this.providers[i].getTransactionDetails(signature);
+      } catch (err) {
+        const reason = err instanceof Error ? err.message : String(err);
+        this.markCooldown(i, 'getTransactionDetails', reason);
+      }
+    }
+    console.error('[provider] ALL providers exhausted for getTransactionDetails');
+    this.onAllExhausted();
+    throw new Error(`[provider] All providers exhausted fetching transaction: ${signature}`);
+  }
+
   async fetchSwapHistory(address: string, afterTimestamp: number): Promise<HeliusTransaction[]> {
     return (await this.tryCallSwapHistory(address, afterTimestamp)) ?? [];
   }
@@ -95,6 +112,10 @@ export class ProviderRouter implements RpcProvider {
 
   async fetchOnePage(address: string, limit: number): Promise<HeliusTransaction[]> {
     return (await this.tryCallOnePage(address, limit)) ?? [];
+  }
+
+  async getTransactionDetails(signature: string): Promise<ProviderTransaction> {
+    return this.tryCallGetTransactionDetails(signature);
   }
 
   getStatus(): Array<{ index: number; name: string; state: 'active' | 'cooldown'; lastError: string | null }> {
