@@ -38,9 +38,9 @@
 
 ### API Resilience
 
-- [ ] **API-01**: `getTransactionDetails` added to `RpcProvider` interface, covering `bundler.ts` and `wash-trader.ts`
-- [ ] **API-02**: `ShyftProvider` normalization handles all SOL transfer action types for `nativeTransfers` (fixes silent bundler detection gaps under Shyft fallback)
-- [ ] **API-03**: Detection engines throw on provider exhaustion rather than silently returning null results
+- [x] **API-01**: `getTransactionDetails` added to `RpcProvider` interface, covering `bundler.ts` and `wash-trader.ts`
+- [x] **API-02**: `ShyftProvider` normalization handles all SOL transfer action types for `nativeTransfers` (fixes silent bundler detection gaps under Shyft fallback)
+- [x] **API-03**: Detection engines throw on provider exhaustion rather than silently returning null results
 
 ## v1.2 Requirements (Deferred)
 
@@ -92,9 +92,9 @@ All 21 v1.1 requirements mapped to phases. Updated during roadmap creation (2026
 | SEED-06 | Phase 15 | Complete |
 | OBS-01 | Phase 15 | Complete |
 | OBS-02 | Phase 15 | Complete |
-| API-01 | Phase 16 | Pending |
-| API-02 | Phase 16 | Pending |
-| API-03 | Phase 16 | Pending |
+| API-01 | Phase 16 | Complete |
+| API-02 | Phase 16 | Complete |
+| API-03 | Phase 16 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 21 total

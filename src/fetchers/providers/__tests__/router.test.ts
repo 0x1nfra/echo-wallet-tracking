@@ -27,6 +27,7 @@ function makeProvider(results: {
   fetchSwapHistory?: HeliusTransaction[] | Error;
   fetchEarlySwapsForMint?: HeliusTransaction[] | Error;
   fetchOnePage?: HeliusTransaction[] | Error;
+  getTransactionDetails?: HeliusTransaction | Error;
 }): RpcProvider {
   return {
     fetchSwapHistory: async (_address: string, _afterTimestamp: number) => {
@@ -41,6 +42,11 @@ function makeProvider(results: {
     },
     fetchOnePage: async (_address: string, _limit: number) => {
       const r = results.fetchOnePage ?? [];
+      if (r instanceof Error) throw r;
+      return r;
+    },
+    getTransactionDetails: async (_signature: string) => {
+      const r = results.getTransactionDetails ?? makeTx('default-sig');
       if (r instanceof Error) throw r;
       return r;
     },
@@ -73,6 +79,7 @@ describe('ProviderRouter', () => {
         fetchSwapHistory: async () => { provider1Called = true; return []; },
         fetchEarlySwapsForMint: async () => [],
         fetchOnePage: async () => [],
+        getTransactionDetails: async () => makeTx('unused'),
       };
 
       const router = new ProviderRouter([p0, p1], onAllExhausted);
@@ -108,6 +115,7 @@ describe('ProviderRouter', () => {
         fetchSwapHistory: async () => { p0CallCount++; throw new Error('fail'); },
         fetchEarlySwapsForMint: async () => [],
         fetchOnePage: async () => [],
+        getTransactionDetails: async () => makeTx('unused'),
       };
       const p1 = makeProvider({ fetchSwapHistory: expected });
 
@@ -141,6 +149,7 @@ describe('ProviderRouter', () => {
         },
         fetchEarlySwapsForMint: async () => [],
         fetchOnePage: async () => [],
+        getTransactionDetails: async () => makeTx('unused'),
       };
       const p1 = makeProvider({ fetchSwapHistory: [makeTx('sig-1')] });
 
@@ -241,6 +250,62 @@ describe('ProviderRouter', () => {
 
       expect(result).toEqual([]);
       expect(exhaustedCallCount).toBe(1);
+    });
+  });
+
+  describe('getTransactionDetails', () => {
+    let exhaustedCallCount: number;
+    let onAllExhausted: () => void;
+
+    beforeEach(() => {
+      exhaustedCallCount = 0;
+      onAllExhausted = () => { exhaustedCallCount++; };
+    });
+
+    it('returns provider[0] result on success', async () => {
+      const tx = makeTx('sig-ok-0');
+      const p0 = makeProvider({ getTransactionDetails: tx });
+      const p1 = makeProvider({ getTransactionDetails: new Error('should not be called') });
+      const router = new ProviderRouter([p0, p1], onAllExhausted);
+      const result = await router.getTransactionDetails('sig-ok-0');
+      expect(result).toBe(tx);
+      expect(exhaustedCallCount).toBe(0);
+    });
+
+    it('falls through to provider[1] when provider[0] throws', async () => {
+      const tx = makeTx('sig-fallback');
+      const p0 = makeProvider({ getTransactionDetails: new Error('helius down') });
+      const p1 = makeProvider({ getTransactionDetails: tx });
+      const router = new ProviderRouter([p0, p1], onAllExhausted);
+      const result = await router.getTransactionDetails('sig-fallback');
+      expect(result).toBe(tx);
+      expect(exhaustedCallCount).toBe(0);
+    });
+
+    it('throws (not returns empty) when all providers exhausted', async () => {
+      const p0 = makeProvider({ getTransactionDetails: new Error('p0 fail') });
+      const p1 = makeProvider({ getTransactionDetails: new Error('p1 fail') });
+      const router = new ProviderRouter([p0, p1], onAllExhausted);
+      await expect(router.getTransactionDetails('sig-exhausted')).rejects.toThrow(/All providers exhausted/);
+      await expect(router.getTransactionDetails('sig-exhausted')).rejects.toThrow(/sig-exhausted/);
+      expect(exhaustedCallCount).toBeGreaterThanOrEqual(1);
+    });
+
+    it('skips providers on cooldown', async () => {
+      const tx = makeTx('sig-cooldown');
+      const p0 = makeProvider({ getTransactionDetails: new Error('initial fail') });
+      const p1 = makeProvider({ getTransactionDetails: tx });
+      const router = new ProviderRouter([p0, p1], onAllExhausted);
+      // First call marks p0 on cooldown
+      await router.getTransactionDetails('sig-cooldown');
+      // Second call must not re-attempt p0 (cooldown active)
+      let p0CallCount = 0;
+      (p0 as unknown as { getTransactionDetails: (s: string) => Promise<HeliusTransaction> }).getTransactionDetails = async () => {
+        p0CallCount++;
+        throw new Error('should-not-be-called');
+      };
+      await router.getTransactionDetails('sig-cooldown-2');
+      expect(p0CallCount).toBe(0);
     });
   });
 });

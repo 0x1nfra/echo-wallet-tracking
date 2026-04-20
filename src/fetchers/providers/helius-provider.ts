@@ -19,4 +19,8 @@ export class HeliusProvider implements RpcProvider {
   fetchOnePage(address: string, limit: number): Promise<ProviderTransaction[]> {
     return this.fetcher.fetchOnePage(address, limit);
   }
+
+  getTransactionDetails(signature: string): Promise<ProviderTransaction> {
+    return this.fetcher.getTransaction(signature);
+  }
 }

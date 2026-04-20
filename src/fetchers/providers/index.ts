@@ -101,6 +101,11 @@ export function createProviderRouter(): ProviderRouter {
         () => heliusProvider.fetchOnePage(address, limit),
         heliusFetcher
       ),
+    getTransactionDetails: (signature) =>
+      handleCreditExhaustion(
+        () => heliusProvider.getTransactionDetails(signature),
+        heliusFetcher
+      ),
   };
 
   const providers: RpcProvider[] = [heliusProviderWrapped];
@@ -132,6 +137,15 @@ export function getSharedProviderStatus(): Array<{ index: number; name: string; 
 export function updateSharedProviderStatus(router: ProviderRouter): void {
   _lastProviderStatus = router.getStatus();
 }
+
+/**
+ * Shared singleton ProviderRouter instance used by detection engines
+ * (bundler.ts, wash-trader.ts) via lazy dynamic import.
+ *
+ * Stateful — holds per-provider cooldown and lastError maps.
+ * Must be instantiated once per process (not per call).
+ */
+export const sharedProviderRouter: ProviderRouter = createProviderRouter();
 
 export type { RpcProvider, ProviderTransaction } from './types.js';
 export { ProviderRouter } from './router.js';

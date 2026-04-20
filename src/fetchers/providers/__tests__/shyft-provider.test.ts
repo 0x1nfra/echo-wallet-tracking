@@ -53,6 +53,39 @@ function makeSwapTx(sig: string, timestamp = 1_700_000_000): ShyftRawTx {
 }
 
 /**
+ * Creates a ShyftRawTx with a single native-transfer action of the specified type.
+ * Used by Wave 1 to test extractNativeTransfers across observed D-03 variants.
+ */
+function makeNativeTransferTx(
+  sig: string,
+  actionType: string,
+  sender: string,
+  receiver: string,
+  amount: number,
+  timestamp = 1_700_000_000
+): ShyftRawTx {
+  return {
+    signatures: [sig],
+    slot: 9999,
+    timestamp,
+    fee: 5000,
+    fee_payer: sender,
+    status: 'Success',
+    type: 'TRANSFER',
+    actions: [
+      {
+        type: actionType,
+        info: {
+          sender,
+          receiver,
+          amount,
+        },
+      },
+    ],
+  };
+}
+
+/**
  * Creates a minimal fake AxiosInstance for testing.
  * `responses` is a queue — each call pops the next response.
  */
@@ -309,6 +342,63 @@ describe('ShyftProvider', () => {
       expect(result).toHaveLength(1);
       expect(result[0].events).toBeUndefined();
       expect(result[0].source).toBe('SHYFT_NORMALIZED');
+    });
+  });
+
+  it('makeNativeTransferTx helper builds correct raw tx shape (wave-0 scaffolding)', () => {
+    const raw = makeNativeTransferTx('sig-native-1', 'SOL_TRANSFER', 'fromWallet', 'toWallet', 1_000_000);
+    expect(raw.signatures).toEqual(['sig-native-1']);
+    expect(raw.actions).toHaveLength(1);
+    expect(raw.actions[0].type).toBe('SOL_TRANSFER');
+    expect(raw.actions[0].info).toMatchObject({
+      sender: 'fromWallet',
+      receiver: 'toWallet',
+      amount: 1_000_000,
+    });
+    expect(raw.status).toBe('Success');
+  });
+
+  describe('getTransactionDetails', () => {
+    it('calls /sol/v1/transaction/parsed with txn_signature param and x-api-key header', async () => {
+      const raw = makeSwapTx('sig-details-1');
+      const axios = makeAxiosInstance([{ data: { result: raw } }]);
+      const provider = new ShyftProvider('test-key', axios);
+      const result = await provider.getTransactionDetails('sig-details-1');
+      expect(axios.capturedCalls).toHaveLength(1);
+      expect(axios.capturedCalls[0].url).toBe('/sol/v1/transaction/parsed');
+      expect(axios.capturedCalls[0].params).toMatchObject({
+        network: 'mainnet-beta',
+        txn_signature: 'sig-details-1',
+      });
+      expect(axios.capturedCalls[0].headers).toMatchObject({ 'x-api-key': 'test-key' });
+      expect(result.signature).toBe('sig-details-1');
+      expect(result.source).toBe('SHYFT_NORMALIZED');
+    });
+
+    it('throws when result is missing', async () => {
+      const axios = makeAxiosInstance([{ data: { result: null } }]);
+      const provider = new ShyftProvider('test-key', axios);
+      await expect(provider.getTransactionDetails('sig-missing')).rejects.toThrow(/no result for signature/);
+    });
+  });
+
+  describe('extractNativeTransfers (via normalize)', () => {
+    it('normalizes SOL_TRANSFER action into nativeTransfers', async () => {
+      const raw = makeNativeTransferTx('sig-nt-sol', 'SOL_TRANSFER', 'fromW', 'toW', 1_000_000);
+      const axios = makeAxiosInstance([{ data: { result: raw } }]);
+      const provider = new ShyftProvider('test-key', axios);
+      const result = await provider.getTransactionDetails('sig-nt-sol');
+      expect(result.nativeTransfers).toEqual([
+        { fromUserAccount: 'fromW', toUserAccount: 'toW', amount: 1_000_000 },
+      ]);
+    });
+
+    it('skips action types NOT in observed-types set', async () => {
+      const raw = makeNativeTransferTx('sig-nt-unknown', 'UNKNOWN_ACTION_TYPE_NOT_OBSERVED', 'fromW', 'toW', 1_000_000);
+      const axios = makeAxiosInstance([{ data: { result: raw } }]);
+      const provider = new ShyftProvider('test-key', axios);
+      const result = await provider.getTransactionDetails('sig-nt-unknown');
+      expect(result.nativeTransfers).toEqual([]);
     });
   });
 });

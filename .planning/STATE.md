@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Forward Testing & Deployment
 status: completed
-last_updated: "2026-04-18T15:28:51.679Z"
-last_activity: "2026-04-18 — Plan 05 complete: /status Telegram command with multi-section health summary, OBS-02 satisfied"
+last_updated: "2026-04-20T02:35:03.892Z"
+last_activity: 2026-04-20 -- Phase 16 Plan 02 complete
 progress:
-  total_phases: 4
-  completed_phases: 3
-  total_plans: 13
-  completed_plans: 13
+  total_phases: 5
+  completed_phases: 4
+  total_plans: 16
+  completed_plans: 16
 ---
 
 # Project State
@@ -23,13 +23,13 @@ See: .planning/PROJECT.md (updated 2026-03-31 after v1.1 milestone started)
 
 ## Current Position
 
-Phase: 15 — Coin Sourcing + Observability (Complete — 5/5 plans complete)
-Plan: 05 complete — /status Telegram command expanded to 3-section health summary (Monitor, AutoSourcer, Providers), OBS-02 satisfied
-Status: Phase 15 complete. All 8 requirements (SEED-01–06, OBS-01–02) satisfied. Next: Phase 16 — ProviderRouter Extension.
-Last activity: 2026-04-18 — Plan 05 complete: /status Telegram command with multi-section health summary, OBS-02 satisfied
+Phase: 16 — ProviderRouter Extension (Complete — 2/2 plans complete)
+Plan: 02 complete — bundler.ts and wash-trader.ts getDefaultFetcher() rewired to sharedProviderRouter; both detectors gain Shyft fallback and throw-on-exhaustion (API-01, API-03 satisfied)
+Status: Complete
+Last activity: 2026-04-20 -- Phase 16 Plan 02 complete
 
 ```
-v1.1 Progress: [██████████] 100% (13/13 plans complete)
+v1.1 Progress: [██████████] 100% (16/16 plans complete)
 ```
 
 ## Milestone History
@@ -43,7 +43,8 @@ v1.1 Progress: [██████████] 100% (13/13 plans complete)
 | 13 - Railway Deployment | Persistent Railway deployment with data integrity safeguards | DEPLOY-01–04 | Complete |
 | 14 - Signal Outcome Tracking | Accurate forward-testing dataset: 30m window, peak price, rug classification | OUTCOME-01–06 | Complete (4/4 plans) |
 | 15 - Coin Sourcing + Observability | Automated discovery via DexScreener with caps and dashboard health | SEED-01–06, OBS-01–02 | Complete (5/5 plans) |
-| 16 - ProviderRouter Extension | Bundler/wash-trader detection with full Shyft fallback | API-01–03 | Not started |
+| 16 - ProviderRouter Extension | Bundler/wash-trader detection with full Shyft fallback | API-01–03 | In progress (1/2 plans) |
+| 17 - GMGN Agent API Integration | Replace public endpoint scrape with official GMGN Agent API for robust token data ingestion | TBD | Not started |
 
 ## Accumulated Context
 
@@ -140,6 +141,23 @@ v1.1 Progress: [██████████] 100% (13/13 plans complete)
 - Provider section uses try/catch with graceful fallback — empty array returns "No provider data yet", import failure returns "Provider status unavailable"
 - /status is on-demand only — not scheduled, not triggered by cycles; pure Telegram command handler
 
+### Phase 16 Plan 01 Decisions (2026-04-20)
+
+- AbortError used in pRetry onFailedAttempt for non-retryable errors (missing result, 401) — pRetry v7 changed onFailedAttempt signature to RetryContext object; context.error holds the original error
+- SHYFT_NATIVE_TRANSFER_ACTION_TYPES contains only SOL_TRANSFER — D-03 script was committed in Plan 00 but operator did not run it; SOL_TRANSFER is the canonical documented type
+- tryCallGetTransactionDetails throws on exhaustion (no ?? []) — callers need explicit failure signal; distinct from existing list methods which return empty arrays
+- sharedProviderRouter exported as module-level const from providers/index.ts — instantiated once per process; Plan 02 consumes via dynamic import inside function body to avoid circular deps
+
+### Phase 16 Plan 02 Decisions (2026-04-20)
+
+- Explicit adapter object `{ getTransaction: sig => router.getTransactionDetails(sig) }` used instead of `as unknown as BundlerFetcher`/`WashTraderFetcher` cast — TypeScript validates method signature directly, method-name bridge is visible in code, no unsafe `unknown` hop
+- Zero changes to detector interfaces (D-05) and test files (D-06) — only `getDefaultFetcher` function body modified in each of bundler.ts and wash-trader.ts
+- Dynamic `await import('../fetchers/providers/index.js')` kept inside function body (not top-level) — preserves lazy-load isolation for test-time DI injection pattern
+
+### Roadmap Evolution
+
+- Phase 17 added: GMGN Agent API Integration — replace public trending endpoint scrape with official GMGN Agent API (https://docs.gmgn.ai/index/gmgn-agent-api) for authenticated, rate-limit-friendly token data ingestion
+
 ### Research Flags for Planning
 
 - **Phase 15**: Before building AutoSourcer filter logic, verify DexScreener boost endpoint (`/token-boosts/latest/v1`) live JSON response field names (`chainId`, `tokenAddress`, `boostAmount`). A mismatch silently breaks the Solana token filter.
@@ -151,4 +169,4 @@ None.
 
 ## Next Action
 
-Phase 16 — ProviderRouter Extension (bundler/wash-trader detection with full Shyft fallback, API-01–03). Phase 15 fully complete: all 5 plans executed, all 8 requirements satisfied (SEED-01–06, OBS-01–02), human-verify checkpoint approved 2026-04-18 (/admin, /status, and AutoSourcer polling confirmed). SEED-06 Railway CLI verification deferred to Railway deployment.
+Phase 16 complete — all 2 plans executed, all 3 requirements satisfied (API-01, API-02, API-03). Run `/gsd:verify-work` for final goal-backward audit of Phase 16. Next: Phase 17 — GMGN Agent API Integration.
