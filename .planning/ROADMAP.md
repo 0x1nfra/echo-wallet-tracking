@@ -32,7 +32,7 @@ See full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] **Phase 13: Railway Deployment** - Deploy Echo to Railway with persistent SQLite, WAL safeguards, and credit exhaustion handling (completed 2026-04-01)
 - [x] **Phase 14: Signal Outcome Tracking** - Extend outcome resolver with 30m window, peak price capture, rug classification, and % tier milestones (completed 2026-04-09)
 - [x] **Phase 15: Coin Sourcing + Observability** - Automate token discovery via DexScreener boost API with rate limits, caps, and dashboard health visibility (completed 2026-04-18)
-- [ ] **Phase 16: ProviderRouter Extension** - Extend ProviderRouter to cover bundler and wash-trader detection with full Shyft fallback
+- [x] **Phase 16: ProviderRouter Extension** - Extend ProviderRouter to cover bundler and wash-trader detection with full Shyft fallback (completed 2026-04-20)
 
 ## Phase Details
 
@@ -113,7 +113,7 @@ Plans:
 | 13. Railway Deployment             | v1.1      | Complete    | 2026-04-02 | 2026-04-01 |
 | 14. Signal Outcome Tracking        | 4/4 | Complete    | 2026-04-09 | -          |
 | 15. Coin Sourcing + Observability  | 5/5 | Complete    | 2026-04-18 | -          |
-| 16. ProviderRouter Extension       | 2/3 | In Progress|  | -          |
+| 16. ProviderRouter Extension       | 3/3 | Complete   | 2026-04-20 | -          |
 | 17. GMGN Agent API Integration     | v1.1      | 0/TBD          | Not started | -          |
 
 ### Phase 17: GMGN Agent API Integration
@@ -121,7 +121,7 @@ Plans:
 **Goal:** Replace the public GMGN trending endpoint scrape with the official GMGN Agent API — authenticated, rate-limit-friendly, and more reliable token data ingestion
 **Requirements**: TBD
 **Depends on:** Phase 16
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [ ] TBD (run /gsd:plan-phase 17 to break down)

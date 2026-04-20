@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Forward Testing & Deployment
 status: executing
-last_updated: "2026-04-20T00:30:00.000Z"
-last_activity: 2026-04-20 -- Phase 16 Plan 01 complete
+last_updated: "2026-04-20T02:15:00.000Z"
+last_activity: 2026-04-20 -- Phase 16 Plan 02 complete
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 16
-  completed_plans: 15
+  completed_plans: 16
 ---
 
 # Project State
@@ -23,13 +23,13 @@ See: .planning/PROJECT.md (updated 2026-03-31 after v1.1 milestone started)
 
 ## Current Position
 
-Phase: 16 — ProviderRouter Extension (In Progress — 1/2 plans complete)
-Plan: 01 complete — RpcProvider extended with getTransactionDetails, HeliusProvider/ShyftProvider/ProviderRouter implemented, sharedProviderRouter singleton exported
-Status: Executing
-Last activity: 2026-04-20 -- Phase 16 Plan 01 complete
+Phase: 16 — ProviderRouter Extension (Complete — 2/2 plans complete)
+Plan: 02 complete — bundler.ts and wash-trader.ts getDefaultFetcher() rewired to sharedProviderRouter; both detectors gain Shyft fallback and throw-on-exhaustion (API-01, API-03 satisfied)
+Status: Complete
+Last activity: 2026-04-20 -- Phase 16 Plan 02 complete
 
 ```
-v1.1 Progress: [██████████] 98% (15/16 plans complete)
+v1.1 Progress: [██████████] 100% (16/16 plans complete)
 ```
 
 ## Milestone History
@@ -148,6 +148,12 @@ v1.1 Progress: [██████████] 98% (15/16 plans complete)
 - tryCallGetTransactionDetails throws on exhaustion (no ?? []) — callers need explicit failure signal; distinct from existing list methods which return empty arrays
 - sharedProviderRouter exported as module-level const from providers/index.ts — instantiated once per process; Plan 02 consumes via dynamic import inside function body to avoid circular deps
 
+### Phase 16 Plan 02 Decisions (2026-04-20)
+
+- Explicit adapter object `{ getTransaction: sig => router.getTransactionDetails(sig) }` used instead of `as unknown as BundlerFetcher`/`WashTraderFetcher` cast — TypeScript validates method signature directly, method-name bridge is visible in code, no unsafe `unknown` hop
+- Zero changes to detector interfaces (D-05) and test files (D-06) — only `getDefaultFetcher` function body modified in each of bundler.ts and wash-trader.ts
+- Dynamic `await import('../fetchers/providers/index.js')` kept inside function body (not top-level) — preserves lazy-load isolation for test-time DI injection pattern
+
 ### Roadmap Evolution
 
 - Phase 17 added: GMGN Agent API Integration — replace public trending endpoint scrape with official GMGN Agent API (https://docs.gmgn.ai/index/gmgn-agent-api) for authenticated, rate-limit-friendly token data ingestion
@@ -163,4 +169,4 @@ None.
 
 ## Next Action
 
-Phase 16 — ProviderRouter Extension (bundler/wash-trader detection with full Shyft fallback, API-01–03). Phase 15 fully complete: all 5 plans executed, all 8 requirements satisfied (SEED-01–06, OBS-01–02), human-verify checkpoint approved 2026-04-18 (/admin, /status, and AutoSourcer polling confirmed). SEED-06 Railway CLI verification deferred to Railway deployment.
+Phase 16 complete — all 2 plans executed, all 3 requirements satisfied (API-01, API-02, API-03). Run `/gsd:verify-work` for final goal-backward audit of Phase 16. Next: Phase 17 — GMGN Agent API Integration.
