@@ -97,4 +97,33 @@ describe('HeliusProvider', () => {
       expect(result).toBe(expected);
     });
   });
+
+  describe('getTransactionDetails', () => {
+    it('delegates to HeliusFetcher.getTransaction', async () => {
+      const expected = { signature: 'sig-a', slot: 1, timestamp: 0, fee: 0, feePayer: 'w', success: true, type: 'SWAP', source: 'RAYDIUM' } as unknown as HeliusTransaction;
+      let calledWith: string | undefined;
+      const fakeFetcher = {
+        fetchSwapHistory: async () => [],
+        fetchEarlySwapsForMint: async () => [],
+        fetchOnePage: async () => [],
+        getTransaction: async (sig: string) => { calledWith = sig; return expected; },
+      } as unknown as HeliusFetcher;
+      const provider = new HeliusProvider(fakeFetcher);
+      const result = await provider.getTransactionDetails('sig-a');
+      expect(calledWith).toBe('sig-a');
+      expect(result).toBe(expected);
+    });
+
+    it('propagates HeliusFetcher.getTransaction errors unchanged', async () => {
+      const boom = new Error('Transaction not found: sig-x');
+      const fakeFetcher = {
+        fetchSwapHistory: async () => [],
+        fetchEarlySwapsForMint: async () => [],
+        fetchOnePage: async () => [],
+        getTransaction: async () => { throw boom; },
+      } as unknown as HeliusFetcher;
+      const provider = new HeliusProvider(fakeFetcher);
+      await expect(provider.getTransactionDetails('sig-x')).rejects.toBe(boom);
+    });
+  });
 });
