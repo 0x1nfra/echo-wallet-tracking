@@ -240,6 +240,15 @@ async function getDefaultDb(): Promise<WashTraderDb> {
 }
 
 async function getDefaultFetcher(): Promise<WashTraderFetcher> {
-  const { createHeliusFetcher } = await import('../fetchers/helius.js');
-  return createHeliusFetcher() as unknown as WashTraderFetcher;
+  // Route through ProviderRouter (Phase 16) to gain Shyft fallback and
+  // throw-on-exhaustion semantics. The router exposes getTransactionDetails(sig),
+  // which structurally satisfies WashTraderFetcher.getTransaction(sig) — both
+  // return a Promise with { signature, tokenTransfers?, nativeTransfers? }.
+  // Explicit adapter (not `as unknown as WashTraderFetcher`) keeps the
+  // method-name bridge visible and avoids leaking the full ProviderRouter surface.
+  const { sharedProviderRouter } = await import('../fetchers/providers/index.js');
+  return {
+    getTransaction: (signature: string) =>
+      sharedProviderRouter.getTransactionDetails(signature),
+  };
 }
