@@ -3,14 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Forward Testing & Deployment
 status: executing
-last_updated: "2026-04-19T18:08:00.143Z"
-last_activity: 2026-04-19 -- Phase 16 planning complete
+last_updated: "2026-04-20T00:30:00.000Z"
+last_activity: 2026-04-20 -- Phase 16 Plan 01 complete
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 16
-  completed_plans: 13
-  percent: 81
+  completed_plans: 15
 ---
 
 # Project State
@@ -24,13 +23,13 @@ See: .planning/PROJECT.md (updated 2026-03-31 after v1.1 milestone started)
 
 ## Current Position
 
-Phase: 15 — Coin Sourcing + Observability (Complete — 5/5 plans complete)
-Plan: 05 complete — /status Telegram command expanded to 3-section health summary (Monitor, AutoSourcer, Providers), OBS-02 satisfied
-Status: Ready to execute
-Last activity: 2026-04-19 -- Phase 16 planning complete
+Phase: 16 — ProviderRouter Extension (In Progress — 1/2 plans complete)
+Plan: 01 complete — RpcProvider extended with getTransactionDetails, HeliusProvider/ShyftProvider/ProviderRouter implemented, sharedProviderRouter singleton exported
+Status: Executing
+Last activity: 2026-04-20 -- Phase 16 Plan 01 complete
 
 ```
-v1.1 Progress: [██████████] 100% (13/13 plans complete)
+v1.1 Progress: [██████████] 98% (15/16 plans complete)
 ```
 
 ## Milestone History
@@ -44,7 +43,7 @@ v1.1 Progress: [██████████] 100% (13/13 plans complete)
 | 13 - Railway Deployment | Persistent Railway deployment with data integrity safeguards | DEPLOY-01–04 | Complete |
 | 14 - Signal Outcome Tracking | Accurate forward-testing dataset: 30m window, peak price, rug classification | OUTCOME-01–06 | Complete (4/4 plans) |
 | 15 - Coin Sourcing + Observability | Automated discovery via DexScreener with caps and dashboard health | SEED-01–06, OBS-01–02 | Complete (5/5 plans) |
-| 16 - ProviderRouter Extension | Bundler/wash-trader detection with full Shyft fallback | API-01–03 | Not started |
+| 16 - ProviderRouter Extension | Bundler/wash-trader detection with full Shyft fallback | API-01–03 | In progress (1/2 plans) |
 | 17 - GMGN Agent API Integration | Replace public endpoint scrape with official GMGN Agent API for robust token data ingestion | TBD | Not started |
 
 ## Accumulated Context
@@ -141,6 +140,13 @@ v1.1 Progress: [██████████] 100% (13/13 plans complete)
 - Stall threshold is 5 minutes (STALL_THRESHOLD_MS) — null lastCycleCompletedAt treated as "Not started" separately from timed-out state for clear operator UX
 - Provider section uses try/catch with graceful fallback — empty array returns "No provider data yet", import failure returns "Provider status unavailable"
 - /status is on-demand only — not scheduled, not triggered by cycles; pure Telegram command handler
+
+### Phase 16 Plan 01 Decisions (2026-04-20)
+
+- AbortError used in pRetry onFailedAttempt for non-retryable errors (missing result, 401) — pRetry v7 changed onFailedAttempt signature to RetryContext object; context.error holds the original error
+- SHYFT_NATIVE_TRANSFER_ACTION_TYPES contains only SOL_TRANSFER — D-03 script was committed in Plan 00 but operator did not run it; SOL_TRANSFER is the canonical documented type
+- tryCallGetTransactionDetails throws on exhaustion (no ?? []) — callers need explicit failure signal; distinct from existing list methods which return empty arrays
+- sharedProviderRouter exported as module-level const from providers/index.ts — instantiated once per process; Plan 02 consumes via dynamic import inside function body to avoid circular deps
 
 ### Roadmap Evolution
 
