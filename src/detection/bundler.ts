@@ -240,6 +240,15 @@ async function getDefaultDb(): Promise<BundlerDb> {
 }
 
 async function getDefaultFetcher(): Promise<BundlerFetcher> {
-  const { createHeliusFetcher } = await import('../fetchers/helius.js');
-  return createHeliusFetcher();
+  // Route through ProviderRouter (Phase 16) to gain Shyft fallback and
+  // throw-on-exhaustion semantics. The router exposes getTransactionDetails(sig),
+  // which structurally satisfies BundlerFetcher.getTransaction(sig) — both
+  // take a string and return a Promise<{ signature, nativeTransfers? }>.
+  // Explicit adapter (not `as unknown as BundlerFetcher`) keeps the
+  // method-name bridge visible and avoids leaking the full ProviderRouter surface.
+  const { sharedProviderRouter } = await import('../fetchers/providers/index.js');
+  return {
+    getTransaction: (signature: string) =>
+      sharedProviderRouter.getTransactionDetails(signature),
+  };
 }
